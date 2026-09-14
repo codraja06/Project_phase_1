@@ -1,0 +1,53 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# CivicDetect — YOLO Dataset Configuration
+# ──────────────────────────────────────────────────────────────────────────────
+# This file configures the dataset for Ultralytics YOLOv8 training.
+#
+# Usage:
+#   yolo detect train data=dataset.yaml model=yolov8n.pt epochs=100 imgsz=640
+#
+# OR via train.py in this directory.
+# ──────────────────────────────────────────────────────────────────────────────
+
+# Dataset root path (relative to this file, or use absolute path)
+path: ./data
+
+# Train and validation image directories (relative to 'path')
+train: images/train
+val: images/val
+
+# Optional: test set
+# test: images/test
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Number of classes
+# ──────────────────────────────────────────────────────────────────────────────
+nc: 5
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Class Names
+# These must match the CLASS_MAP in ai-service/app/detector.py:
+#   0: pothole
+#   1: road_damage
+#   2: garbage
+#   3: drainage
+#   4: broken_streetlight
+# ──────────────────────────────────────────────────────────────────────────────
+names:
+  0: pothole
+  1: road_damage
+  2: garbage
+  3: drainage
+  4: broken_streetlight
+
+# ──────────────────────────────────────────────────────────────────────────────
+# NOTE for RDD2022 users:
+# RDD2022 uses class names D00, D10, D20, D40 (and others).
+# After downloading RDD2022, remap annotations:
+#   D00 (longitudinal crack) → road_damage (index 1)
+#   D10 (transverse crack)   → road_damage (index 1)
+#   D20 (alligator crack)    → road_damage (index 1)
+#   D40 (pothole)            → pothole (index 0)
+#
+# Use the conversion script in this directory or re-annotate with Roboflow.
+# ──────────────────────────────────────────────────────────────────────────────

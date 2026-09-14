@@ -1,0 +1,68 @@
+{
+  "expo": {
+    "name": "CivicTrack",
+    "slug": "civic-issue-detection",
+    "scheme": "civictrack",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "CivicDetect requires camera access to photograph civic issues such as potholes, road damage, and garbage for AI analysis.",
+        "NSMicrophoneUsageDescription": "Camera access requires microphone permission on this device.",
+        "NSLocationWhenInUseUsageDescription": "CivicDetect uses your location to accurately pin civic complaints on the map.",
+        "NSPhotoLibraryUsageDescription": "CivicDetect needs photo library access to upload existing images of civic issues."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0F172A"
+      },
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": ""
+        }
+      }
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow CivicDetect to access your camera to photograph road damage, potholes, and garbage for AI detection."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow CivicDetect to access your location to pin civic complaints accurately on the map."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow CivicDetect to access your photos to upload existing civic issue images.",
+          "cameraPermission": "Allow CivicDetect to access your camera for photo capture."
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": ""
+    }
+  }
+}
