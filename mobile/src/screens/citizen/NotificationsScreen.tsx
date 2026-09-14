@@ -10,10 +10,15 @@ import {
   StatusBar,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { complaintApi } from '../../api/complaintApi';
 import { Complaint } from '../../types/complaint';
-import { COLORS, BORDER_RADIUS } from '../../constants/theme';
+import { COLORS } from '../../theme/colors';
+import { BORDER_RADIUS } from '../../theme/radius';
+import { SHADOWS } from '../../theme/index';
+import { SPACING } from '../../theme/spacing';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { NotificationItem, NotificationData } from '../../components/NotificationItem';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { formatDate } from '../../utils/date';
@@ -95,10 +100,10 @@ export const NotificationsScreen = ({ navigation }: any) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
       {/* Screen Header */}
-      <View style={styles.headerBar}>
+      <Animated.View entering={FadeInDown.duration(400)} style={styles.headerBar}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => navigation.navigate('CitizenDashboard')}
@@ -107,7 +112,7 @@ export const NotificationsScreen = ({ navigation }: any) => {
           <Ionicons name="chevron-back" size={24} color={COLORS.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Notifications</Text>
-      </View>
+      </Animated.View>
 
       <View style={styles.container}>
         <FlatList
@@ -122,23 +127,25 @@ export const NotificationsScreen = ({ navigation }: any) => {
             />
           }
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
+            <Animated.View entering={FadeIn.delay(200)} style={styles.emptyContainer}>
               <Ionicons name="notifications-outline" size={44} color={COLORS.textMuted} />
               <Text style={styles.emptyTitle}>No notifications yet</Text>
               <Text style={styles.emptySub}>
                 When your reported civic issues are verified, scheduled, or resolved, updates will appear here.
               </Text>
-            </View>
+            </Animated.View>
           }
-          renderItem={({ item }) => (
-            <NotificationItem
-              item={item}
-              onPress={() => {
-                if (item.complaintId) {
-                  (navigation as any).navigate('ComplaintDetail', { complaintId: item.complaintId });
-                }
-              }}
-            />
+          renderItem={({ item, index }) => (
+            <Animated.View entering={FadeInUp.delay(100 + index * 50)}>
+              <NotificationItem
+                item={item}
+                onPress={() => {
+                  if (item.complaintId) {
+                    (navigation as any).navigate('ComplaintDetail', { complaintId: item.complaintId });
+                  }
+                }}
+              />
+            </Animated.View>
           )}
         />
       </View>
@@ -149,17 +156,17 @@ export const NotificationsScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.background,
   },
   headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 12,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.sm,
+    paddingBottom: SPACING.md,
     borderBottomWidth: 1.5,
-    borderBottomColor: COLORS.border,
-    backgroundColor: '#FFFFFF',
+    borderBottomColor: COLORS.borderLight,
+    backgroundColor: COLORS.background,
   },
   backBtn: {
     width: 38,
@@ -170,39 +177,36 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
-    marginRight: 12,
+    marginRight: SPACING.md,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+    ...TYPOGRAPHY.h3,
     color: COLORS.textPrimary,
   },
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.backgroundNeutral,
   },
   listContent: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 32,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING['4xl'],
   },
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 56,
+    paddingVertical: SPACING['6xl'],
   },
   emptyTitle: {
-    fontSize: 16,
-    fontWeight: '800',
+    ...TYPOGRAPHY.h4,
     color: COLORS.textPrimary,
-    marginTop: 12,
-    marginBottom: 4,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.xs,
   },
   emptySub: {
-    fontSize: 13,
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
     textAlign: 'center',
     maxWidth: 280,
-    lineHeight: 18,
   },
 });

@@ -10,10 +10,15 @@ import {
   ScrollView,
   FlatList,
 } from 'react-native';
+import Animated, { FadeInDown, FadeInUp, ZoomIn, FadeInRight } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { authorityApi } from '../../api/authorityApi';
 import { Complaint } from '../../types/complaint';
-import { COLORS, BORDER_RADIUS, SHADOWS, TYPOGRAPHY } from '../../constants/theme';
+import { COLORS } from '../../theme/colors';
+import { BORDER_RADIUS } from '../../theme/radius';
+import { SHADOWS } from '../../theme/index';
+import { SPACING } from '../../theme/spacing';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { StatusBadge } from '../../components/StatusBadge';
 import { FilterChipGroup } from '../../components/FilterChip';
@@ -104,7 +109,7 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
     }
 
     return (
-      <View style={styles.mapContainer}>
+      <Animated.View entering={FadeInUp.delay(200)} style={styles.mapContainer}>
         <MapView
           provider={PROVIDER_DEFAULT}
           style={styles.map}
@@ -121,33 +126,32 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
             longitudeDelta: 0.03,
           }}
         >
-          {filtered.map((item) => {
+          {filtered.map((item, index) => {
             return (
               <Marker
                 key={item._id}
                 coordinate={{ latitude: item.latitude, longitude: item.longitude }}
                 title={item.title}
                 description={item.address}
-                pinColor={COLORS.primary}
                 onPress={() => setSelectedComplaint(item)}
               >
-                <View style={styles.redYellowPinMarker}>
+                <Animated.View entering={ZoomIn.delay(300 + (index % 10) * 50)} style={styles.redYellowPinMarker}>
                   <View style={styles.pinOuterYellowRing}>
                     <View style={styles.pinInnerRedCircle}>
                       <Ionicons name="location" size={16} color="#FFFFFF" />
                     </View>
                   </View>
-                </View>
+                </Animated.View>
               </Marker>
             );
           })}
         </MapView>
-      </View>
+      </Animated.View>
     );
   };
 
   // ─── Complaint list item (used in the desktop side panel) ─────────────────
-  const renderSidePanelItem = ({ item }: { item: Complaint }) => {
+  const renderSidePanelItem = ({ item, index }: { item: Complaint, index: number }) => {
     const isSelected = selectedComplaint?._id === item._id;
     const norm = (item.status || '').toLowerCase();
     const accentColor =
@@ -158,33 +162,35 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
         : COLORS.pending;
 
     return (
-      <TouchableOpacity
-        style={[styles.panelItem, isSelected && styles.panelItemSelected]}
-        onPress={() => setSelectedComplaint(item)}
-        activeOpacity={0.75}
-      >
-        <View
-          style={[styles.panelAccentBar, { backgroundColor: accentColor }]}
-        />
-        <View style={styles.panelItemContent}>
-          <Text style={styles.panelItemTitle} numberOfLines={1}>
-            {item.title}
-          </Text>
-          <Text style={styles.panelItemAddress} numberOfLines={1}>
-            {item.address || 'GPS coordinates logged'}
-          </Text>
-          <StatusBadge status={item.status} size="sm" />
-        </View>
+      <Animated.View entering={FadeInRight.delay(index * 50)}>
         <TouchableOpacity
-          style={styles.panelItemArrow}
-          onPress={() =>
-            navigation.navigate('AuthorityComplaintDetail', { complaintId: item._id })
-          }
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          style={[styles.panelItem, isSelected && styles.panelItemSelected]}
+          onPress={() => setSelectedComplaint(item)}
+          activeOpacity={0.75}
         >
-          <Ionicons name="arrow-forward-circle-outline" size={20} color={COLORS.accent} />
+          <View
+            style={[styles.panelAccentBar, { backgroundColor: accentColor }]}
+          />
+          <View style={styles.panelItemContent}>
+            <Text style={styles.panelItemTitle} numberOfLines={1}>
+              {item.title}
+            </Text>
+            <Text style={styles.panelItemAddress} numberOfLines={1}>
+              {item.address || 'GPS coordinates logged'}
+            </Text>
+            <StatusBadge status={item.status} size="sm" />
+          </View>
+          <TouchableOpacity
+            style={styles.panelItemArrow}
+            onPress={() =>
+              navigation.navigate('AuthorityComplaintDetail', { complaintId: item._id })
+            }
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons name="arrow-forward-circle-outline" size={20} color={COLORS.secondary} />
+          </TouchableOpacity>
         </TouchableOpacity>
-      </TouchableOpacity>
+      </Animated.View>
     );
   };
 
@@ -192,10 +198,10 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
   if (isDesktop) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+        <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
         {/* Desktop top bar */}
-        <View style={styles.desktopTopBar}>
+        <Animated.View entering={FadeInDown.duration(400)} style={styles.desktopTopBar}>
           <Text style={styles.desktopTopBarTitle}>Incident Map</Text>
           <FilterChipGroup
             options={filterOptions}
@@ -203,7 +209,7 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
             onSelect={setStatusFilter}
             containerStyle={styles.desktopFilterContainer}
           />
-        </View>
+        </Animated.View>
 
         {/* Desktop body: panel + map */}
         <View style={styles.desktopBody}>
@@ -233,7 +239,7 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
 
             {/* Selected complaint detail in panel footer */}
             {selectedComplaint && (
-              <View style={styles.panelFooter}>
+              <Animated.View entering={FadeInUp.duration(300)} style={styles.panelFooter}>
                 <View style={styles.panelFooterInfo}>
                   <Text style={styles.panelFooterTitle} numberOfLines={1}>
                     {selectedComplaint.title}
@@ -254,7 +260,7 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
                   <Text style={styles.panelFooterBtnText}>Inspect</Text>
                   <Ionicons name="arrow-forward" size={14} color="#FFFFFF" style={{ marginLeft: 4 }} />
                 </TouchableOpacity>
-              </View>
+              </Animated.View>
             )}
           </View>
 
@@ -270,9 +276,9 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
   // ─── Mobile / Tablet — original stacked layout ─────────────────────────────
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
-      <View style={styles.headerBar}>
+      <Animated.View entering={FadeInDown.duration(400)} style={styles.headerBar}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => navigation.navigate('AuthorityDashboard')}
@@ -281,7 +287,7 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
           <Ionicons name="chevron-back" size={24} color={COLORS.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Incident Map</Text>
-      </View>
+      </Animated.View>
 
       <View style={styles.container}>
         <FilterChipGroup
@@ -294,7 +300,7 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
         {Platform.OS === 'web' ? renderWebMap() : renderNativeMap()}
 
         {selectedComplaint ? (
-          <View style={styles.previewCard}>
+          <Animated.View entering={FadeInUp.duration(300)} style={styles.previewCard}>
             <View style={styles.previewHeader}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.previewTitle} numberOfLines={1}>
@@ -323,7 +329,7 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
                 style={{ marginLeft: 6 }}
               />
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         ) : null}
       </View>
     </SafeAreaView>
@@ -333,7 +339,7 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.background,
   },
 
   // ── Desktop ──────────────────────────────────────────────────────────────────
@@ -341,15 +347,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 14,
+    paddingHorizontal: SPACING['3xl'],
+    paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    backgroundColor: '#FFFFFF',
+    borderBottomColor: COLORS.borderLight,
+    backgroundColor: COLORS.background,
   },
   desktopTopBarTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    ...TYPOGRAPHY.h4,
     color: COLORS.textPrimary,
   },
   desktopFilterContainer: {
@@ -364,46 +369,45 @@ const styles = StyleSheet.create({
     width: 360,
     flexShrink: 0,
     borderRightWidth: 1,
-    borderRightColor: COLORS.border,
-    backgroundColor: '#FFFFFF',
+    borderRightColor: COLORS.borderLight,
+    backgroundColor: COLORS.surface,
     flexDirection: 'column',
   },
   panelHeader: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.borderLight,
   },
   panelHeaderTitle: {
-    fontSize: 15,
-    fontWeight: '700',
+    ...TYPOGRAPHY.bodyBold,
     color: COLORS.textPrimary,
   },
   panelHeaderSub: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption,
     color: COLORS.textMuted,
     marginTop: 2,
   },
   panelListContent: {
-    paddingVertical: 8,
+    paddingVertical: SPACING.sm,
   },
   panelItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.borderLight,
     minHeight: 64,
   },
   panelItemSelected: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.backgroundNeutral,
   },
   panelAccentBar: {
     width: 3,
     height: 36,
     borderRadius: 2,
-    marginRight: 12,
+    marginRight: SPACING.sm,
     flexShrink: 0,
   },
   panelItemContent: {
@@ -411,18 +415,18 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   panelItemTitle: {
-    fontSize: 13,
+    ...TYPOGRAPHY.bodySmall,
     fontWeight: '700',
     color: COLORS.textPrimary,
     marginBottom: 2,
   },
   panelItemAddress: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption,
     color: COLORS.textSecondary,
     marginBottom: 4,
   },
   panelItemArrow: {
-    paddingLeft: 8,
+    paddingLeft: SPACING.sm,
     minWidth: 44,
     minHeight: 44,
     alignItems: 'center',
@@ -432,67 +436,67 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
+    padding: SPACING['4xl'],
   },
   panelEmptyText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.caption,
     color: COLORS.textMuted,
-    marginTop: 8,
+    marginTop: SPACING.sm,
     textAlign: 'center',
   },
   panelFooter: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
+    padding: SPACING.md,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    backgroundColor: '#FAFAFA',
-    gap: 10,
+    borderTopColor: COLORS.borderLight,
+    backgroundColor: COLORS.backgroundNeutral,
+    gap: SPACING.sm,
   },
   panelFooterInfo: {
     flex: 1,
     minWidth: 0,
   },
   panelFooterTitle: {
-    fontSize: 13,
+    ...TYPOGRAPHY.bodySmall,
     fontWeight: '700',
     color: COLORS.textPrimary,
   },
   panelFooterAddr: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption,
     color: COLORS.textSecondary,
     marginTop: 2,
   },
   panelFooterBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.accent,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    backgroundColor: COLORS.secondary,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
     borderRadius: BORDER_RADIUS.md,
     minHeight: 44,
     ...SHADOWS.button,
   },
   panelFooterBtnText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.bodySmall,
     fontWeight: '700',
     color: '#FFFFFF',
   },
   desktopMapArea: {
     flex: 1,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.backgroundNeutral,
   },
 
   // ── Mobile / Tablet ───────────────────────────────────────────────────────
   headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 12,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.sm,
+    paddingBottom: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    backgroundColor: '#FFFFFF',
+    borderBottomColor: COLORS.borderLight,
+    backgroundColor: COLORS.background,
   },
   backBtn: {
     width: 36,
@@ -500,26 +504,25 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F8FAFC',
-    marginRight: 12,
+    backgroundColor: COLORS.surface,
+    marginRight: SPACING.md,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    ...TYPOGRAPHY.h4,
     color: COLORS.textPrimary,
   },
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.background,
   },
   filterBar: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
   },
   mapContainer: {
     flex: 1,
     width: '100%',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.backgroundNeutral,
   },
   map: {
     width: '100%',
@@ -530,34 +533,32 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   fallbackTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    ...TYPOGRAPHY.bodyBold,
     color: COLORS.textPrimary,
-    marginTop: 10,
+    marginTop: SPACING.sm,
   },
   previewCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 24,
+    borderTopColor: COLORS.borderLight,
+    paddingHorizontal: SPACING.xl,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING['3xl'],
     ...SHADOWS.elevated,
   },
   previewHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: SPACING.md,
   },
   previewTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    ...TYPOGRAPHY.bodyBold,
     color: COLORS.textPrimary,
     marginBottom: 2,
   },
   previewAddress: {
-    fontSize: 13,
+    ...TYPOGRAPHY.caption,
     color: COLORS.textSecondary,
   },
   inspectBtn: {
@@ -565,12 +566,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.primary,
-    paddingVertical: 12,
+    paddingVertical: SPACING.md,
     borderRadius: BORDER_RADIUS.md,
     ...SHADOWS.button,
   },
   inspectBtnText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.bodySmall,
     fontWeight: '700',
     color: '#FFFFFF',
   },

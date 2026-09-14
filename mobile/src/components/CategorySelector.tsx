@@ -67,7 +67,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
         <View style={styles.aiNoticeBanner}>
           <Ionicons name="information-circle" size={20} color={COLORS.secondaryDark} style={{ marginRight: 10 }} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.aiNoticeTitle}>Unable to identify this issue automatically.</Text>
+            <Text style={styles.aiNoticeTitle}>No supported issue detected automatically.</Text>
             <Text style={styles.aiNoticeSubtitle}>
               Please select the appropriate civic hazard category below.
             </Text>

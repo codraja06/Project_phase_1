@@ -56,8 +56,8 @@ async def predict_issue(image: UploadFile = File(...)):
         detections = detector_instance.detect(contents)
 
         return PredictResponse(
-            success=True,
-            message="Civic issue detection completed successfully",
+            detected=len(detections) > 0,
+            message="Civic issue detection completed successfully" if len(detections) > 0 else "No supported civic issue detected automatically.",
             detections=detections
         )
     except RuntimeError as re:

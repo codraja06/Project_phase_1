@@ -1,7 +1,12 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, TouchableOpacity, Platform } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import Animated, { FadeInUp, FadeOutUp } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../constants/theme';
+import { COLORS } from '../theme/colors';
+import { BORDER_RADIUS } from '../theme/radius';
+import { SHADOWS } from '../theme/index';
+import { SPACING } from '../theme/spacing';
+import { TYPOGRAPHY } from '../theme/typography';
 
 export interface ToastProps {
   visible: boolean;
@@ -18,54 +23,18 @@ export const Toast: React.FC<ToastProps> = ({
   onDismiss,
   duration = 3500,
 }) => {
-  const translateY = useRef(new Animated.Value(-100)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
-
   useEffect(() => {
     if (visible) {
-      Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: 0,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-      ]).start();
-
       const timer = setTimeout(() => {
-        hideToast();
+        onDismiss();
       }, duration);
-
       return () => clearTimeout(timer);
-    } else {
-      hideToast();
     }
-  }, [visible]);
-
-  const hideToast = () => {
-    Animated.parallel([
-      Animated.timing(translateY, {
-        toValue: -100,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      onDismiss();
-    });
-  };
+  }, [visible, duration, onDismiss]);
 
   if (!visible) return null;
 
-  let bg = '#FFFFFF';
+  let bg = COLORS.surface;
   let borderColor = COLORS.border;
   let iconColor = COLORS.successDark;
   let iconName: keyof typeof Ionicons.glyphMap = 'checkmark-circle';
@@ -74,35 +43,39 @@ export const Toast: React.FC<ToastProps> = ({
     borderColor = COLORS.errorBorder;
     iconColor = COLORS.error;
     iconName = 'alert-circle';
+    bg = COLORS.errorLight;
   } else if (type === 'info') {
     borderColor = COLORS.inProgressBorder;
     iconColor = COLORS.inProgress;
     iconName = 'information-circle';
+    bg = COLORS.inProgressLight;
   } else {
     borderColor = COLORS.successBorder;
     iconColor = COLORS.successDark;
     iconName = 'checkmark-circle';
+    bg = COLORS.successLight;
   }
 
   return (
     <Animated.View
+      entering={FadeInUp.springify().damping(15).stiffness(150)}
+      exiting={FadeOutUp.duration(200)}
       style={[
         styles.toastContainer,
         {
-          transform: [{ translateY }],
-          opacity,
           borderColor,
+          backgroundColor: bg,
         },
       ]}
       accessibilityLiveRegion="polite"
       accessibilityRole="alert"
     >
-      <Ionicons name={iconName} size={22} color={iconColor} style={{ marginRight: 10 }} />
+      <Ionicons name={iconName} size={22} color={iconColor} style={{ marginRight: SPACING.md }} />
       <Text style={styles.toastMessage} numberOfLines={2}>
         {message}
       </Text>
-      <TouchableOpacity onPress={hideToast} style={styles.closeBtn} activeOpacity={0.7}>
-        <Ionicons name="close" size={18} color={COLORS.textMuted} />
+      <TouchableOpacity onPress={onDismiss} style={styles.closeBtn} activeOpacity={0.7}>
+        <Ionicons name="close" size={20} color={COLORS.slateMuted} />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -111,30 +84,27 @@ export const Toast: React.FC<ToastProps> = ({
 const styles = StyleSheet.create({
   toastContainer: {
     position: 'absolute',
-    top: Platform.OS === 'web' ? 24 : 48,
-    left: 20,
-    right: 20,
+    top: Platform.OS === 'web' ? 24 : 54, // Avoid safe area
+    left: SPACING.xl,
+    right: SPACING.xl,
     maxWidth: 500,
     alignSelf: 'center',
     zIndex: 99999,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
     borderRadius: BORDER_RADIUS.md,
     borderWidth: 1.5,
-    ...SHADOWS.cardHover,
+    ...SHADOWS.elevated,
   },
   toastMessage: {
     flex: 1,
-    fontSize: 14,
-    fontWeight: '700',
+    ...TYPOGRAPHY.bodyBold,
     color: COLORS.textPrimary,
-    lineHeight: 19,
   },
   closeBtn: {
-    marginLeft: 10,
-    padding: 4,
+    marginLeft: SPACING.md,
+    padding: SPACING.xs,
   },
 });

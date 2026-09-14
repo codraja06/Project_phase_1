@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -10,9 +10,13 @@ import {
   RefreshControl,
   Platform,
 } from 'react-native';
+import Animated, { FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { complaintApi } from '../../api/complaintApi';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../../constants/theme';
+import { COLORS } from '../../theme/colors';
+import { BORDER_RADIUS } from '../../theme/radius';
+import { SHADOWS } from '../../theme/index';
+import { SPACING } from '../../theme/spacing';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
@@ -50,15 +54,20 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
       {/* Screen Header */}
-      <View style={styles.headerBar}>
-        <View>
-          <View style={styles.headerTag}>
-            <Text style={styles.headerTagText}>OPERATIONS INTELLIGENCE</Text>
+      <Animated.View entering={FadeInDown.duration(400)} style={styles.headerBar}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.md }}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={24} color={COLORS.textPrimary} />
+          </TouchableOpacity>
+          <View>
+            <View style={styles.headerTag}>
+              <Text style={styles.headerTagText}>OPERATIONS INTELLIGENCE</Text>
+            </View>
+            <Text style={styles.headerTitle}>Municipal Analytics</Text>
           </View>
-          <Text style={styles.headerTitle}>Municipal Performance Analytics</Text>
         </View>
 
         {/* Timeframe selector */}
@@ -75,7 +84,7 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
             </TouchableOpacity>
           ))}
         </View>
-      </View>
+      </Animated.View>
 
       <ScrollView
         style={styles.container}
@@ -90,7 +99,7 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
       >
         <View style={styles.mainWrapper}>
           {/* Executive KPI Row */}
-          <View style={styles.kpiRow}>
+          <Animated.View entering={FadeInUp.delay(100)} style={styles.kpiRow}>
             <View style={styles.kpiCard}>
               <View style={styles.kpiIcon}>
                 <Ionicons name="speedometer-outline" size={20} color={COLORS.primary} />
@@ -125,18 +134,18 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
                 <Text style={[styles.kpiTrendText, { color: '#4B5563' }]}>6 Active Units</Text>
               </View>
             </View>
-          </View>
+          </Animated.View>
 
           {/* Category Distribution Card */}
-          <View style={styles.card}>
+          <Animated.View entering={FadeInUp.delay(200)} style={styles.card}>
             <View style={styles.cardHeader}>
               <Ionicons name="pie-chart-outline" size={18} color={COLORS.primary} style={{ marginRight: 8 }} />
               <Text style={styles.cardTitle}>Incident Category Distribution</Text>
             </View>
 
             <View style={styles.categoryList}>
-              {categories.map((cat) => (
-                <View key={cat.name} style={styles.catItem}>
+              {categories.map((cat, index) => (
+                <Animated.View entering={ZoomIn.delay(300 + index * 50)} key={cat.name} style={styles.catItem}>
                   <View style={styles.catMetaRow}>
                     <Text style={styles.catName}>{cat.name}</Text>
                     <Text style={styles.catCount}>
@@ -144,20 +153,20 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
                     </Text>
                   </View>
                   <View style={styles.progressBarBg}>
-                    <View
+                    <Animated.View
                       style={[
                         styles.progressBarFill,
                         { width: `${cat.pct}%`, backgroundColor: cat.color },
                       ]}
                     />
                   </View>
-                </View>
+                </Animated.View>
               ))}
             </View>
-          </View>
+          </Animated.View>
 
           {/* Priority Severity Breakdown */}
-          <View style={styles.card}>
+          <Animated.View entering={FadeInUp.delay(400)} style={styles.card}>
             <View style={styles.cardHeader}>
               <Ionicons name="alert-circle-outline" size={18} color={COLORS.error} style={{ marginRight: 8 }} />
               <Text style={styles.cardTitle}>Priority Severity Matrix</Text>
@@ -184,10 +193,10 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
                 <Text style={styles.priorityPillLabel}>Routine (P4)</Text>
               </View>
             </View>
-          </View>
+          </Animated.View>
 
           {/* Regional Risk & Ward Table */}
-          <View style={styles.card}>
+          <Animated.View entering={FadeInUp.delay(500)} style={styles.card}>
             <View style={styles.cardHeader}>
               <Ionicons name="map-outline" size={18} color={COLORS.primary} style={{ marginRight: 8 }} />
               <Text style={styles.cardTitle}>Ward Incident Concentration</Text>
@@ -238,7 +247,7 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
                 </View>
               ))}
             </View>
-          </View>
+          </Animated.View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -248,18 +257,21 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.background,
   },
   headerBar: {
-    paddingHorizontal: 20,
-    paddingTop: 14,
-    paddingBottom: 14,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.sm,
+    paddingBottom: SPACING.lg,
     borderBottomWidth: 1.5,
-    borderBottomColor: COLORS.border,
-    backgroundColor: '#FFFFFF',
+    borderBottomColor: COLORS.borderLight,
+    backgroundColor: COLORS.background,
+  },
+  backBtn: {
+    marginRight: SPACING.md,
   },
   headerTag: {
-    backgroundColor: COLORS.authorityLight,
+    backgroundColor: COLORS.primaryLight,
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -267,36 +279,33 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   headerTagText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: COLORS.authorityPrimary,
-    letterSpacing: 0.6,
+    ...TYPOGRAPHY.overline,
+    color: COLORS.primary,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+    ...TYPOGRAPHY.h3,
     color: COLORS.textPrimary,
     letterSpacing: -0.2,
-    marginBottom: 10,
   },
   timeframeRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: SPACING.sm,
+    marginTop: SPACING.sm,
   },
   tfBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
     borderRadius: BORDER_RADIUS.full,
     backgroundColor: COLORS.backgroundNeutral,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.borderLight,
   },
   tfBtnActive: {
     backgroundColor: COLORS.primary,
     borderColor: COLORS.primary,
   },
   tfBtnText: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption,
     fontWeight: '700',
     color: COLORS.textSecondary,
   },
@@ -305,15 +314,15 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.backgroundNeutral,
   },
   scrollContent: {
-    padding: 18,
-    paddingBottom: 40,
+    padding: SPACING.lg,
+    paddingBottom: SPACING['5xl'],
   },
   scrollContentDesktop: {
-    padding: 32,
-    paddingBottom: 56,
+    padding: SPACING['4xl'],
+    paddingBottom: SPACING['6xl'],
   },
   mainWrapper: {
     width: '100%',
@@ -323,17 +332,17 @@ const styles = StyleSheet.create({
   kpiRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 18,
+    gap: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   kpiCard: {
     flex: 1,
     minWidth: 160,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.md,
-    padding: 16,
+    padding: SPACING.lg,
     borderWidth: 1.5,
-    borderColor: COLORS.border,
+    borderColor: COLORS.borderLight,
     ...SHADOWS.sm,
   },
   kpiIcon: {
@@ -343,20 +352,19 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: SPACING.sm,
   },
   kpiValue: {
-    fontSize: 22,
-    fontWeight: '800',
+    ...TYPOGRAPHY.h2,
     color: COLORS.textPrimary,
     marginBottom: 2,
     letterSpacing: -0.3,
   },
   kpiLabel: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption,
     fontWeight: '700',
     color: COLORS.textMuted,
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
   },
   kpiTrend: {
     flexDirection: 'row',
@@ -364,32 +372,32 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   kpiTrendText: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption,
     fontWeight: '700',
     color: '#059669',
   },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.md,
     borderWidth: 1.5,
-    borderColor: COLORS.border,
-    padding: 18,
-    marginBottom: 18,
+    borderColor: COLORS.borderLight,
+    padding: SPACING.lg,
+    marginBottom: SPACING.lg,
     ...SHADOWS.card,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: SPACING.lg,
   },
   cardTitle: {
-    fontSize: 14,
+    ...TYPOGRAPHY.bodySmall,
     fontWeight: '800',
     color: COLORS.textPrimary,
     letterSpacing: -0.2,
   },
   categoryList: {
-    gap: 12,
+    gap: SPACING.md,
   },
   catItem: {
     width: '100%',
@@ -400,12 +408,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   catName: {
-    fontSize: 13,
+    ...TYPOGRAPHY.bodySmall,
     fontWeight: '700',
     color: COLORS.textPrimary,
   },
   catCount: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption,
     color: COLORS.textMuted,
     fontWeight: '600',
   },
@@ -422,22 +430,21 @@ const styles = StyleSheet.create({
   },
   priorityGrid: {
     flexDirection: 'row',
-    gap: 10,
+    gap: SPACING.sm,
   },
   priorityPill: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: SPACING.md,
     borderRadius: BORDER_RADIUS.md,
     borderWidth: 1.5,
   },
   priorityPillNum: {
-    fontSize: 18,
-    fontWeight: '800',
+    ...TYPOGRAPHY.h3,
     marginBottom: 2,
   },
   priorityPillLabel: {
-    fontSize: 10,
+    ...TYPOGRAPHY.caption,
     fontWeight: '700',
     color: COLORS.textSecondary,
   },
@@ -446,33 +453,31 @@ const styles = StyleSheet.create({
   },
   wardTableHeader: {
     flexDirection: 'row',
-    paddingBottom: 8,
+    paddingBottom: SPACING.sm,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.borderLight,
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
   },
   wardCol: {
     flex: 1,
-    fontSize: 10,
-    fontWeight: '800',
+    ...TYPOGRAPHY.overline,
     color: COLORS.textMuted,
-    letterSpacing: 0.5,
   },
   wardRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: SPACING.sm,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.borderLight,
   },
   wardName: {
-    fontSize: 13,
+    ...TYPOGRAPHY.bodySmall,
     fontWeight: '700',
     color: COLORS.textPrimary,
   },
   wardVal: {
     flex: 1,
-    fontSize: 13,
+    ...TYPOGRAPHY.bodySmall,
     fontWeight: '800',
     color: COLORS.textPrimary,
   },
@@ -491,7 +496,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ECFDF5',
   },
   riskText: {
-    fontSize: 10,
+    ...TYPOGRAPHY.caption,
     fontWeight: '800',
   },
   riskTextHigh: {

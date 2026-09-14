@@ -8,8 +8,13 @@ import {
   StyleProp,
   Platform,
 } from 'react-native';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../constants/theme';
+import { COLORS } from '../theme/colors';
+import { BORDER_RADIUS } from '../theme/radius';
+import { SHADOWS } from '../theme/index';
+import { SPACING } from '../theme/spacing';
+import { TYPOGRAPHY } from '../theme/typography';
 
 interface SearchBarProps {
   value: string;
@@ -40,8 +45,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     >
       <Ionicons
         name="search-outline"
-        size={19}
-        color={isFocused ? COLORS.primary : COLORS.slateMedium}
+        size={20}
+        color={isFocused ? COLORS.primary : COLORS.slateMuted}
         style={styles.searchIcon}
       />
       <TextInput
@@ -59,18 +64,20 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         onBlur={() => setIsFocused(false)}
       />
       {value.length > 0 && (
-        <TouchableOpacity
-          onPress={() => {
-            onChangeText('');
-            onClear?.();
-          }}
-          style={styles.clearBtn}
-          accessibilityRole="button"
-          accessibilityLabel="Clear search text"
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Ionicons name="close-circle" size={18} color={COLORS.textMuted} />
-        </TouchableOpacity>
+        <Animated.View entering={FadeIn.duration(150)} exiting={FadeOut.duration(150)}>
+          <TouchableOpacity
+            onPress={() => {
+              onChangeText('');
+              onClear?.();
+            }}
+            style={styles.clearBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Clear search text"
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Ionicons name="close-circle" size={18} color={COLORS.slateMuted} />
+          </TouchableOpacity>
+        </Animated.View>
       )}
     </View>
   );
@@ -80,36 +87,35 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
     borderWidth: 1.5,
     borderColor: COLORS.border,
     borderRadius: BORDER_RADIUS.md,
-    paddingHorizontal: 14,
+    paddingHorizontal: SPACING.md,
     height: 48,
-    marginBottom: 12,
+    marginBottom: SPACING.lg,
     ...SHADOWS.sm,
     ...(Platform.OS === 'web' ? {
-      transition: 'all 0.18s ease-in-out' as any,
+      transition: 'all 0.2s ease' as any,
     } : {}),
   },
   containerFocused: {
     borderColor: COLORS.primary,
-    backgroundColor: '#FFFFFF',
   },
   webFocusHalo: {
-    ...(Platform.OS === 'web' ? ({ boxShadow: '0 0 0 3px rgba(16, 185, 129, 0.16)' } as any) : {}),
+    ...(Platform.OS === 'web' ? ({ boxShadow: `0 0 0 3px ${COLORS.primaryGlow}` } as any) : {}),
   },
   searchIcon: {
-    marginRight: 10,
+    marginRight: SPACING.md,
+    marginLeft: SPACING.xs,
   },
   input: {
     flex: 1,
-    fontSize: 14,
-    color: COLORS.textPrimary,
-    paddingVertical: 10,
+    ...TYPOGRAPHY.input,
+    paddingVertical: Platform.OS === 'ios' ? 12 : 10,
   },
   clearBtn: {
-    padding: 4,
+    padding: SPACING.xs,
     justifyContent: 'center',
     alignItems: 'center',
   },

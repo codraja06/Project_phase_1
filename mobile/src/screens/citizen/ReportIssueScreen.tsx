@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,8 +12,8 @@ import {
   Platform,
   Image,
   Alert,
-  Animated,
 } from 'react-native';
+import Animated, { FadeIn, FadeInDown, FadeInUp, ZoomIn, FadeOut, SlideInRight, SlideOutLeft } from 'react-native-reanimated';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { CitizenTabParamList } from '../../types/navigation';
@@ -32,7 +32,11 @@ import { SuccessModal } from '../../components/SuccessModal';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../../constants/theme';
+import { COLORS } from '../../theme/colors';
+import { BORDER_RADIUS } from '../../theme/radius';
+import { SHADOWS } from '../../theme/index';
+import { SPACING } from '../../theme/spacing';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 type Props = NativeStackScreenProps<CitizenTabParamList, 'ReportIssue'>;
@@ -69,9 +73,6 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
   const [createdComplaint, setCreatedComplaint] = useState<Complaint | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
 
-  // Animation for step transitions
-  const fadeAnim = useRef(new Animated.Value(1)).current;
-
   useEffect(() => {
     fetchCurrentLocation();
     if (route.params?.initialCategory) {
@@ -81,11 +82,8 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
   }, [route.params?.initialCategory]);
 
   const animateStepChange = (nextStep: Step) => {
-    Animated.sequence([
-      Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: true }),
-      Animated.timing(fadeAnim, { toValue: 1, duration: 250, useNativeDriver: true })
-    ]).start();
-    setTimeout(() => setCurrentStep(nextStep), 150);
+    // using reanimated entering/exiting handles transitions nicely.
+    setCurrentStep(nextStep);
   };
 
   const fetchCurrentLocation = async () => {
@@ -116,34 +114,34 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
       const [detectRes, uploadUrl] = await Promise.all([
         aiApi.detectIssue(uri).catch((e) => {
           console.warn('AI detection service warning:', e.message);
-          return { success: false, detections: [], message: e.message };
+          return { detected: false, detections: [], message: e.message };
         }),
         aiApi.uploadImage(uri).catch(() => uri),
       ]);
 
       setServerImageUrl(uploadUrl || uri);
 
-      if (detectRes && detectRes.detections && detectRes.detections.length > 0) {
+      if (detectRes && detectRes.detected && detectRes.detections && detectRes.detections.length > 0) {
         setAiDetections(detectRes.detections);
         const topDetection = detectRes.detections[0];
         setAiConfidence(topDetection.confidence);
-        setAiDetectedClass(topDetection.className);
+        setAiDetectedClass(topDetection.category);
         setAiDetected(true);
 
-        const mappedCategory = topDetection.className.toLowerCase().replace(/ /g, '_');
+        const mappedCategory = topDetection.category.toLowerCase().replace(/ /g, '_');
         setSelectedCategory(mappedCategory);
-        const genTitle = `${topDetection.className.charAt(0).toUpperCase() + topDetection.className.slice(1)} Issue`;
+        const genTitle = `${topDetection.category.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')} Issue`;
         setTitle(genTitle);
         setDescription(getDefaultDescription(mappedCategory, address));
       } else {
         setAiDetected(false);
-        setSelectedCategory('pothole');
-        setTitle('Pothole Hazard Reported');
-        setDescription(getDefaultDescription('pothole', address));
+        setSelectedCategory('other');
+        setTitle('Civic Hazard Reported');
+        setDescription(getDefaultDescription('other', address));
       }
     } catch (error: any) {
       setAiDetected(false);
-      setSelectedCategory('pothole');
+      setSelectedCategory('other');
       setTitle('Civic Hazard Reported');
       setDescription(getDefaultDescription('pothole', address));
     } finally {
@@ -239,7 +237,7 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FDFBF7" />
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.backgroundNeutral} />
 
       {/* Screen Header Bar */}
       <View style={styles.headerBar}>
@@ -265,13 +263,15 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
           return (
             <React.Fragment key={step.key}>
               <View style={styles.stepPill}>
-                <View style={[styles.stepCircle, isCurrent && styles.stepCircleCurrent, isDone && styles.stepCircleDone]}>
+                <Animated.View style={[styles.stepCircle, isCurrent && styles.stepCircleCurrent, isDone && styles.stepCircleDone]}>
                   {isDone ? (
-                    <Ionicons name="checkmark" size={12} color="#FFFFFF" />
+                    <Animated.View entering={ZoomIn}>
+                      <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                    </Animated.View>
                   ) : (
                     <Text style={[styles.stepNumText, isCurrent && styles.stepNumTextCurrent]}>{step.num}</Text>
                   )}
-                </View>
+                </Animated.View>
                 <Text style={[styles.stepLabel, isCurrent && styles.stepLabelCurrent, isDone && styles.stepLabelDone]}>
                   {step.label}
                 </Text>
@@ -286,71 +286,89 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={[styles.scrollContent, isDesktop && styles.scrollContentDesktop]} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          <Animated.View style={[styles.mainWrapper, { opacity: fadeAnim }]}>
+          <View style={styles.mainWrapper}>
             {errorMessage ? (
-              <View style={styles.errorBanner}>
-                <Ionicons name="alert-circle" size={18} color={COLORS.error} style={{ marginRight: 8 }} />
+              <Animated.View entering={FadeIn.duration(300)} style={styles.errorBanner}>
+                <Ionicons name="alert-circle" size={18} color={COLORS.error} style={{ marginRight: SPACING.xs }} />
                 <Text style={styles.errorText}>{errorMessage}</Text>
-              </View>
+              </Animated.View>
             ) : null}
 
             {/* STEP 1: CAPTURE */}
             {currentStep === 'capture' && (
-              <View style={styles.stepContainer}>
+              <Animated.View entering={FadeInDown} exiting={FadeOut} style={styles.stepContainer}>
                 <ImagePickerCamera imageUri={localImageUri} onImageSelected={handleImageSelected} onRetakeImage={handleRetake} />
-              </View>
+              </Animated.View>
             )}
 
             {/* STEP 2: AI ANALYSIS */}
             {currentStep === 'ai_analysis' && (
-              <View style={styles.stepContainer}>
+              <Animated.View entering={FadeInDown} exiting={FadeOut} style={styles.stepContainer}>
                 {detectingAI ? (
                   <Card style={styles.loadingCard}>
                     <CardContent style={styles.loadingContent}>
-                      <ActivityIndicator color={COLORS.primary} size="large" style={{ marginBottom: 16 }} />
-                      <Text style={styles.loadingTitle}>Running YOLOv8 Vision...</Text>
-                      <Text style={styles.loadingSubtitle}>Scanning for potholes, road damage & garbage overflow</Text>
+                      <ActivityIndicator color={COLORS.primary} size="large" style={{ marginBottom: SPACING.lg }} />
+                      <Text style={styles.loadingTitle}>Analyzing Image</Text>
+                      <Text style={styles.loadingSubtitle}>AI is detecting civic issues...</Text>
                     </CardContent>
                   </Card>
                 ) : localImageUri ? (
                   <>
-                    <DetectionOverlay imageUri={localImageUri} detections={aiDetections} confidence={aiConfidence} height={260} />
-                    <CategorySelector selectedCategory={selectedCategory} onSelectCategory={handleSelectCategory} customCategory={customCategory} onChangeCustomCategory={setCustomCategory} aiDetected={aiDetected} aiClass={aiDetectedClass} aiConfidence={aiConfidence} />
-                    <DescriptionEditor category={selectedCategory} customCategory={customCategory} description={description} onChangeDescription={setDescription} address={address} />
+                    {!aiDetected && (
+                      <Animated.View entering={FadeIn.duration(300)} style={styles.errorBanner}>
+                        <Ionicons name="information-circle" size={18} color={COLORS.error} style={{ marginRight: SPACING.xs }} />
+                        <Text style={styles.errorText}>AI could not identify this issue automatically. Please select a category below.</Text>
+                      </Animated.View>
+                    )}
+                    <Animated.View entering={FadeInUp.delay(100)}>
+                      <DetectionOverlay imageUri={localImageUri} detections={aiDetections} confidence={aiConfidence} height={260} />
+                    </Animated.View>
+                    <Animated.View entering={FadeInUp.delay(200)}>
+                      <CategorySelector selectedCategory={selectedCategory} onSelectCategory={handleSelectCategory} customCategory={customCategory} onChangeCustomCategory={setCustomCategory} aiDetected={aiDetected} aiClass={aiDetectedClass} aiConfidence={aiConfidence} />
+                    </Animated.View>
+                    <Animated.View entering={FadeInUp.delay(300)}>
+                      <DescriptionEditor category={selectedCategory} customCategory={customCategory} description={description} onChangeDescription={setDescription} address={address} />
+                    </Animated.View>
                     
-                    <View style={styles.buttonRow}>
+                    <Animated.View entering={FadeInUp.delay(400)} style={styles.buttonRow}>
                       <Button title="Retake Photo" onPress={handleRetake} variant="secondary" size="lg" style={{ flex: 1 }} />
                       <Button title="Continue to Location" onPress={() => animateStepChange('location')} variant="default" size="lg" style={{ flex: 1.5 }} />
-                    </View>
+                    </Animated.View>
                   </>
                 ) : null}
-              </View>
+              </Animated.View>
             )}
 
             {/* STEP 3: LOCATION */}
             {currentStep === 'location' && (
-              <View style={styles.stepContainer}>
+              <Animated.View entering={FadeInDown} exiting={FadeOut} style={styles.stepContainer}>
                 {locationLoading ? (
                   <Card style={styles.loadingCard}>
                     <CardContent style={styles.loadingContent}>
-                      <ActivityIndicator color={COLORS.primary} size="large" style={{ marginBottom: 12 }} />
+                      <ActivityIndicator color={COLORS.primary} size="large" style={{ marginBottom: SPACING.md }} />
                       <Text style={styles.loadingTitle}>Triangulating GPS coordinates...</Text>
                       <Text style={styles.loadingSubtitle}>Acquiring high-accuracy satellite fix</Text>
                     </CardContent>
                   </Card>
                 ) : (
                   <>
-                    <MapLocationPicker latitude={latitude} longitude={longitude} address={address} height={290} showCard={true} onSelectLocation={(lat, lng) => { setLatitude(lat); setLongitude(lng); setAddress(`Coordinates Lat: ${lat.toFixed(4)}, Long: ${lng.toFixed(4)}`); }} onUseCurrentLocation={fetchCurrentLocation} />
-                    <LocationCard address={address} latitude={latitude} longitude={longitude} onRefreshLocation={fetchCurrentLocation} />
-                    <Button title="Confirm Location & Review" onPress={() => animateStepChange('review')} variant="default" size="lg" style={{ marginTop: 8 }} />
+                    <Animated.View entering={FadeInUp.delay(100)}>
+                      <MapLocationPicker latitude={latitude} longitude={longitude} address={address} height={290} showCard={true} onSelectLocation={(lat, lng) => { setLatitude(lat); setLongitude(lng); setAddress(`Coordinates Lat: ${lat.toFixed(4)}, Long: ${lng.toFixed(4)}`); }} onUseCurrentLocation={fetchCurrentLocation} />
+                    </Animated.View>
+                    <Animated.View entering={FadeInUp.delay(200)}>
+                      <LocationCard address={address} latitude={latitude} longitude={longitude} onRefreshLocation={fetchCurrentLocation} />
+                    </Animated.View>
+                    <Animated.View entering={FadeInUp.delay(300)}>
+                      <Button title="Confirm Location & Review" onPress={() => animateStepChange('review')} variant="default" size="lg" style={{ marginTop: SPACING.xs }} />
+                    </Animated.View>
                   </>
                 )}
-              </View>
+              </Animated.View>
             )}
 
             {/* STEP 4: REVIEW */}
             {currentStep === 'review' && (
-              <View style={styles.stepContainer}>
+              <Animated.View entering={FadeInDown} exiting={FadeOut} style={styles.stepContainer}>
                 <Card style={styles.reviewCard}>
                   <CardContent style={styles.reviewContent}>
                     <Text style={styles.reviewCardTitle}>Incident Summary</Text>
@@ -371,16 +389,18 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
                     <View style={styles.reviewSection}>
                       <Text style={styles.reviewSectionLabel}>INCIDENT LOCATION</Text>
                       <View style={styles.reviewLocationRow}>
-                        <Ionicons name="location-outline" size={16} color={COLORS.primary} style={{ marginRight: 6 }} />
+                        <Ionicons name="location-outline" size={16} color={COLORS.primary} style={{ marginRight: SPACING.xs }} />
                         <Text style={styles.reviewLocationText}>{address}</Text>
                       </View>
                     </View>
                   </CardContent>
                 </Card>
-                <Button title={submitting ? "Submitting Report..." : "SUBMIT COMPLAINT"} onPress={handleSubmitComplaint} variant="default" size="lg" loading={submitting} disabled={submitting} style={{ marginTop: 10 }} />
-              </View>
+                <Animated.View entering={FadeInUp.delay(200)}>
+                  <Button title={submitting ? "Submitting Report..." : "SUBMIT COMPLAINT"} onPress={handleSubmitComplaint} variant="default" size="lg" loading={submitting} disabled={submitting} style={{ marginTop: SPACING.xs }} />
+                </Animated.View>
+              </Animated.View>
             )}
-          </Animated.View>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -391,43 +411,43 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: COLORS.backgroundNeutral },
-  headerBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 14, backgroundColor: COLORS.backgroundNeutral },
-  backBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.borderLight, marginRight: 12, ...SHADOWS.sm },
+  headerBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING.lg, paddingTop: SPACING.md, paddingBottom: SPACING.lg, backgroundColor: COLORS.backgroundNeutral },
+  backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.borderLight, marginRight: SPACING.md, ...SHADOWS.sm },
   headerTextWrapper: { flex: 1 },
-  headerTitle: { fontSize: 18, fontWeight: '800', color: COLORS.textPrimary },
-  stepperContainer: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14, backgroundColor: COLORS.surface, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight, ...SHADOWS.sm },
+  headerTitle: { ...TYPOGRAPHY.h3, color: COLORS.textPrimary },
+  stepperContainer: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING.xl, paddingVertical: SPACING.lg, backgroundColor: COLORS.surface, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight, ...SHADOWS.sm },
   stepPill: { flexDirection: 'row', alignItems: 'center' },
-  stepCircle: { width: 22, height: 22, borderRadius: 11, backgroundColor: COLORS.borderLight, alignItems: 'center', justifyContent: 'center', marginRight: 6 },
+  stepCircle: { width: 24, height: 24, borderRadius: 12, backgroundColor: COLORS.borderLight, alignItems: 'center', justifyContent: 'center', marginRight: SPACING.xs },
   stepCircleCurrent: { backgroundColor: COLORS.primary },
   stepCircleDone: { backgroundColor: COLORS.primaryDark },
-  stepNumText: { fontSize: 11, fontWeight: '800', color: COLORS.textSecondary },
+  stepNumText: { ...TYPOGRAPHY.caption, fontWeight: '800', color: COLORS.textSecondary },
   stepNumTextCurrent: { color: '#FFFFFF' },
-  stepLabel: { fontSize: 11, fontWeight: '600', color: COLORS.textMuted },
+  stepLabel: { ...TYPOGRAPHY.caption, fontWeight: '600', color: COLORS.textMuted },
   stepLabelCurrent: { color: COLORS.primary, fontWeight: '800' },
   stepLabelDone: { color: COLORS.textPrimary, fontWeight: '700' },
-  stepLine: { flex: 1, height: 2, backgroundColor: COLORS.borderLight, marginHorizontal: 8 },
+  stepLine: { flex: 1, height: 2, backgroundColor: COLORS.borderLight, marginHorizontal: SPACING.sm },
   stepLineDone: { backgroundColor: COLORS.primary },
-  scrollContent: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 40 },
-  scrollContentDesktop: { paddingTop: 32, paddingBottom: 56 },
+  scrollContent: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.xl, paddingBottom: SPACING['5xl'] },
+  scrollContentDesktop: { paddingTop: SPACING['3xl'], paddingBottom: SPACING['7xl'] },
   mainWrapper: { width: '100%', maxWidth: 640, alignSelf: 'center' },
   stepContainer: { width: '100%' },
-  errorBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.errorLight, padding: 12, borderRadius: BORDER_RADIUS.md, marginBottom: 16, borderWidth: 1, borderColor: COLORS.errorBorder },
-  errorText: { color: COLORS.errorDark, fontSize: 13, fontWeight: '600', flex: 1 },
-  loadingCard: { alignItems: 'center', justifyContent: 'center', paddingVertical: 20 },
-  loadingContent: { padding: 40, alignItems: 'center' },
-  loadingTitle: { fontSize: 16, fontWeight: '800', color: COLORS.textPrimary, marginBottom: 4 },
-  loadingSubtitle: { fontSize: 13, color: COLORS.textSecondary, textAlign: 'center' },
-  buttonRow: { flexDirection: 'row', gap: 12, marginTop: 10, marginBottom: 20 },
-  reviewCard: { marginBottom: 20 },
-  reviewContent: { padding: 24 },
-  reviewCardTitle: { fontSize: 16, fontWeight: '800', color: COLORS.textPrimary, marginBottom: 16 },
-  reviewThumbRow: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 16, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
-  reviewThumb: { width: 76, height: 76, borderRadius: BORDER_RADIUS.md, backgroundColor: COLORS.backgroundNeutral },
-  reviewCategoryLabel: { fontSize: 10, fontWeight: '800', color: COLORS.textMuted, letterSpacing: 0.6, marginBottom: 4 },
-  reviewCategoryVal: { fontSize: 16, fontWeight: '800', color: COLORS.primary, marginBottom: 8 },
-  reviewSection: { marginBottom: 16 },
-  reviewSectionLabel: { fontSize: 10, fontWeight: '800', color: COLORS.textMuted, letterSpacing: 0.6, marginBottom: 6 },
-  reviewSectionBody: { fontSize: 14, lineHeight: 20, color: COLORS.textPrimary },
+  errorBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.errorLight, padding: SPACING.lg, borderRadius: BORDER_RADIUS.md, marginBottom: SPACING.xl, borderWidth: 1, borderColor: COLORS.errorBorder },
+  errorText: { ...TYPOGRAPHY.caption, color: COLORS.errorDark, fontWeight: '600', flex: 1 },
+  loadingCard: { alignItems: 'center', justifyContent: 'center', paddingVertical: SPACING.xl },
+  loadingContent: { padding: SPACING['5xl'], alignItems: 'center' },
+  loadingTitle: { ...TYPOGRAPHY.h4, color: COLORS.textPrimary, marginBottom: SPACING.xs },
+  loadingSubtitle: { ...TYPOGRAPHY.bodySmall, color: COLORS.textSecondary, textAlign: 'center' },
+  buttonRow: { flexDirection: 'row', gap: SPACING.lg, marginTop: SPACING.md, marginBottom: SPACING.xl },
+  reviewCard: { marginBottom: SPACING.xl },
+  reviewContent: { padding: SPACING['2xl'] },
+  reviewCardTitle: { ...TYPOGRAPHY.h4, color: COLORS.textPrimary, marginBottom: SPACING.lg },
+  reviewThumbRow: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: SPACING.lg, paddingBottom: SPACING.lg, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
+  reviewThumb: { width: 80, height: 80, borderRadius: BORDER_RADIUS.md, backgroundColor: COLORS.backgroundNeutral },
+  reviewCategoryLabel: { ...TYPOGRAPHY.overline, color: COLORS.textMuted, marginBottom: SPACING.xs },
+  reviewCategoryVal: { ...TYPOGRAPHY.h4, color: COLORS.primary, marginBottom: SPACING.sm },
+  reviewSection: { marginBottom: SPACING.lg },
+  reviewSectionLabel: { ...TYPOGRAPHY.overline, color: COLORS.textMuted, marginBottom: SPACING.xs },
+  reviewSectionBody: { ...TYPOGRAPHY.body, color: COLORS.textPrimary },
   reviewLocationRow: { flexDirection: 'row', alignItems: 'center' },
-  reviewLocationText: { fontSize: 13, fontWeight: '600', color: COLORS.textPrimary, flex: 1 },
+  reviewLocationText: { ...TYPOGRAPHY.bodySmall, fontWeight: '600', color: COLORS.textPrimary, flex: 1 },
 });

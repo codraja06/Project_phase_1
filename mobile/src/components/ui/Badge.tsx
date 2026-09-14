@@ -1,6 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, ViewStyle, TextStyle, StyleProp } from 'react-native';
-import { COLORS, BORDER_RADIUS } from '../../constants/theme';
+import { View, Text, ViewStyle, TextStyle, StyleProp } from 'react-native';
+import Animated, { FadeIn, FadeOut, Layout } from 'react-native-reanimated';
+import { COLORS } from '../../theme/colors';
+import { BORDER_RADIUS } from '../../theme/radius';
+import { TYPOGRAPHY } from '../../theme/typography';
 
 export type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning';
 
@@ -10,28 +13,40 @@ export interface BadgeProps {
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
   icon?: React.ReactNode;
+  animate?: boolean;
 }
 
-export const Badge: React.FC<BadgeProps> = ({ label, variant = 'default', style, textStyle, icon }) => {
+export const Badge: React.FC<BadgeProps> = ({ 
+  label, 
+  variant = 'default', 
+  style, 
+  textStyle, 
+  icon,
+  animate = false
+}) => {
   const getContainerStyle = (): ViewStyle => {
     const base: ViewStyle = {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 8,
-      paddingVertical: 2,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
       borderRadius: BORDER_RADIUS.full,
       alignSelf: 'flex-start',
     };
 
     switch (variant) {
       case 'default':
-        base.backgroundColor = COLORS.primary;
+        base.backgroundColor = COLORS.primaryLight;
+        base.borderWidth = 1;
+        base.borderColor = COLORS.primarySurface;
         break;
       case 'secondary':
-        base.backgroundColor = COLORS.borderStrong;
+        base.backgroundColor = COLORS.slateLight;
         break;
       case 'destructive':
-        base.backgroundColor = COLORS.error;
+        base.backgroundColor = COLORS.errorLight;
+        base.borderWidth = 1;
+        base.borderColor = COLORS.errorBorder;
         break;
       case 'outline':
         base.backgroundColor = 'transparent';
@@ -39,10 +54,14 @@ export const Badge: React.FC<BadgeProps> = ({ label, variant = 'default', style,
         base.borderColor = COLORS.borderStrong;
         break;
       case 'success':
-        base.backgroundColor = COLORS.resolved;
+        base.backgroundColor = COLORS.successLight;
+        base.borderWidth = 1;
+        base.borderColor = COLORS.successBorder;
         break;
       case 'warning':
-        base.backgroundColor = COLORS.pending;
+        base.backgroundColor = COLORS.warningLight;
+        base.borderWidth = 1;
+        base.borderColor = COLORS.warningDark;
         break;
     }
 
@@ -51,32 +70,54 @@ export const Badge: React.FC<BadgeProps> = ({ label, variant = 'default', style,
 
   const getTextStyle = (): TextStyle => {
     const base: TextStyle = {
-      fontSize: 11,
-      fontWeight: '600',
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
+      ...TYPOGRAPHY.badge,
     };
 
     switch (variant) {
       case 'default':
+        base.color = COLORS.primaryDark;
+        break;
       case 'destructive':
+        base.color = COLORS.errorDark;
+        break;
       case 'success':
+        base.color = COLORS.successDark;
+        break;
       case 'warning':
-        base.color = '#FFFFFF';
+        base.color = COLORS.warningDark;
         break;
       case 'secondary':
       case 'outline':
-        base.color = COLORS.textPrimary;
+        base.color = COLORS.textSecondary;
         break;
     }
 
     return base;
   };
 
+  const content = (
+    <>
+      {icon && <View style={{ marginRight: 6 }}>{icon}</View>}
+      <Text style={[getTextStyle(), textStyle]}>{label}</Text>
+    </>
+  );
+
+  if (animate) {
+    return (
+      <Animated.View 
+        style={[getContainerStyle(), style]}
+        entering={FadeIn.duration(200)}
+        exiting={FadeOut.duration(200)}
+        layout={Layout.springify().damping(14).stiffness(150)}
+      >
+        {content}
+      </Animated.View>
+    );
+  }
+
   return (
     <View style={[getContainerStyle(), style]}>
-      {icon && <View style={{ marginRight: 4 }}>{icon}</View>}
-      <Text style={[getTextStyle(), textStyle]}>{label}</Text>
+      {content}
     </View>
   );
 };

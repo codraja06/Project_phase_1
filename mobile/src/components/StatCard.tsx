@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, Platform, Pressable } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../constants/theme';
+import { COLORS } from '../theme/colors';
+import { BORDER_RADIUS } from '../theme/radius';
+import { SHADOWS } from '../theme/index';
+import { SPACING } from '../theme/spacing';
+import { TYPOGRAPHY } from '../theme/typography';
+import { usePressAnimation } from '../hooks/useAnimations';
 
 interface StatCardProps {
   label: string;
@@ -9,7 +15,10 @@ interface StatCardProps {
   type: 'total' | 'pending' | 'inProgress' | 'resolved' | 'urgent' | 'today';
   onPress?: () => void;
   isTablet?: boolean;
+  index?: number;
 }
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export const StatCard: React.FC<StatCardProps> = ({
   label,
@@ -17,22 +26,24 @@ export const StatCard: React.FC<StatCardProps> = ({
   type,
   onPress,
   isTablet = false,
+  index = 0,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const isWeb = Platform.OS === 'web';
+  const { onPressIn, onPressOut, animatedStyle: pressStyle } = usePressAnimation(0.95);
 
   let countColor = COLORS.textPrimary;
   let iconName: keyof typeof Ionicons.glyphMap = 'documents-outline';
-  let iconBg = '#F1F5F9';
+  let iconBg = COLORS.backgroundNeutral;
   let iconColor = COLORS.slateDark;
   let borderColor = COLORS.border;
 
   switch (type) {
     case 'total':
-      countColor = COLORS.secondary;
+      countColor = COLORS.primary;
       iconName = 'stats-chart-outline';
-      iconBg = '#F1F5F9';
-      iconColor = COLORS.secondary;
+      iconBg = COLORS.primaryLight;
+      iconColor = COLORS.primary;
       borderColor = COLORS.border;
       break;
     case 'pending':
@@ -64,25 +75,23 @@ export const StatCard: React.FC<StatCardProps> = ({
       borderColor = COLORS.errorBorder;
       break;
     case 'today':
-      countColor = COLORS.accentDark;
+      countColor = COLORS.secondaryDeep;
       iconName = 'today-outline';
-      iconBg = COLORS.accentLight;
-      iconColor = COLORS.accentDark;
-      borderColor = COLORS.accentSurface;
+      iconBg = COLORS.secondaryLight;
+      iconColor = COLORS.secondaryDark;
+      borderColor = COLORS.secondarySurface;
       break;
   }
 
   const content = (
     <View style={styles.contentContainer}>
-      {/* Top row: Icon Badge & Subtle Type Indicator */}
       <View style={styles.topRow}>
         <View style={[styles.iconCircle, { backgroundColor: iconBg }]}>
-          <Ionicons name={iconName} size={18} color={iconColor} />
+          <Ionicons name={iconName} size={20} color={iconColor} />
         </View>
         <View style={[styles.typeIndicator, { backgroundColor: countColor }]} />
       </View>
 
-      {/* Count & Label */}
       <View style={styles.metricContainer}>
         <Text style={[styles.count, { color: countColor }]}>{count}</Text>
         <Text style={styles.label} numberOfLines={1}>{label}</Text>
@@ -99,10 +108,12 @@ export const StatCard: React.FC<StatCardProps> = ({
 
   if (onPress) {
     return (
-      <TouchableOpacity
-        style={cardStyle}
+      <AnimatedPressable
+        entering={FadeInDown.delay(index * 50).duration(400)}
+        style={[cardStyle, pressStyle]}
         onPress={onPress}
-        activeOpacity={0.82}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
         accessibilityRole="button"
         accessibilityLabel={`${label}: ${count}`}
         {...({
@@ -111,41 +122,42 @@ export const StatCard: React.FC<StatCardProps> = ({
         } as any)}
       >
         {content}
-      </TouchableOpacity>
+      </AnimatedPressable>
     );
   }
 
   return (
-    <View
+    <Animated.View
+      entering={FadeInDown.delay(index * 50).duration(400)}
       style={cardStyle}
       accessibilityRole="text"
       accessibilityLabel={`${label}: ${count}`}
     >
       {content}
-    </View>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
     width: '48%',
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    backgroundColor: COLORS.surface,
+    paddingVertical: SPACING.xl,
+    paddingHorizontal: SPACING.lg,
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 1.5,
     borderColor: COLORS.border,
-    marginBottom: 12,
-    ...SHADOWS.card,
+    marginBottom: SPACING.lg,
+    ...SHADOWS.sm,
     ...(Platform.OS === 'web' ? {
       cursor: 'pointer' as any,
-      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)' as any,
+      transition: 'all 0.2s cubic-bezier(0.2, 0, 0, 1)' as any,
     } : {}),
   },
   cardTablet: {
     width: '23.5%',
-    paddingVertical: 20,
-    paddingHorizontal: 18,
+    paddingVertical: SPACING['2xl'],
+    paddingHorizontal: SPACING.xl,
   },
   cardHovered: {
     ...SHADOWS.cardHover,
@@ -158,12 +170,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: SPACING.lg,
   },
   iconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 40,
+    height: 40,
+    borderRadius: BORDER_RADIUS.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -171,22 +183,17 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    opacity: 0.6,
+    opacity: 0.8,
   },
   metricContainer: {
     width: '100%',
   },
   count: {
-    fontSize: 30,
-    fontWeight: '800',
-    letterSpacing: -0.6,
-    marginBottom: 4,
-    lineHeight: 34,
+    ...TYPOGRAPHY.kpiNumber,
+    marginBottom: SPACING.xs,
   },
   label: {
-    fontSize: 13,
-    fontWeight: '600',
+    ...TYPOGRAPHY.caption,
     color: COLORS.textSecondary,
-    letterSpacing: 0.1,
   },
 });

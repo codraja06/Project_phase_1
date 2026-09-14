@@ -38,7 +38,7 @@ export const aiApi = {
     const aiResult = envelope?.data || {};
 
     return {
-      success: aiResult.success ?? false,
+      detected: aiResult.detected ?? false,
       message: aiResult.message || envelope?.message || 'AI detection completed.',
       detections: aiResult.detections || [],
     };

@@ -121,34 +121,40 @@ export const ImagePickerCamera: React.FC<ImagePickerCameraProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* Large Tap to Capture Card matching Screen 5 */}
       <TouchableOpacity
-        style={styles.captureCard}
+        style={[styles.captureCard, { borderStyle: Platform.OS === 'web' ? 'dashed' : 'solid' }]}
         onPress={handleTakePhoto}
-        activeOpacity={0.8}
+        activeOpacity={0.9}
         accessibilityRole="button"
         accessibilityLabel="Tap to Capture. Take a photo of the issue"
       >
         <View style={styles.iconBox}>
-          <Ionicons name="camera-outline" size={38} color={COLORS.primary} />
+          <Ionicons name="camera" size={32} color={COLORS.primary} />
         </View>
-        <Text style={styles.captureTitle}>Tap to Capture</Text>
-        <Text style={styles.captureSub}>Take a photo of the issue</Text>
+        <Text style={styles.captureTitle}>Upload an Issue Image</Text>
+        <Text style={styles.captureSub}>Capture a photo or choose an image from your device</Text>
+        
+        <View style={styles.buttonRow}>
+          <TouchableOpacity
+            style={styles.actionBtn}
+            onPress={handleTakePhoto}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+          >
+            <Ionicons name="camera-outline" size={16} color={COLORS.primary} style={{ marginRight: 6 }} />
+            <Text style={styles.actionBtnText}>Capture Photo</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionBtnSecondary}
+            onPress={handlePickGallery}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+          >
+            <Ionicons name="images-outline" size={16} color={COLORS.textPrimary} style={{ marginRight: 6 }} />
+            <Text style={styles.actionBtnTextSecondary}>Upload Image</Text>
+          </TouchableOpacity>
+        </View>
       </TouchableOpacity>
-
-      {/* Upload from Gallery Button matching Screen 5 */}
-      <TouchableOpacity
-        style={styles.galleryBtn}
-        onPress={handlePickGallery}
-        activeOpacity={0.8}
-        accessibilityRole="button"
-        accessibilityLabel="Upload from Gallery"
-      >
-        <Ionicons name="images-outline" size={18} color={COLORS.textPrimary} style={{ marginRight: 8 }} />
-        <Text style={styles.galleryBtnText}>Upload from Gallery</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.formatHint}>Supported formats: JPG, PNG</Text>
     </View>
   );
 };
@@ -161,58 +167,73 @@ const styles = StyleSheet.create({
   },
   captureCard: {
     width: '100%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     borderWidth: 1.5,
-    borderColor: '#CBD5E1',
-    borderStyle: 'dashed',
+    borderColor: COLORS.borderLight,
     borderRadius: BORDER_RADIUS.xl,
-    paddingVertical: 44,
+    paddingVertical: 32,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.sm,
+  },
+  iconBox: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: COLORS.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
   },
-  iconBox: {
-    width: 68,
-    height: 68,
-    borderRadius: 16,
-    backgroundColor: COLORS.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: COLORS.primarySurface,
-  },
   captureTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    ...TYPOGRAPHY.h4,
     color: COLORS.textPrimary,
-    marginBottom: 4,
+    marginBottom: 8,
   },
   captureSub: {
-    fontSize: 13,
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+    maxWidth: '80%',
   },
-  galleryBtn: {
-    width: '100%',
+  buttonRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: COLORS.border,
+    gap: 12,
+  },
+  actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primaryLight,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: BORDER_RADIUS.md,
-    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: COLORS.primarySurface,
+  },
+  actionBtnText: {
+    ...TYPOGRAPHY.button,
+    color: COLORS.primary,
+    fontSize: 13,
+  },
+  actionBtnSecondary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     ...SHADOWS.card,
   },
-  galleryBtnText: {
-    fontSize: 14,
-    fontWeight: '700',
+  actionBtnTextSecondary: {
+    ...TYPOGRAPHY.button,
     color: COLORS.textPrimary,
-  },
-  formatHint: {
-    fontSize: 11,
-    color: COLORS.textMuted,
-    marginTop: 12,
+    fontSize: 13,
   },
   retakeRow: {
     width: '100%',

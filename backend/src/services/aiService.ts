@@ -5,7 +5,7 @@ import { env } from '../config/env';
 import { ApiError } from '../utils/apiError';
 
 export interface DetectionResult {
-  className: string;
+  category: string;
   confidence: number;
   bbox: {
     x1: number;
@@ -13,10 +13,11 @@ export interface DetectionResult {
     x2: number;
     y2: number;
   };
+  model: string;
 }
 
 export interface PredictResponse {
-  success: boolean;
+  detected: boolean;
   message?: string;
   detections: DetectionResult[];
 }

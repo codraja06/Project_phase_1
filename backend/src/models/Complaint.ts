@@ -16,7 +16,7 @@ export type ComplaintStatus = 'Pending' | 'In Progress' | 'Resolved';
 export type ComplaintPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export interface IBoundingBox {
-  className: string;
+  category: string;
   confidence: number;
   x1: number;
   y1: number;
@@ -52,7 +52,7 @@ export interface IComplaint extends Document {
 
 const BoundingBoxSchema = new Schema<IBoundingBox>(
   {
-    className: { type: String, required: true },
+    category: { type: String, required: true },
     confidence: { type: Number, required: true },
     x1: { type: Number, required: true },
     y1: { type: Number, required: true },

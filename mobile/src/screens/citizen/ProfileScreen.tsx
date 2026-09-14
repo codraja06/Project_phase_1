@@ -12,6 +12,7 @@ import {
   Platform,
   Switch,
 } from 'react-native';
+import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
 import { authApi } from '../../api/authApi';
@@ -20,7 +21,11 @@ import { Button } from '../../components/ui/Button';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { ConfirmationDialog } from '../../components/ConfirmationDialog';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../../constants/theme';
+import { COLORS } from '../../theme/colors';
+import { BORDER_RADIUS } from '../../theme/radius';
+import { SHADOWS } from '../../theme/index';
+import { SPACING } from '../../theme/spacing';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 export const ProfileScreen = ({ navigation }: any) => {
@@ -162,14 +167,14 @@ export const ProfileScreen = ({ navigation }: any) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
       <ScrollView
         style={styles.container}
         contentContainerStyle={isDesktop ? styles.desktopContent : styles.mobileContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={isDesktop ? styles.desktopHeader : styles.mobileHeader}>
+        <Animated.View entering={FadeInDown.duration(400)} style={isDesktop ? styles.desktopHeader : styles.mobileHeader}>
           <TouchableOpacity
             style={styles.backBtn}
             onPress={() => navigation.navigate('CitizenDashboard')}
@@ -177,44 +182,46 @@ export const ProfileScreen = ({ navigation }: any) => {
             <Ionicons name="chevron-back" size={20} color={COLORS.textPrimary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Account Settings</Text>
-        </View>
+        </Animated.View>
 
         {/* ── Compact Profile Header ──────────────────────────────────────────── */}
-        <Card style={styles.profileHeaderCard}>
-          <CardContent style={isDesktop ? styles.profileHeaderDesktop : styles.profileHeaderMobile}>
-            <View style={styles.profileHeaderLeft}>
-              <View style={styles.avatarContainer}>
-                <Text style={styles.avatarText}>{userInitials}</Text>
-              </View>
-              <View style={styles.profileInfo}>
-                <Text style={styles.profileName}>{user?.name || 'CivicTrack Citizen'}</Text>
-                <View style={styles.badgeRow}>
-                  <Badge label="VERIFIED CITIZEN" variant="outline" icon={<Ionicons name="shield-checkmark" size={10} color={COLORS.primary} />} />
-                  <Text style={styles.profileEmail}>{user?.email}</Text>
+        <Animated.View entering={FadeInUp.delay(100)}>
+          <Card style={styles.profileHeaderCard}>
+            <CardContent style={isDesktop ? styles.profileHeaderDesktop : styles.profileHeaderMobile}>
+              <View style={styles.profileHeaderLeft}>
+                <View style={styles.avatarContainer}>
+                  <Text style={styles.avatarText}>{userInitials}</Text>
                 </View>
-                <Text style={styles.profileLocality}>Ward 14 / Civic Zone</Text>
+                <View style={styles.profileInfo}>
+                  <Text style={styles.profileName}>{user?.name || 'CivicTrack Citizen'}</Text>
+                  <View style={styles.badgeRow}>
+                    <Badge label="VERIFIED CITIZEN" variant="outline" icon={<Ionicons name="shield-checkmark" size={10} color={COLORS.primary} />} />
+                    <Text style={styles.profileEmail}>{user?.email}</Text>
+                  </View>
+                  <Text style={styles.profileLocality}>Ward 14 / Civic Zone</Text>
+                </View>
               </View>
-            </View>
-            <Button
-              title="Edit Profile"
-              variant="secondary"
-              onPress={() => {
-                setName(user?.name || '');
-                setPhone(user?.phone || '');
-                setEditProfileVisible(true);
-              }}
-              icon={<Ionicons name="create-outline" size={16} color={COLORS.textPrimary} />}
-              style={isDesktop ? {} : { width: '100%' }}
-            />
-          </CardContent>
-        </Card>
+              <Button
+                title="Edit Profile"
+                variant="secondary"
+                onPress={() => {
+                  setName(user?.name || '');
+                  setPhone(user?.phone || '');
+                  setEditProfileVisible(true);
+                }}
+                icon={<Ionicons name="create-outline" size={16} color={COLORS.textPrimary} />}
+                style={isDesktop ? {} : { width: '100%' }}
+              />
+            </CardContent>
+          </Card>
+        </Animated.View>
 
         {/* ── Compact Stat Cards ──────────────────────────────────────────── */}
-        <View style={styles.statsGrid}>
+        <Animated.View entering={FadeInUp.delay(200)} style={styles.statsGrid}>
           {[
             { label: 'Reports', value: '12', color: COLORS.primary },
             { label: 'Pending', value: '3', color: COLORS.pending },
-            { label: 'In Progress', value: '1', color: COLORS.accent },
+            { label: 'In Progress', value: '1', color: COLORS.inProgress },
             { label: 'Resolved', value: '8', color: COLORS.resolved },
           ].map((stat, i) => (
             <Card key={i} style={isDesktop ? styles.statCardDesktop : styles.statCard}>
@@ -224,15 +231,15 @@ export const ProfileScreen = ({ navigation }: any) => {
               </CardContent>
             </Card>
           ))}
-        </View>
+        </Animated.View>
 
         {/* ── Menu Sections ─────────────────────────────────────────────────── */}
         <View style={isDesktop ? styles.desktopMenuGrid : {}}>
-          {menuSections.map((section) => (
-            <View key={section.title} style={isDesktop ? styles.menuCol : { marginBottom: 24 }}>
+          {menuSections.map((section, sectionIdx) => (
+            <Animated.View entering={FadeInUp.delay(300 + sectionIdx * 100)} key={section.title} style={isDesktop ? styles.menuCol : { marginBottom: SPACING['3xl'] }}>
               <Text style={styles.sectionHeader}>{section.title}</Text>
               <Card>
-                <View style={{ paddingVertical: 8 }}>
+                <View style={{ paddingVertical: SPACING.sm }}>
                   {section.items.map((item, idx) => (
                     <View key={item.label}>
                       <TouchableOpacity style={styles.menuItem} onPress={item.onPress} activeOpacity={0.7}>
@@ -252,27 +259,29 @@ export const ProfileScreen = ({ navigation }: any) => {
                   ))}
                 </View>
               </Card>
-            </View>
+            </Animated.View>
           ))}
         </View>
 
-        <Text style={styles.sectionHeader}>Danger Zone</Text>
-        <Card style={{ borderColor: COLORS.errorBorder }}>
-          <TouchableOpacity style={styles.menuItem} onPress={() => setLogoutModalVisible(true)} activeOpacity={0.7}>
-            <View style={styles.menuLeft}>
-              <View style={[styles.menuIconBadge, { backgroundColor: COLORS.errorLight }]}>
-                <Ionicons name="log-out-outline" size={18} color={COLORS.error} />
+        <Animated.View entering={FadeInUp.delay(500)}>
+          <Text style={styles.sectionHeader}>Danger Zone</Text>
+          <Card style={{ borderColor: COLORS.errorBorder }}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => setLogoutModalVisible(true)} activeOpacity={0.7}>
+              <View style={styles.menuLeft}>
+                <View style={[styles.menuIconBadge, { backgroundColor: COLORS.errorLight }]}>
+                  <Ionicons name="log-out-outline" size={18} color={COLORS.error} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.menuLabel, { color: COLORS.error }]}>Sign Out</Text>
+                  <Text style={styles.menuSub}>End active citizen session</Text>
+                </View>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.menuLabel, { color: COLORS.error }]}>Sign Out</Text>
-                <Text style={styles.menuSub}>End active citizen session</Text>
-              </View>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={COLORS.error} />
-          </TouchableOpacity>
-        </Card>
+              <Ionicons name="chevron-forward" size={18} color={COLORS.error} />
+            </TouchableOpacity>
+          </Card>
+        </Animated.View>
 
-        <Text style={styles.footerVersion}>CivicTrack v2.0.0 • AI-Powered Civic Management</Text>
+        <Animated.Text entering={FadeIn.delay(600)} style={styles.footerVersion}>CivicTrack v2.0.0 • AI-Powered Civic Management</Animated.Text>
       </ScrollView>
 
       {/* Edit Profile Modal */}
@@ -306,7 +315,7 @@ export const ProfileScreen = ({ navigation }: any) => {
               title="Save Changes"
               onPress={handleUpdateProfile}
               loading={updatingProfile}
-              style={{ marginTop: 8 }}
+              style={{ marginTop: SPACING.sm }}
             />
           </View>
         </View>
@@ -342,7 +351,7 @@ export const ProfileScreen = ({ navigation }: any) => {
               title="Update Password"
               onPress={handleChangePassword}
               loading={updatingPassword}
-              style={{ marginTop: 8 }}
+              style={{ marginTop: SPACING.sm }}
             />
           </View>
         </View>
@@ -390,7 +399,7 @@ export const ProfileScreen = ({ navigation }: any) => {
             <Button
               title="Save Preferences"
               onPress={() => setNotifSettingsVisible(false)}
-              style={{ marginTop: 16 }}
+              style={{ marginTop: SPACING.lg }}
             />
           </View>
         </View>
@@ -415,26 +424,26 @@ export const ProfileScreen = ({ navigation }: any) => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
+  safeArea: { flex: 1, backgroundColor: COLORS.background },
   container: { flex: 1 },
-  desktopContent: { padding: 40, maxWidth: 900, alignSelf: 'center', width: '100%' },
-  mobileContent: { padding: 16, paddingBottom: 40 },
-  desktopHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 32 },
-  mobileHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 24, marginTop: 8 },
-  backBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.borderLight, marginRight: 12 },
-  headerTitle: { fontSize: 24, fontWeight: '800', color: COLORS.textPrimary, letterSpacing: -0.5 },
-  profileHeaderCard: { marginBottom: 24 },
-  profileHeaderDesktop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 24 },
-  profileHeaderMobile: { flexDirection: 'column', padding: 20 },
-  profileHeaderLeft: { flexDirection: 'row', alignItems: 'center', marginBottom: Platform.OS === 'web' ? 0 : 16 },
-  avatarContainer: { width: 64, height: 64, borderRadius: 32, backgroundColor: COLORS.primaryLight, alignItems: 'center', justifyContent: 'center', marginRight: 16 },
-  avatarText: { fontSize: 20, fontWeight: '800', color: COLORS.primary, letterSpacing: -0.5 },
+  desktopContent: { padding: SPACING['5xl'], maxWidth: 900, alignSelf: 'center', width: '100%' },
+  mobileContent: { padding: SPACING.lg, paddingBottom: SPACING['5xl'] },
+  desktopHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING['4xl'] },
+  mobileHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING['3xl'], marginTop: SPACING.sm },
+  backBtn: { width: 36, height: 36, borderRadius: BORDER_RADIUS.full, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.borderLight, marginRight: SPACING.md },
+  headerTitle: { ...TYPOGRAPHY.h3, color: COLORS.textPrimary },
+  profileHeaderCard: { marginBottom: SPACING['3xl'] },
+  profileHeaderDesktop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: SPACING['3xl'] },
+  profileHeaderMobile: { flexDirection: 'column', padding: SPACING['2xl'] },
+  profileHeaderLeft: { flexDirection: 'row', alignItems: 'center', marginBottom: Platform.OS === 'web' ? 0 : SPACING.lg },
+  avatarContainer: { width: 64, height: 64, borderRadius: 32, backgroundColor: COLORS.primaryLight, alignItems: 'center', justifyContent: 'center', marginRight: SPACING.lg },
+  avatarText: { ...TYPOGRAPHY.h4, color: COLORS.primary },
   profileInfo: { flex: 1 },
-  profileName: { fontSize: 20, fontWeight: '800', color: COLORS.textPrimary, letterSpacing: -0.5, marginBottom: 4 },
-  badgeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' },
-  profileEmail: { fontSize: 13, color: COLORS.textSecondary, fontWeight: '500' },
-  profileLocality: { fontSize: 13, color: COLORS.textMuted },
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 32 },
+  profileName: { ...TYPOGRAPHY.h4, color: COLORS.textPrimary, marginBottom: SPACING.xs },
+  badgeRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.xs, flexWrap: 'wrap' },
+  profileEmail: { ...TYPOGRAPHY.bodySmall, color: COLORS.textSecondary, fontWeight: '500' },
+  profileLocality: { ...TYPOGRAPHY.caption, color: COLORS.textMuted },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.md, marginBottom: SPACING['4xl'] },
   statCard: {
     flexBasis: Platform.OS === 'web' ? ('calc(50% - 6px)' as any) : '47%',
     flexGrow: 1,
@@ -449,24 +458,24 @@ const styles = StyleSheet.create({
     minWidth: 120,
     padding: 0,
   },
-  statCardContent: { padding: 16, alignItems: 'center', justifyContent: 'center' },
-  statValue: { fontSize: 24, fontWeight: '800', marginBottom: 4, letterSpacing: -0.5 },
-  statLabel: { fontSize: 11, fontWeight: '700', color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 },
-  desktopMenuGrid: { flexDirection: 'row', gap: 24, marginBottom: 24 },
+  statCardContent: { padding: SPACING.lg, alignItems: 'center', justifyContent: 'center' },
+  statValue: { ...TYPOGRAPHY.h2, marginBottom: 4 },
+  statLabel: { ...TYPOGRAPHY.caption, fontWeight: '700', color: COLORS.textMuted, textTransform: 'uppercase' },
+  desktopMenuGrid: { flexDirection: 'row', gap: SPACING['3xl'], marginBottom: SPACING['3xl'] },
   menuCol: { flex: 1 },
-  sectionHeader: { fontSize: 12, fontWeight: '800', color: COLORS.textMuted, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 12, paddingHorizontal: 4 },
-  menuItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12, paddingHorizontal: 16, ...(Platform.OS === 'web' ? { cursor: 'pointer' as any } : {}) },
+  sectionHeader: { ...TYPOGRAPHY.overline, color: COLORS.textMuted, marginBottom: SPACING.md, paddingHorizontal: SPACING.xs },
+  menuItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: SPACING.md, paddingHorizontal: SPACING.lg, ...(Platform.OS === 'web' ? { cursor: 'pointer' as any } : {}) },
   menuLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  menuIconBadge: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
-  menuLabel: { fontSize: 14, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 2 },
-  menuSub: { fontSize: 12, color: COLORS.textMuted },
-  divider: { height: 1, backgroundColor: COLORS.borderLight, marginHorizontal: 16 },
-  footerVersion: { fontSize: 11, color: COLORS.textMuted, textAlign: 'center', marginTop: 32, marginBottom: 8, fontWeight: '500' },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.6)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  modalContent: { width: '100%', maxWidth: 440, backgroundColor: '#FFFFFF', borderRadius: BORDER_RADIUS.lg, padding: 24, ...SHADOWS.floating },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  modalTitle: { fontSize: 18, fontWeight: '800', color: COLORS.textPrimary, letterSpacing: -0.5 },
-  toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12 },
-  toggleTitle: { fontSize: 14, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 2 },
-  toggleSubtitle: { fontSize: 12, color: COLORS.textSecondary },
+  menuIconBadge: { width: 36, height: 36, borderRadius: BORDER_RADIUS.md, alignItems: 'center', justifyContent: 'center', marginRight: SPACING.md },
+  menuLabel: { ...TYPOGRAPHY.bodySmall, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 2 },
+  menuSub: { ...TYPOGRAPHY.caption, color: COLORS.textMuted },
+  divider: { height: 1, backgroundColor: COLORS.borderLight, marginHorizontal: SPACING.lg },
+  footerVersion: { ...TYPOGRAPHY.caption, color: COLORS.textMuted, textAlign: 'center', marginTop: SPACING['4xl'], marginBottom: SPACING.md, fontWeight: '500' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.6)', justifyContent: 'center', alignItems: 'center', padding: SPACING.lg },
+  modalContent: { width: '100%', maxWidth: 440, backgroundColor: COLORS.surface, borderRadius: BORDER_RADIUS.lg, padding: SPACING['3xl'], ...SHADOWS.floating },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING['2xl'] },
+  modalTitle: { ...TYPOGRAPHY.h4, color: COLORS.textPrimary },
+  toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: SPACING.md },
+  toggleTitle: { ...TYPOGRAPHY.bodySmall, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 2 },
+  toggleSubtitle: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary },
 });

@@ -158,12 +158,12 @@ export const DetectionOverlay: React.FC<DetectionOverlayProps> = ({
             const boxWidth = Math.max((x2 - x1) * scale, 32);
             const boxHeight = Math.max((y2 - y1) * scale, 32);
             const conf = Math.round((item.confidence || confidence || 0) * 100);
-            const rawName = item.className || 'Civic Issue';
-            const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+            const rawName = item.category || 'Civic Issue';
+            const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1).replace(/_/g, ' ');
 
             return (
               <View
-                key={`bbox-${index}-${item.className || 'defect'}`}
+                key={`bbox-${index}-${item.category || 'defect'}`}
                 style={[
                   styles.boundingBox,
                   {

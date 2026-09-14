@@ -10,10 +10,15 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { complaintApi } from '../../api/complaintApi';
 import { Complaint } from '../../types/complaint';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../../constants/theme';
+import { COLORS } from '../../theme/colors';
+import { BORDER_RADIUS } from '../../theme/radius';
+import { SHADOWS } from '../../theme/index';
+import { SPACING } from '../../theme/spacing';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { ComplaintCard } from '../../components/ComplaintCard';
 import { SearchBar } from '../../components/SearchBar';
@@ -94,7 +99,7 @@ export const ComplaintHistoryScreen = ({ navigation, route }: any) => {
   ];
 
   const EmptyComponent = (
-    <View style={styles.emptyContainer}>
+    <Animated.View entering={FadeInUp.delay(300)} style={styles.emptyContainer}>
       <View style={styles.emptyIconCircle}>
         <Ionicons name="documents-outline" size={40} color={COLORS.slateMedium} />
       </View>
@@ -114,21 +119,21 @@ export const ComplaintHistoryScreen = ({ navigation, route }: any) => {
           onPress={() => navigation.navigate('ReportIssue')}
           activeOpacity={0.8}
         >
-          <Ionicons name="camera-outline" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+          <Ionicons name="camera-outline" size={18} color="#FFFFFF" style={{ marginRight: SPACING.xs }} />
           <Text style={styles.emptyReportBtnText}>Report an Issue</Text>
         </TouchableOpacity>
       )}
-    </View>
+    </Animated.View>
   );
 
   // ─── Desktop Layout: wide container + two-column card grid ───────────────
   if (isDesktop) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+        <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
         {/* Desktop Header */}
-        <View style={styles.desktopHeader}>
+        <Animated.View entering={FadeInDown.duration(400)} style={styles.desktopHeader}>
           <View style={styles.desktopHeaderLeft}>
             <Text style={styles.desktopTitle}>My Complaints</Text>
             <Text style={styles.desktopSubtitle}>
@@ -143,17 +148,17 @@ export const ComplaintHistoryScreen = ({ navigation, route }: any) => {
               style={styles.desktopSearch}
             />
           </View>
-        </View>
+        </Animated.View>
 
         {/* Desktop Filter Bar */}
-        <View style={styles.desktopFilterBar}>
+        <Animated.View entering={FadeInDown.delay(100).duration(400)} style={styles.desktopFilterBar}>
           <FilterChipGroup
             options={filterOptions}
             selectedValue={statusFilter}
             onSelect={setStatusFilter}
             containerStyle={styles.desktopFilterChips}
           />
-        </View>
+        </Animated.View>
 
         {loading && !refreshing ? (
           <LoadingSpinner message="Loading your community reports..." />
@@ -164,15 +169,15 @@ export const ComplaintHistoryScreen = ({ navigation, route }: any) => {
             numColumns={2}
             key="desktop-2col"
             columnWrapperStyle={styles.desktopColumnWrapper}
-            renderItem={({ item }) => (
-              <View style={styles.desktopCardWrapper}>
+            renderItem={({ item, index }) => (
+              <Animated.View entering={FadeInUp.delay(150 + index * 50)} style={styles.desktopCardWrapper}>
                 <ComplaintCard
                   complaint={item}
                   onPress={() =>
                     (navigation as any).navigate('ComplaintDetail', { complaintId: item._id })
                   }
                 />
-              </View>
+              </Animated.View>
             )}
             contentContainerStyle={styles.desktopListContent}
             refreshControl={
@@ -193,10 +198,10 @@ export const ComplaintHistoryScreen = ({ navigation, route }: any) => {
   // ─── Mobile / Tablet Single Column Layout ─────────────────────────────────
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
       {/* Screen Header */}
-      <View style={styles.headerBar}>
+      <Animated.View entering={FadeInDown.duration(400)} style={styles.headerBar}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => navigation.navigate('CitizenDashboard')}
@@ -208,10 +213,10 @@ export const ComplaintHistoryScreen = ({ navigation, route }: any) => {
         <View style={styles.countPill}>
           <Text style={styles.countPillText}>{filteredComplaints.length}</Text>
         </View>
-      </View>
+      </Animated.View>
 
       {/* Search & Filter Header */}
-      <View style={styles.filterSection}>
+      <Animated.View entering={FadeInDown.delay(100).duration(400)} style={styles.filterSection}>
         <SearchBar
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -224,7 +229,7 @@ export const ComplaintHistoryScreen = ({ navigation, route }: any) => {
           onSelect={setStatusFilter}
           containerStyle={styles.filterChips}
         />
-      </View>
+      </Animated.View>
 
       {loading && !refreshing ? (
         <LoadingSpinner message="Loading complaints..." />
@@ -232,13 +237,15 @@ export const ComplaintHistoryScreen = ({ navigation, route }: any) => {
         <FlatList
           data={filteredComplaints}
           keyExtractor={(item) => item._id}
-          renderItem={({ item }) => (
-            <ComplaintCard
-              complaint={item}
-              onPress={() =>
-                (navigation as any).navigate('ComplaintDetail', { complaintId: item._id })
-              }
-            />
+          renderItem={({ item, index }) => (
+            <Animated.View entering={FadeInUp.delay(150 + index * 50)}>
+              <ComplaintCard
+                complaint={item}
+                onPress={() =>
+                  (navigation as any).navigate('ComplaintDetail', { complaintId: item._id })
+                }
+              />
+            </Animated.View>
           )}
           contentContainerStyle={styles.listContent}
           refreshControl={
@@ -259,7 +266,7 @@ export const ComplaintHistoryScreen = ({ navigation, route }: any) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.background,
   },
 
   // Desktop Styles
@@ -267,25 +274,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 36,
-    paddingTop: 32,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: SPACING['4xl'],
+    paddingTop: SPACING['3xl'],
+    paddingBottom: SPACING.xl,
+    backgroundColor: COLORS.background,
   },
   desktopHeaderLeft: {
     flex: 1,
   },
   desktopTitle: {
-    fontSize: 28,
-    fontWeight: '800',
+    ...TYPOGRAPHY.h1,
     color: COLORS.textPrimary,
-    letterSpacing: -0.5,
   },
   desktopSubtitle: {
-    fontSize: 13,
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
     fontWeight: '500',
-    marginTop: 4,
+    marginTop: SPACING.xs,
   },
   desktopControls: {
     width: 380,
@@ -294,22 +299,22 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   desktopFilterBar: {
-    paddingHorizontal: 36,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: SPACING['4xl'],
+    paddingBottom: SPACING.xl,
+    backgroundColor: COLORS.background,
     borderBottomWidth: 1.5,
     borderBottomColor: COLORS.borderLight,
   },
   desktopFilterChips: {
-    paddingVertical: 4,
+    paddingVertical: SPACING.xs,
   },
   desktopListContent: {
-    paddingHorizontal: 36,
-    paddingTop: 20,
-    paddingBottom: 48,
+    paddingHorizontal: SPACING['4xl'],
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING['6xl'],
   },
   desktopColumnWrapper: {
-    gap: 16,
+    gap: SPACING.xl,
   },
   desktopCardWrapper: {
     flex: 1,
@@ -320,12 +325,12 @@ const styles = StyleSheet.create({
   headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 12,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.lg,
     borderBottomWidth: 1.5,
     borderBottomColor: COLORS.border,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.background,
   },
   backBtn: {
     width: 38,
@@ -336,92 +341,87 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
-    marginRight: 12,
+    marginRight: SPACING.md,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+    ...TYPOGRAPHY.h3,
     color: COLORS.textPrimary,
-    letterSpacing: -0.2,
   },
   countPill: {
     marginLeft: 'auto',
     backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: 10,
+    paddingHorizontal: SPACING.md,
     paddingVertical: 3,
     borderRadius: BORDER_RADIUS.full,
     borderWidth: 1,
-    borderColor: COLORS.borderMaroon,
+    borderColor: COLORS.primarySurface,
   },
   countPillText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption,
     fontWeight: '800',
     color: COLORS.primary,
   },
   filterSection: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 8,
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.sm,
+    backgroundColor: COLORS.background,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.borderLight,
   },
   searchBar: {
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
   },
   filterChips: {
-    paddingVertical: 4,
+    paddingVertical: SPACING.xs,
   },
   listContent: {
-    paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 36,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING['5xl'],
   },
   emptyContainer: {
-    padding: 40,
+    padding: SPACING['5xl'],
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 1.5,
     borderColor: COLORS.border,
-    marginTop: 20,
+    marginTop: SPACING.xl,
     ...SHADOWS.card,
   },
   emptyIconCircle: {
     width: 68,
     height: 68,
     borderRadius: 34,
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.backgroundNeutral,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 14,
+    marginBottom: SPACING.lg,
   },
   emptyTitle: {
-    fontSize: 17,
-    fontWeight: '800',
+    ...TYPOGRAPHY.h4,
     color: COLORS.textPrimary,
-    marginBottom: 6,
+    marginBottom: SPACING.xs,
   },
   emptySub: {
-    fontSize: 13,
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
     textAlign: 'center',
-    lineHeight: 18,
     maxWidth: 280,
   },
   emptyReportBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.md,
     borderRadius: BORDER_RADIUS.md,
-    marginTop: 16,
+    marginTop: SPACING.xl,
   },
   emptyReportBtnText: {
-    color: '#FFFFFF',
-    fontSize: 13,
+    ...TYPOGRAPHY.bodySmall, color: '#FFFFFF',
     fontWeight: '700',
   },
 });

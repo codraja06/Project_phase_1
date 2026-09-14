@@ -11,6 +11,7 @@ import {
   Modal,
   Platform,
 } from 'react-native';
+import Animated, { FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
 import { authApi } from '../../api/authApi';
@@ -19,7 +20,11 @@ import { Button } from '../../components/ui/Button';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { ConfirmationDialog } from '../../components/ConfirmationDialog';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../../constants/theme';
+import { COLORS } from '../../theme/colors';
+import { BORDER_RADIUS } from '../../theme/radius';
+import { SHADOWS } from '../../theme/index';
+import { SPACING } from '../../theme/spacing';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 export const AuthorityProfileScreen = ({ navigation }: any) => {
@@ -92,8 +97,8 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
       items: [
         {
           icon: 'create-outline' as const,
-          iconBg: 'rgba(15, 23, 42, 0.1)',
-          iconColor: '#0F172A',
+          iconBg: COLORS.primaryLight,
+          iconColor: COLORS.primary,
           label: 'Edit Officer Information',
           sub: 'Update department name & contact details',
           onPress: () => {
@@ -104,8 +109,8 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
         },
         {
           icon: 'lock-closed-outline' as const,
-          iconBg: 'rgba(15, 23, 42, 0.1)',
-          iconColor: '#0F172A',
+          iconBg: COLORS.secondaryLight,
+          iconColor: COLORS.secondary,
           label: 'Security Credentials',
           sub: 'Change officer authentication password',
           onPress: () => setChangePasswordVisible(true),
@@ -117,7 +122,7 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
       items: [
         {
           icon: 'call-outline' as const,
-          iconBg: COLORS.borderLight,
+          iconBg: COLORS.backgroundNeutral,
           iconColor: COLORS.textSecondary,
           label: 'Operations Dispatch Desk',
           sub: '1800-CITY-OPS • Internal Ext: #4402',
@@ -125,16 +130,16 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
         },
         {
           icon: 'analytics-outline' as const,
-          iconBg: 'rgba(15, 23, 42, 0.1)',
-          iconColor: '#0F172A',
+          iconBg: COLORS.primaryLight,
+          iconColor: COLORS.primary,
           label: 'Analytics & Reporting',
           sub: 'Ward performance metrics and trend analysis',
           onPress: () => navigation.navigate('AuthorityAnalytics'),
         },
         {
           icon: 'map-outline' as const,
-          iconBg: 'rgba(15, 23, 42, 0.1)',
-          iconColor: '#0F172A',
+          iconBg: COLORS.secondaryLight,
+          iconColor: COLORS.secondary,
           label: 'Geo-Incident Map',
           sub: 'Live GPS cluster heatmap of civic incidents',
           onPress: () => navigation.navigate('AuthorityMap'),
@@ -152,48 +157,50 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
         contentContainerStyle={isDesktop ? styles.desktopContent : styles.mobileContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={isDesktop ? styles.desktopHeader : styles.mobileHeader}>
+        <Animated.View entering={FadeInDown.duration(400)} style={isDesktop ? styles.desktopHeader : styles.mobileHeader}>
           <TouchableOpacity
             style={styles.backBtn}
             onPress={() => navigation.navigate('AuthorityDashboard')}
           >
-            <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
+            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Officer Dossier</Text>
-        </View>
+        </Animated.View>
 
         {/* ── Compact Profile Header ──────────────────────────────────────────── */}
-        <Card style={styles.profileHeaderCard}>
-          <CardContent style={isDesktop ? styles.profileHeaderDesktop : styles.profileHeaderMobile}>
-            <View style={styles.profileHeaderLeft}>
-              <View style={styles.avatarContainer}>
-                <Text style={styles.avatarText}>{userInitials}</Text>
-              </View>
-              <View style={styles.profileInfo}>
-                <Text style={styles.profileName}>{user?.name || 'Municipal Officer'}</Text>
-                <View style={styles.badgeRow}>
-                  <Badge label="MUNICIPAL AUTHORITY" variant="default" icon={<Ionicons name="shield-checkmark" size={10} color="#FFF" />} />
-                  <Text style={styles.profileEmail}>{user?.email || 'officer@city.gov'}</Text>
+        <Animated.View entering={FadeInUp.delay(100)}>
+          <Card style={styles.profileHeaderCard}>
+            <CardContent style={isDesktop ? styles.profileHeaderDesktop : styles.profileHeaderMobile}>
+              <View style={styles.profileHeaderLeft}>
+                <View style={styles.avatarContainer}>
+                  <Text style={styles.avatarText}>{userInitials}</Text>
                 </View>
-                <Text style={styles.profileLocality}>Department of Operations</Text>
+                <View style={styles.profileInfo}>
+                  <Text style={styles.profileName}>{user?.name || 'Municipal Officer'}</Text>
+                  <View style={styles.badgeRow}>
+                    <Badge label="MUNICIPAL AUTHORITY" variant="default" icon={<Ionicons name="shield-checkmark" size={10} color="#FFF" />} />
+                    <Text style={styles.profileEmail}>{user?.email || 'officer@city.gov'}</Text>
+                  </View>
+                  <Text style={styles.profileLocality}>Department of Operations</Text>
+                </View>
               </View>
-            </View>
-            <Button
-              title="Edit Dossier"
-              variant="outline"
-              onPress={() => {
-                setName(user?.name || '');
-                setPhone(user?.phone || '');
-                setEditProfileVisible(true);
-              }}
-              icon={<Ionicons name="create-outline" size={16} color={COLORS.textPrimary} />}
-              style={isDesktop ? {} : { width: '100%' }}
-            />
-          </CardContent>
-        </Card>
+              <Button
+                title="Edit Dossier"
+                variant="outline"
+                onPress={() => {
+                  setName(user?.name || '');
+                  setPhone(user?.phone || '');
+                  setEditProfileVisible(true);
+                }}
+                icon={<Ionicons name="create-outline" size={16} color={COLORS.textPrimary} />}
+                style={isDesktop ? {} : { width: '100%' }}
+              />
+            </CardContent>
+          </Card>
+        </Animated.View>
 
         {/* ── Compact Stat Cards ──────────────────────────────────────────── */}
-        <View style={styles.statsGrid}>
+        <Animated.View entering={FadeInUp.delay(200)} style={styles.statsGrid}>
           {[
             { label: 'Queue', value: '24', color: '#0F172A' },
             { label: 'Pending', value: '14', color: COLORS.pending },
@@ -207,15 +214,15 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
               </CardContent>
             </Card>
           ))}
-        </View>
+        </Animated.View>
 
         {/* ── Menu Sections ─────────────────────────────────────────────────── */}
         <View style={isDesktop ? styles.desktopMenuGrid : {}}>
-          {menuSections.map((section) => (
-            <View key={section.title} style={isDesktop ? styles.menuCol : { marginBottom: 24 }}>
+          {menuSections.map((section, sectionIdx) => (
+            <Animated.View entering={FadeInUp.delay(300 + sectionIdx * 100)} key={section.title} style={isDesktop ? styles.menuCol : { marginBottom: SPACING.xl }}>
               <Text style={styles.sectionHeader}>{section.title}</Text>
               <Card>
-                <View style={{ paddingVertical: 8 }}>
+                <View style={{ paddingVertical: SPACING.sm }}>
                   {section.items.map((item, idx) => (
                     <View key={item.label}>
                       <TouchableOpacity style={styles.menuItem} onPress={item.onPress} activeOpacity={0.7}>
@@ -235,27 +242,29 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
                   ))}
                 </View>
               </Card>
-            </View>
+            </Animated.View>
           ))}
         </View>
 
-        <Text style={styles.sectionHeader}>Session</Text>
-        <Card style={{ borderColor: COLORS.errorBorder }}>
-          <TouchableOpacity style={styles.menuItem} onPress={() => setLogoutModalVisible(true)} activeOpacity={0.7}>
-            <View style={styles.menuLeft}>
-              <View style={[styles.menuIconBadge, { backgroundColor: COLORS.errorLight }]}>
-                <Ionicons name="log-out-outline" size={18} color={COLORS.error} />
+        <Animated.View entering={FadeInUp.delay(500)}>
+          <Text style={styles.sectionHeader}>Session</Text>
+          <Card style={{ borderColor: COLORS.errorBorder }}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => setLogoutModalVisible(true)} activeOpacity={0.7}>
+              <View style={styles.menuLeft}>
+                <View style={[styles.menuIconBadge, { backgroundColor: COLORS.errorLight }]}>
+                  <Ionicons name="log-out-outline" size={18} color={COLORS.error} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.menuLabel, { color: COLORS.error }]}>End Operations Session</Text>
+                  <Text style={styles.menuSub}>Sign out of municipal command portal</Text>
+                </View>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.menuLabel, { color: COLORS.error }]}>End Operations Session</Text>
-                <Text style={styles.menuSub}>Sign out of municipal command portal</Text>
-              </View>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={COLORS.error} />
-          </TouchableOpacity>
-        </Card>
+              <Ionicons name="chevron-forward" size={18} color={COLORS.error} />
+            </TouchableOpacity>
+          </Card>
 
-        <Text style={styles.footerVersion}>CivicTrack v2.0.0 • Operations Portal</Text>
+          <Text style={styles.footerVersion}>CivicTrack v2.0.0 • Operations Portal</Text>
+        </Animated.View>
       </ScrollView>
 
       {/* Edit Profile Modal */}
@@ -289,7 +298,7 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
               variant="default"
               size="lg"
               loading={updatingProfile}
-              style={{ marginTop: 8 }}
+              style={{ marginTop: SPACING.sm }}
             />
           </View>
         </View>
@@ -325,7 +334,7 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
               variant="default"
               size="lg"
               loading={updatingPassword}
-              style={{ marginTop: 8 }}
+              style={{ marginTop: SPACING.sm }}
             />
           </View>
         </View>
@@ -351,25 +360,25 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#0F172A' },
-  container: { flex: 1, backgroundColor: '#F8FAFC' },
-  desktopContent: { padding: 40, maxWidth: 900, alignSelf: 'center', width: '100%' },
-  mobileContent: { padding: 16, paddingBottom: 40 },
-  desktopHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 32, backgroundColor: '#0F172A', padding: 24, borderRadius: BORDER_RADIUS.lg, ...SHADOWS.card },
-  mobileHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 24, backgroundColor: '#0F172A', padding: 20, borderRadius: BORDER_RADIUS.md, ...SHADOWS.card },
-  backBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', marginRight: 12 },
-  headerTitle: { fontSize: 24, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.5 },
-  profileHeaderCard: { marginBottom: 24 },
-  profileHeaderDesktop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 24 },
-  profileHeaderMobile: { flexDirection: 'column', padding: 20 },
-  profileHeaderLeft: { flexDirection: 'row', alignItems: 'center', marginBottom: Platform.OS === 'web' ? 0 : 16 },
-  avatarContainer: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#0F172A', alignItems: 'center', justifyContent: 'center', marginRight: 16 },
-  avatarText: { fontSize: 20, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.5 },
+  container: { flex: 1, backgroundColor: COLORS.backgroundNeutral },
+  desktopContent: { padding: SPACING['5xl'], maxWidth: 900, alignSelf: 'center', width: '100%' },
+  mobileContent: { padding: SPACING.lg, paddingBottom: SPACING['5xl'] },
+  desktopHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING['4xl'], backgroundColor: '#0F172A', padding: SPACING.xl, borderRadius: BORDER_RADIUS.lg, ...SHADOWS.card },
+  mobileHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.xl, backgroundColor: '#0F172A', padding: SPACING.xl, borderRadius: BORDER_RADIUS.md, ...SHADOWS.card },
+  backBtn: { width: 38, height: 38, borderRadius: BORDER_RADIUS.full, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.1)', marginRight: SPACING.md },
+  headerTitle: { ...TYPOGRAPHY.h3, color: '#FFFFFF' },
+  profileHeaderCard: { marginBottom: SPACING.xl },
+  profileHeaderDesktop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: SPACING.xl },
+  profileHeaderMobile: { flexDirection: 'column', padding: SPACING.lg },
+  profileHeaderLeft: { flexDirection: 'row', alignItems: 'center', marginBottom: Platform.OS === 'web' ? 0 : SPACING.lg },
+  avatarContainer: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#0F172A', alignItems: 'center', justifyContent: 'center', marginRight: SPACING.lg },
+  avatarText: { ...TYPOGRAPHY.h3, color: '#FFFFFF' },
   profileInfo: { flex: 1 },
-  profileName: { fontSize: 20, fontWeight: '800', color: COLORS.textPrimary, letterSpacing: -0.5, marginBottom: 4 },
-  badgeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' },
-  profileEmail: { fontSize: 13, color: COLORS.textSecondary, fontWeight: '500' },
-  profileLocality: { fontSize: 13, color: COLORS.textMuted },
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 32 },
+  profileName: { ...TYPOGRAPHY.h4, color: COLORS.textPrimary, marginBottom: 4 },
+  badgeRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: 4, flexWrap: 'wrap' },
+  profileEmail: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, fontWeight: '500' },
+  profileLocality: { ...TYPOGRAPHY.caption, color: COLORS.textMuted },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.md, marginBottom: SPACING['3xl'] },
   statCard: {
     flexBasis: Platform.OS === 'web' ? ('calc(50% - 6px)' as any) : '47%',
     flexGrow: 1,
@@ -384,21 +393,21 @@ const styles = StyleSheet.create({
     minWidth: 120,
     padding: 0,
   },
-  statCardContent: { padding: 16, alignItems: 'center', justifyContent: 'center' },
-  statValue: { fontSize: 24, fontWeight: '800', marginBottom: 4, letterSpacing: -0.5 },
-  statLabel: { fontSize: 11, fontWeight: '700', color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 },
-  desktopMenuGrid: { flexDirection: 'row', gap: 24, marginBottom: 24 },
+  statCardContent: { padding: SPACING.lg, alignItems: 'center', justifyContent: 'center' },
+  statValue: { ...TYPOGRAPHY.h3, marginBottom: 4 },
+  statLabel: { ...TYPOGRAPHY.overline, color: COLORS.textMuted },
+  desktopMenuGrid: { flexDirection: 'row', gap: SPACING['3xl'], marginBottom: SPACING['3xl'] },
   menuCol: { flex: 1 },
-  sectionHeader: { fontSize: 12, fontWeight: '800', color: COLORS.textMuted, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 12, paddingHorizontal: 4 },
-  menuItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12, paddingHorizontal: 16, ...(Platform.OS === 'web' ? { cursor: 'pointer' as any } : {}) },
+  sectionHeader: { ...TYPOGRAPHY.overline, color: COLORS.textMuted, marginBottom: SPACING.md, paddingHorizontal: 4 },
+  menuItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: SPACING.md, paddingHorizontal: SPACING.lg, ...(Platform.OS === 'web' ? { cursor: 'pointer' as any } : {}) },
   menuLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  menuIconBadge: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
-  menuLabel: { fontSize: 14, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 2 },
-  menuSub: { fontSize: 12, color: COLORS.textMuted },
-  divider: { height: 1, backgroundColor: COLORS.borderLight, marginHorizontal: 16 },
-  footerVersion: { fontSize: 11, color: COLORS.textMuted, textAlign: 'center', marginTop: 32, marginBottom: 8, fontWeight: '500' },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.6)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  modalContent: { width: '100%', maxWidth: 440, backgroundColor: '#FFFFFF', borderRadius: BORDER_RADIUS.lg, padding: 24, ...SHADOWS.floating },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  modalTitle: { fontSize: 18, fontWeight: '800', color: COLORS.textPrimary, letterSpacing: -0.5 },
+  menuIconBadge: { width: 36, height: 36, borderRadius: BORDER_RADIUS.sm, alignItems: 'center', justifyContent: 'center', marginRight: SPACING.md },
+  menuLabel: { ...TYPOGRAPHY.bodySmall, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 2 },
+  menuSub: { ...TYPOGRAPHY.caption, color: COLORS.textMuted },
+  divider: { height: 1, backgroundColor: COLORS.borderLight, marginHorizontal: SPACING.lg },
+  footerVersion: { ...TYPOGRAPHY.caption, color: COLORS.textMuted, textAlign: 'center', marginTop: SPACING['4xl'], marginBottom: SPACING.lg, fontWeight: '500' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.6)', justifyContent: 'center', alignItems: 'center', padding: SPACING.lg },
+  modalContent: { width: '100%', maxWidth: 440, backgroundColor: COLORS.surface, borderRadius: BORDER_RADIUS.lg, padding: SPACING.xl, ...SHADOWS.floating },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.lg },
+  modalTitle: { ...TYPOGRAPHY.h4, color: COLORS.textPrimary },
 });

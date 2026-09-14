@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../constants/theme';
+import { COLORS } from '../theme/colors';
+import { BORDER_RADIUS } from '../theme/radius';
+import { SHADOWS } from '../theme/index';
+import { SPACING } from '../theme/spacing';
+import { TYPOGRAPHY } from '../theme/typography';
 
 export interface NotificationData {
   id: string;
@@ -23,8 +27,8 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({ item, onPres
   const isWeb = Platform.OS === 'web';
 
   let iconName: keyof typeof Ionicons.glyphMap = 'information-circle';
-  let iconColor = COLORS.accent;
-  let iconBg = COLORS.accentLight;
+  let iconColor = COLORS.secondary;
+  let iconBg = COLORS.secondaryLight;
 
   const titleLower = item.title.toLowerCase();
   const msgLower = (item.message || '').toLowerCase();
@@ -39,8 +43,8 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({ item, onPres
     item.type === 'in_progress'
   ) {
     iconName = 'arrow-forward-circle';
-    iconColor = COLORS.accent;
-    iconBg = COLORS.accentLight;
+    iconColor = COLORS.inProgress;
+    iconBg = COLORS.inProgressLight;
   } else if (titleLower.includes('update') || item.type === 'alert') {
     iconName = 'notifications';
     iconColor = COLORS.pending;
@@ -107,12 +111,12 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    padding: 16,
+    backgroundColor: COLORS.surface,
+    padding: SPACING.lg,
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 1.5,
-    borderColor: COLORS.border,
-    marginBottom: 10,
+    borderColor: COLORS.borderLight,
+    marginBottom: SPACING.md,
     ...SHADOWS.card,
     ...(Platform.OS === 'web' ? {
       cursor: 'pointer' as any,
@@ -120,7 +124,7 @@ const styles = StyleSheet.create({
     } : {}),
   },
   containerUnread: {
-    borderColor: COLORS.accentLight,
+    borderColor: COLORS.secondaryLight,
     backgroundColor: '#FAFDFE',
   },
   containerHovered: {
@@ -131,10 +135,10 @@ const styles = StyleSheet.create({
   iconCircle: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: BORDER_RADIUS.full,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 14,
+    marginRight: SPACING.md,
   },
   content: {
     flex: 1,
@@ -143,32 +147,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: SPACING.xs,
   },
   title: {
-    fontSize: 14,
-    fontWeight: '700',
+    ...TYPOGRAPHY.bodyBold,
     color: COLORS.textPrimary,
     flex: 1,
-    lineHeight: 18,
-    letterSpacing: -0.1,
   },
   unreadDot: {
     width: 8,
     height: 8,
-    borderRadius: 4,
-    backgroundColor: COLORS.accent,
-    marginLeft: 8,
+    borderRadius: BORDER_RADIUS.full,
+    backgroundColor: COLORS.secondary,
+    marginLeft: SPACING.sm,
     marginTop: 4,
   },
   message: {
-    fontSize: 13,
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
-    marginBottom: 5,
-    lineHeight: 18,
+    marginBottom: SPACING.xs,
   },
   time: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption,
     color: COLORS.textMuted,
     fontWeight: '600',
   },

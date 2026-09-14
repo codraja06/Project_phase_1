@@ -21,20 +21,18 @@ export const detectIssue = async (req: AuthRequest, res: Response, next: NextFun
     }
 
     // Determine user-facing message based on detection result
-    let message = 'AI Detection completed successfully';
-    if (!aiResult.success) {
-      message = aiResult.message || 'AI detection could not process the image.';
-    } else if (!aiResult.detections || aiResult.detections.length === 0) {
-      message = 'No civic issue detected in this image. Please try a clearer photo or select the category manually.';
-    } else {
-      const topClass = aiResult.detections[0].className;
+    let message = aiResult.message || 'AI Detection completed successfully';
+    if (!aiResult.detected) {
+      message = aiResult.message || 'No civic issue detected in this image. Please try a clearer photo or select the category manually.';
+    } else if (aiResult.detections && aiResult.detections.length > 0) {
+      const topClass = aiResult.detections[0].category.replace(/_/g, ' ');
       const topConf = Math.round(aiResult.detections[0].confidence * 100);
       message = `Detected: ${topClass} (${topConf}% confidence)`;
     }
 
     res.status(200).json(
       new ApiResponse(message, {
-        success: aiResult.success,
+        detected: aiResult.detected,
         message,
         detections: aiResult.detections || [],
       })

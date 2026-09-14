@@ -13,9 +13,14 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import Animated, { FadeInDown, FadeInUp, Layout, ZoomIn, FadeOut } from 'react-native-reanimated';
 import { authorityApi } from '../../api/authorityApi';
 import { Complaint } from '../../types/complaint';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../../constants/theme';
+import { COLORS } from '../../theme/colors';
+import { BORDER_RADIUS } from '../../theme/radius';
+import { SHADOWS } from '../../theme/index';
+import { SPACING } from '../../theme/spacing';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { SearchBar } from '../../components/SearchBar';
 import { FilterChipGroup } from '../../components/FilterChip';
@@ -168,7 +173,7 @@ const DesktopComplaintRow: React.FC<TableRowProps> = ({
 
       <View style={styles.tableColActions}>
         {!isVerified && (
-          <Button title="Verify" variant="outline" onPress={() => onVerify(complaint)} size="sm" style={{ marginRight: 8, height: 32, paddingHorizontal: 8 }} />
+          <Button title="Verify" variant="outline" onPress={() => onVerify(complaint)} size="sm" style={{ marginRight: SPACING.xs, height: 32, paddingHorizontal: SPACING.sm }} />
         )}
         <Button variant="ghost" onPress={() => onReject(complaint)} size="sm" style={{ width: 32, height: 32, paddingHorizontal: 0, marginRight: 4 }} icon={<Ionicons name="trash-outline" size={16} color={COLORS.error} />} />
         <Button variant="ghost" onPress={onPress} size="sm" style={{ width: 32, height: 32, paddingHorizontal: 0 }} icon={<Ionicons name="chevron-forward" size={16} color={COLORS.textPrimary} />} />
@@ -230,7 +235,7 @@ const MobileAuthorityCard: React.FC<MobileCardProps> = ({
 
   return (
     <Card style={[styles.mobileCard, isSelected && styles.mobileCardSelected]}>
-      <CardContent style={{ padding: 16 }}>
+      <CardContent style={{ padding: SPACING.lg }}>
         <View style={styles.mobileCardHeader}>
           <View style={styles.mobileCardHeaderLeft}>
             <TouchableOpacity onPress={onToggleSelect} style={styles.mobileCheckboxBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
@@ -275,7 +280,7 @@ const MobileAuthorityCard: React.FC<MobileCardProps> = ({
           <Text style={styles.mobileCardDate}>{formattedDate}</Text>
           <View style={styles.mobileActionGroup}>
             {!isVerified && (
-              <Button title="Verify" variant="outline" onPress={() => onVerify(complaint)} size="sm" style={{ height: 32, paddingHorizontal: 8 }} />
+              <Button title="Verify" variant="outline" onPress={() => onVerify(complaint)} size="sm" style={{ height: 32, paddingHorizontal: SPACING.sm }} />
             )}
             <Button variant="ghost" onPress={() => onReject(complaint)} size="sm" style={{ width: 32, height: 32, paddingHorizontal: 0 }} icon={<Ionicons name="trash-outline" size={14} color={COLORS.error} />} />
             <Button title="Dossier" variant="secondary" onPress={onPress} size="sm" style={{ height: 32 }} icon={<Ionicons name="chevron-forward" size={14} color={COLORS.textPrimary} />} />
@@ -396,13 +401,13 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
   ];
 
   const EmptyComponent = (
-    <View style={styles.emptyContainer}>
+    <Animated.View entering={ZoomIn.delay(300)} style={styles.emptyContainer}>
       <View style={styles.emptyIconCircle}>
-        <Ionicons name="documents-outline" size={42} color={COLORS.slateMedium} />
+        <Ionicons name="documents-outline" size={42} color={COLORS.textMuted} />
       </View>
       <Text style={styles.emptyTitle}>No complaints found</Text>
       <Text style={styles.emptySub}>{searchQuery ? 'Try another search query' : 'No records match the selected status filter'}</Text>
-    </View>
+    </Animated.View>
   );
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -459,20 +464,20 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
             name={selectedIds.length === filteredComplaints.length && filteredComplaints.length > 0 ? 'checkbox' : 'square-outline'}
             size={18}
             color={COLORS.primary}
-            style={{ marginRight: 6 }}
+            style={{ marginRight: SPACING.xs }}
           />
           <Text style={styles.bulkSelectAllText}>{selectedIds.length === 0 ? 'Select All' : `${selectedIds.length} Selected`}</Text>
         </TouchableOpacity>
 
         {selectedIds.length > 0 && (
-          <View style={styles.bulkActionButtons}>
+          <Animated.View entering={FadeInUp.duration(200)} exiting={FadeOut.duration(200)} style={styles.bulkActionButtons}>
             <Button title="In Progress" variant="secondary" size="sm" onPress={() => handleBulkStatus('In Progress')} disabled={bulkLoading} style={{ height: 32 }} icon={<Ionicons name="time" size={14} />} />
             <Button title="Resolve" variant="default" size="sm" onPress={() => handleBulkStatus('Resolved')} disabled={bulkLoading} style={{ height: 32 }} icon={<Ionicons name="checkmark-circle" size={14} color="#FFF" />} />
             <Button title="Verify" variant="outline" size="sm" onPress={handleBulkVerify} disabled={bulkLoading} style={{ height: 32 }} icon={<Ionicons name="shield-checkmark" size={14} />} />
-            <TouchableOpacity onPress={() => setSelectedIds([])} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingLeft: 8 }}>
+            <TouchableOpacity onPress={() => setSelectedIds([])} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingLeft: SPACING.xs }}>
               <Ionicons name="close-circle" size={20} color={COLORS.textMuted} />
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         )}
       </View>
     );
@@ -481,9 +486,9 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
   if (isDesktop) {
     return (
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
+        <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
-        <View style={styles.desktopHeader}>
+        <Animated.View entering={FadeInDown.duration(400)} style={styles.desktopHeader}>
           <View>
             <Text style={styles.desktopTitle}>Incident Registry</Text>
             <Text style={styles.desktopSubtitle}>Showing {filteredComplaints.length} of {complaints.length} civic issues</Text>
@@ -491,11 +496,11 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
           <View style={styles.desktopControls}>
             <SearchBar value={searchQuery} onChangeText={setSearchQuery} placeholder="Search by ID, title, citizen..." style={styles.desktopSearch} />
           </View>
-        </View>
+        </Animated.View>
 
-        <View style={styles.desktopFilterBar}>
+        <Animated.View entering={FadeInDown.delay(100).duration(400)} style={styles.desktopFilterBar}>
           <FilterChipGroup options={statusOptions} selectedValue={statusFilter} onSelect={setStatusFilter} containerStyle={styles.desktopFilterChips} />
-        </View>
+        </Animated.View>
 
         {renderBulkBar()}
 
@@ -520,18 +525,20 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
           <FlatList
             data={filteredComplaints}
             keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
-              <DesktopComplaintRow
-                complaint={item}
-                isSelected={selectedIds.includes(item._id)}
-                onToggleSelect={() => toggleSelect(item._id)}
-                onPress={() => navigation.navigate('AuthorityComplaintDetail', { complaintId: item._id })}
-                onVerify={handleVerify}
-                onReject={handleOpenReject}
-              />
+            renderItem={({ item, index }) => (
+              <Animated.View entering={FadeInUp.delay(100 + index * 30)} layout={Layout.springify()}>
+                <DesktopComplaintRow
+                  complaint={item}
+                  isSelected={selectedIds.includes(item._id)}
+                  onToggleSelect={() => toggleSelect(item._id)}
+                  onPress={() => navigation.navigate('AuthorityComplaintDetail', { complaintId: item._id })}
+                  onVerify={handleVerify}
+                  onReject={handleOpenReject}
+                />
+              </Animated.View>
             )}
             contentContainerStyle={styles.desktopListContent}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.accent]} />}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />}
             ListEmptyComponent={EmptyComponent}
             showsVerticalScrollIndicator={false}
           />
@@ -547,7 +554,7 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
     <SafeAreaView style={styles.safeAreaMobile}>
       <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
 
-      <View style={styles.headerBar}>
+      <Animated.View entering={FadeInDown.duration(400)} style={styles.headerBar}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.navigate('AuthorityDashboard')}>
           <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -555,12 +562,12 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
         <View style={styles.countPill}>
           <Text style={styles.countPillText}>{filteredComplaints.length}</Text>
         </View>
-      </View>
+      </Animated.View>
 
-      <View style={styles.filterSection}>
+      <Animated.View entering={FadeInDown.delay(100).duration(400)} style={styles.filterSection}>
         <SearchBar value={searchQuery} onChangeText={setSearchQuery} placeholder="Search incidents..." style={styles.searchBar} />
         <FilterChipGroup options={statusOptions} selectedValue={statusFilter} onSelect={setStatusFilter} containerStyle={styles.filterChips} />
-      </View>
+      </Animated.View>
 
       {renderBulkBar()}
 
@@ -570,18 +577,20 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
         <FlatList
           data={filteredComplaints}
           keyExtractor={(item) => item._id}
-          renderItem={({ item }) => (
-            <MobileAuthorityCard
-              complaint={item}
-              isSelected={selectedIds.includes(item._id)}
-              onToggleSelect={() => toggleSelect(item._id)}
-              onPress={() => navigation.navigate('AuthorityComplaintDetail', { complaintId: item._id })}
-              onVerify={handleVerify}
-              onReject={handleOpenReject}
-            />
+          renderItem={({ item, index }) => (
+            <Animated.View entering={FadeInUp.delay(100 + index * 40)} layout={Layout.springify()}>
+              <MobileAuthorityCard
+                complaint={item}
+                isSelected={selectedIds.includes(item._id)}
+                onToggleSelect={() => toggleSelect(item._id)}
+                onPress={() => navigation.navigate('AuthorityComplaintDetail', { complaintId: item._id })}
+                onVerify={handleVerify}
+                onReject={handleOpenReject}
+              />
+            </Animated.View>
           )}
           contentContainerStyle={styles.listContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.accent]} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />}
           ListEmptyComponent={EmptyComponent}
           showsVerticalScrollIndicator={false}
         />
@@ -594,83 +603,83 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
-  safeAreaMobile: { flex: 1, backgroundColor: '#F8FAFC' },
+  safeArea: { flex: 1, backgroundColor: COLORS.background },
+  safeAreaMobile: { flex: 1, backgroundColor: COLORS.background },
 
   // ── Desktop Table ──────────────────────────────────────────────────────────
-  desktopHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 36, paddingTop: 32, paddingBottom: 16, backgroundColor: '#F8FAFC' },
-  desktopTitle: { fontSize: 28, fontWeight: '800', color: COLORS.textPrimary, letterSpacing: -0.5 },
-  desktopSubtitle: { fontSize: 13, color: COLORS.textSecondary, fontWeight: '500', marginTop: 4 },
+  desktopHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: SPACING['4xl'], paddingTop: SPACING['3xl'], paddingBottom: SPACING.xl, backgroundColor: COLORS.background },
+  desktopTitle: { ...TYPOGRAPHY.h1, color: COLORS.textPrimary },
+  desktopSubtitle: { ...TYPOGRAPHY.bodySmall, color: COLORS.textSecondary, fontWeight: '500', marginTop: SPACING.xs },
   desktopControls: { width: 380 },
   desktopSearch: { marginBottom: 0 },
-  desktopFilterBar: { paddingHorizontal: 36, paddingBottom: 16, backgroundColor: '#F8FAFC', borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
-  desktopFilterChips: { paddingVertical: 4 },
-  tableHeaderRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 36, paddingVertical: 12, backgroundColor: '#F8FAFC', borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
+  desktopFilterBar: { paddingHorizontal: SPACING['4xl'], paddingBottom: SPACING.xl, backgroundColor: COLORS.background, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
+  desktopFilterChips: { paddingVertical: SPACING.xs },
+  tableHeaderRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING['4xl'], paddingVertical: SPACING.md, backgroundColor: COLORS.background, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
   tableThumbHeader: { width: 44, marginRight: 14 },
-  tableHeaderLabel: { fontSize: 10, fontWeight: '800', color: COLORS.textSecondary, letterSpacing: 0.6 },
-  desktopListContent: { paddingHorizontal: 36, paddingTop: 12, paddingBottom: 48 },
-  tableRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', paddingVertical: 12, paddingHorizontal: 16, borderRadius: BORDER_RADIUS.md, borderWidth: 1, borderColor: COLORS.borderLight, marginBottom: 8, ...(Platform.OS === 'web' ? { transition: 'all 0.1s ease-in-out' as any } : {}) },
-  tableRowHovered: { borderColor: COLORS.border, backgroundColor: '#F8FAFC' },
+  tableHeaderLabel: { ...TYPOGRAPHY.overline, color: COLORS.textSecondary },
+  desktopListContent: { paddingHorizontal: SPACING['4xl'], paddingTop: SPACING.md, paddingBottom: SPACING['6xl'] },
+  tableRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.surface, paddingVertical: SPACING.md, paddingHorizontal: SPACING.xl, borderRadius: BORDER_RADIUS.md, borderWidth: 1, borderColor: COLORS.borderLight, marginBottom: SPACING.sm, ...(Platform.OS === 'web' ? { transition: 'all 0.1s ease-in-out' as any } : {}) },
+  tableRowHovered: { borderColor: COLORS.border, backgroundColor: COLORS.backgroundNeutral },
   tableThumbWrapper: { width: 44, marginRight: 14, alignItems: 'center' },
-  tableThumb: { width: 44, height: 44, borderRadius: BORDER_RADIUS.sm, overflow: 'hidden', backgroundColor: '#F1F5F9' },
+  tableThumb: { width: 44, height: 44, borderRadius: BORDER_RADIUS.sm, overflow: 'hidden', backgroundColor: COLORS.backgroundNeutral },
   tableThumbImg: { width: '100%', height: '100%' },
   tableThumbPlaceholder: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' },
   tableColTitle: { flex: 2, marginRight: 14 },
-  civRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
-  complaintCodeText: { fontSize: 11, fontWeight: '800', color: COLORS.textSecondary, fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' },
-  tableTitle: { fontSize: 14, fontWeight: '700', color: COLORS.textPrimary },
+  civRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs, marginBottom: 4 },
+  complaintCodeText: { ...TYPOGRAPHY.caption, fontWeight: '800', color: COLORS.textSecondary, fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' },
+  tableTitle: { ...TYPOGRAPHY.bodyBold, color: COLORS.textPrimary },
   tableColComparison: { flex: 1.5, marginRight: 14, justifyContent: 'center' },
-  catCompareItem: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 },
-  catCompareKey: { fontSize: 9, fontWeight: '800', color: COLORS.textMuted, width: 28 },
-  catCompareVal: { fontSize: 11, fontWeight: '600', color: COLORS.textPrimary, flex: 1 },
+  catCompareItem: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs, marginBottom: 2 },
+  catCompareKey: { ...TYPOGRAPHY.caption, fontSize: 9, fontWeight: '800', color: COLORS.textMuted, width: 28 },
+  catCompareVal: { ...TYPOGRAPHY.caption, fontWeight: '600', color: COLORS.textPrimary, flex: 1 },
   tableColCitizen: { flex: 1.3, marginRight: 14 },
-  tableCitizenName: { fontSize: 13, fontWeight: '700', color: COLORS.textPrimary },
-  tableCitizenContact: { fontSize: 11, color: COLORS.textMuted, marginTop: 1 },
+  tableCitizenName: { ...TYPOGRAPHY.bodySmall, fontWeight: '700', color: COLORS.textPrimary },
+  tableCitizenContact: { ...TYPOGRAPHY.caption, color: COLORS.textMuted, marginTop: 1 },
   tableColDate: { width: 80, marginRight: 14 },
-  tableDate: { fontSize: 12, color: COLORS.textSecondary, fontWeight: '500' },
+  tableDate: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, fontWeight: '500' },
   tableColStatus: { width: 105, marginRight: 14 },
   tableColActionsHeader: { width: 130 },
   tableColActions: { width: 130, flexDirection: 'row', alignItems: 'center' },
   
   // ── Mobile ────────────────────────────────────────────────────────────────
-  headerBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: Platform.OS === 'ios' ? 12 : 24, paddingBottom: 14, backgroundColor: '#0F172A' },
-  backBtn: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.1)', marginRight: 12 },
-  headerTitle: { fontSize: 18, fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.2, flex: 1 },
+  headerBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING.lg, paddingTop: Platform.OS === 'ios' ? SPACING.md : SPACING['3xl'], paddingBottom: SPACING.lg, backgroundColor: '#0F172A' },
+  backBtn: { width: 38, height: 38, borderRadius: BORDER_RADIUS.full, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.1)', marginRight: SPACING.md },
+  headerTitle: { ...TYPOGRAPHY.h3, color: '#FFFFFF', flex: 1 },
   countPill: { backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: BORDER_RADIUS.full },
-  countPillText: { fontSize: 12, fontWeight: '800', color: '#FFFFFF' },
-  filterSection: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
-  searchBar: { marginBottom: 8 },
-  filterChips: { paddingVertical: 4 },
-  listContent: { paddingHorizontal: 16, paddingTop: 14, paddingBottom: 36 },
-  mobileCard: { marginBottom: 12, padding: 0 },
-  mobileCardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-  mobileCardHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
-  mobileCardBody: { flexDirection: 'row', gap: 12, alignItems: 'center' },
+  countPillText: { ...TYPOGRAPHY.caption, fontWeight: '800', color: '#FFFFFF' },
+  filterSection: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.md, paddingBottom: SPACING.sm, backgroundColor: COLORS.background, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
+  searchBar: { marginBottom: SPACING.sm },
+  filterChips: { paddingVertical: SPACING.xs },
+  listContent: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.lg, paddingBottom: SPACING['5xl'] },
+  mobileCard: { marginBottom: SPACING.md, padding: 0 },
+  mobileCardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: SPACING.md },
+  mobileCardHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs, flexWrap: 'wrap' },
+  mobileCardBody: { flexDirection: 'row', gap: SPACING.md, alignItems: 'center' },
   mobileCardImg: { width: 74, height: 74, borderRadius: BORDER_RADIUS.md },
-  mobileCardImgPlaceholder: { width: 74, height: 74, borderRadius: BORDER_RADIUS.md, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },
+  mobileCardImgPlaceholder: { width: 74, height: 74, borderRadius: BORDER_RADIUS.md, backgroundColor: COLORS.backgroundNeutral, alignItems: 'center', justifyContent: 'center' },
   mobileCardContent: { flex: 1 },
-  mobileCardTitle: { fontSize: 15, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 4 },
-  mobileCardLocation: { fontSize: 12, color: COLORS.textSecondary, marginBottom: 2 },
-  mobileCardCitizen: { fontSize: 11, color: COLORS.textMuted, fontWeight: '500' },
-  mobileCompareBanner: { flexDirection: 'row', backgroundColor: '#F8FAFC', borderRadius: BORDER_RADIUS.sm, padding: 8, marginTop: 12, borderWidth: 1, borderColor: COLORS.borderLight },
+  mobileCardTitle: { ...TYPOGRAPHY.bodyBold, color: COLORS.textPrimary, marginBottom: 4 },
+  mobileCardLocation: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginBottom: 2 },
+  mobileCardCitizen: { ...TYPOGRAPHY.caption, color: COLORS.textMuted, fontWeight: '500' },
+  mobileCompareBanner: { flexDirection: 'row', backgroundColor: COLORS.background, borderRadius: BORDER_RADIUS.sm, padding: SPACING.sm, marginTop: SPACING.md, borderWidth: 1, borderColor: COLORS.borderLight },
   mobileCompareCol: { flex: 1 },
-  mobileCompareLabel: { fontSize: 9, fontWeight: '800', color: COLORS.textMuted, marginBottom: 2, letterSpacing: 0.3 },
-  mobileCompareValue: { fontSize: 11, fontWeight: '700', color: COLORS.textPrimary },
-  mobileCompareDivider: { width: 1, backgroundColor: COLORS.borderLight, marginHorizontal: 8 },
-  mobileCardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, paddingTop: 12, borderTopWidth: 1, borderTopColor: COLORS.borderLight },
-  mobileCardDate: { fontSize: 12, color: COLORS.textMuted, fontWeight: '500' },
-  mobileActionGroup: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  emptyContainer: { padding: 40, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderRadius: BORDER_RADIUS.lg, borderWidth: 1, borderColor: COLORS.borderLight, marginTop: 20 },
-  emptyIconCircle: { width: 68, height: 68, borderRadius: 34, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
-  emptyTitle: { fontSize: 17, fontWeight: '800', color: COLORS.textPrimary, marginBottom: 6 },
-  emptySub: { fontSize: 13, color: COLORS.textSecondary, textAlign: 'center', lineHeight: 18, maxWidth: 280 },
-  tableCheckboxBtn: { width: 32, alignItems: 'center', justifyContent: 'center', marginRight: 6 },
-  tableCheckboxHeader: { width: 32, alignItems: 'center', justifyContent: 'center', marginRight: 6 },
-  tableRowSelected: { backgroundColor: '#F1F5F9', borderColor: COLORS.border },
+  mobileCompareLabel: { ...TYPOGRAPHY.caption, fontSize: 9, fontWeight: '800', color: COLORS.textMuted, marginBottom: 2, letterSpacing: 0.3 },
+  mobileCompareValue: { ...TYPOGRAPHY.caption, fontWeight: '700', color: COLORS.textPrimary },
+  mobileCompareDivider: { width: 1, backgroundColor: COLORS.borderLight, marginHorizontal: SPACING.sm },
+  mobileCardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: SPACING.xl, paddingTop: SPACING.md, borderTopWidth: 1, borderTopColor: COLORS.borderLight },
+  mobileCardDate: { ...TYPOGRAPHY.caption, color: COLORS.textMuted, fontWeight: '500' },
+  mobileActionGroup: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
+  emptyContainer: { padding: SPACING['5xl'], alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.surface, borderRadius: BORDER_RADIUS.lg, borderWidth: 1, borderColor: COLORS.borderLight, marginTop: SPACING.xl },
+  emptyIconCircle: { width: 68, height: 68, borderRadius: 34, backgroundColor: COLORS.background, alignItems: 'center', justifyContent: 'center', marginBottom: SPACING.lg },
+  emptyTitle: { ...TYPOGRAPHY.h4, color: COLORS.textPrimary, marginBottom: SPACING.xs },
+  emptySub: { ...TYPOGRAPHY.bodySmall, color: COLORS.textSecondary, textAlign: 'center', maxWidth: 280 },
+  tableCheckboxBtn: { width: 32, alignItems: 'center', justifyContent: 'center', marginRight: SPACING.xs },
+  tableCheckboxHeader: { width: 32, alignItems: 'center', justifyContent: 'center', marginRight: SPACING.xs },
+  tableRowSelected: { backgroundColor: COLORS.backgroundNeutral, borderColor: COLORS.border },
   mobileCheckboxBtn: { marginRight: 4, padding: 2 },
-  mobileCardSelected: { borderColor: COLORS.border, backgroundColor: '#F8FAFC' },
-  bulkToolbar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFFFFF', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
+  mobileCardSelected: { borderColor: COLORS.border, backgroundColor: COLORS.backgroundNeutral },
+  bulkToolbar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: COLORS.surface, paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
   bulkSelectAllBtn: { flexDirection: 'row', alignItems: 'center' },
-  bulkSelectAllText: { fontSize: 13, fontWeight: '800', color: COLORS.textPrimary },
-  bulkActionButtons: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  bulkSelectAllText: { ...TYPOGRAPHY.bodySmall, fontWeight: '800', color: COLORS.textPrimary },
+  bulkActionButtons: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
 });

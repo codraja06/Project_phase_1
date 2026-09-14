@@ -6,13 +6,14 @@ export interface BoundingBox {
 }
 
 export interface DetectionResult {
-  className: string;
+  category: string;
   confidence: number;
   bbox: BoundingBox;
+  model: string;
 }
 
 export interface AIDetectResponse {
-  success: boolean;
+  detected: boolean;
   message?: string;
   detections: DetectionResult[];
 }

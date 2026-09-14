@@ -9,9 +9,8 @@ import {
   Platform,
   SafeAreaView,
   StatusBar,
-  ActivityIndicator,
-  ImageBackground,
 } from 'react-native';
+import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -22,7 +21,11 @@ import { useAuth } from '../../hooks/useAuth';
 import { Input, PasswordInput } from '../../components/Input';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent } from '../../components/ui/Card';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../../constants/theme';
+import { CivicTrackLogo } from '../../components/CivicTrackLogo';
+import { COLORS } from '../../theme/colors';
+import { BORDER_RADIUS } from '../../theme/radius';
+import { SPACING } from '../../theme/spacing';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'AuthorityLogin'>;
@@ -107,7 +110,7 @@ export const AuthorityLoginScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.authorityDark} />
       
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -117,40 +120,155 @@ export const AuthorityLoginScreen: React.FC<Props> = ({ navigation }) => {
           <View style={styles.desktopContainer}>
             {/* Left Branding Side */}
             <View style={styles.brandingSide}>
-              <View style={styles.brandingContent}>
-                <Ionicons name="shield-checkmark" size={64} color={COLORS.primary} style={styles.brandingIcon} />
+              <Animated.View entering={FadeIn.duration(1000)} style={styles.brandingContent}>
+                <View style={styles.brandingIcon}>
+                  <CivicTrackLogo size="lg" showText={false} />
+                </View>
                 <Text style={styles.brandingTitle}>Municipal Operations Command</Text>
                 <Text style={styles.brandingSubtitle}>
                   Access jurisdictional triage, automated defect verification, and field dispatch workflows.
                 </Text>
-              </View>
-              <View style={styles.brandingFooter}>
+              </Animated.View>
+              <Animated.View entering={FadeInUp.delay(500)} style={styles.brandingFooter}>
                 <Text style={styles.brandingFooterText}>Secure 256-Bit TLS Connection • CivicTrack v2.0</Text>
-              </View>
+              </Animated.View>
             </View>
 
             {/* Right Auth Side */}
             <ScrollView contentContainerStyle={styles.authSide}>
               <View style={styles.authWrapper}>
-                <TouchableOpacity
-                  style={styles.backBtnDesktop}
-                  onPress={() => navigation.navigate('CitizenLogin')}
-                >
-                  <Ionicons name="chevron-back" size={16} color={COLORS.textSecondary} />
-                  <Text style={styles.backBtnTextDesktop}>Back to Citizen Portal</Text>
-                </TouchableOpacity>
+                <Animated.View entering={FadeInDown.delay(100)}>
+                  <TouchableOpacity
+                    style={styles.backBtnDesktop}
+                    onPress={() => navigation.navigate('CitizenLogin')}
+                  >
+                    <Ionicons name="chevron-back" size={16} color={COLORS.textSecondary} />
+                    <Text style={styles.backBtnTextDesktop}>Back to Citizen Portal</Text>
+                  </TouchableOpacity>
+                </Animated.View>
 
-                <Text style={styles.authTitle}>Officer Sign In</Text>
-                <Text style={styles.authSubtitle}>Authenticate to access the command center.</Text>
+                <Animated.Text entering={FadeInDown.delay(200)} style={styles.authTitle}>Officer Sign In</Animated.Text>
+                <Animated.Text entering={FadeInDown.delay(300)} style={styles.authSubtitle}>Authenticate to access the command center.</Animated.Text>
 
                 {errorMessage && (
-                  <View style={styles.errorBanner}>
-                    <Ionicons name="alert-circle" size={18} color={COLORS.error} style={{ marginRight: 8 }} />
+                  <Animated.View entering={FadeIn.duration(300)} style={styles.errorBanner}>
+                    <Ionicons name="alert-circle" size={18} color={COLORS.error} style={{ marginRight: SPACING.xs }} />
                     <Text style={styles.errorBannerText}>{errorMessage}</Text>
-                  </View>
+                  </Animated.View>
                 )}
 
                 {isOfficerSaved && (
+                  <Animated.View entering={FadeInDown.delay(400)}>
+                    <Card style={styles.savedSessionCard}>
+                      <CardContent style={styles.savedSessionContent}>
+                        <View style={styles.savedAvatar}>
+                          <Ionicons name="shield" size={20} color="#FFFFFF" />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.savedGreeting}>Remembered Officer Session</Text>
+                          <Text style={styles.savedName} numberOfLines={1}>{savedSession.user.name || 'Municipal Officer'}</Text>
+                          <Text style={styles.savedEmail} numberOfLines={1}>{savedSession.user.email}</Text>
+                        </View>
+                      </CardContent>
+                      <View style={{ padding: SPACING.xl, paddingTop: 0 }}>
+                        <Button title={`Resume Officer Session`} onPress={handleResumeSession} loading={resumeLoading || loading} variant="default" style={{ marginBottom: SPACING.sm }} />
+                        <Button title="Use another credential" onPress={clearSavedSession} variant="ghost" />
+                      </View>
+                    </Card>
+                  </Animated.View>
+                )}
+
+                <Animated.View entering={FadeInDown.delay(isOfficerSaved ? 500 : 400)}>
+                  <Card>
+                    <CardContent>
+                      <Controller
+                        control={control}
+                        name="email"
+                        render={({ field: { onChange, value } }) => (
+                          <Input
+                            label="Department Official Email"
+                            placeholder="officer@city.gov"
+                            value={value}
+                            onChangeText={(text) => { onChange(text); if (errorMessage) setErrorMessage(null); }}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            leftIcon="mail-outline"
+                            error={errors.email?.message}
+                          />
+                        )}
+                      />
+
+                      <Controller
+                        control={control}
+                        name="password"
+                        render={({ field: { onChange, value } }) => (
+                          <PasswordInput
+                            label="Officer Security Password"
+                            placeholder="Enter security password"
+                            value={value}
+                            onChangeText={(text) => { onChange(text); if (errorMessage) setErrorMessage(null); }}
+                            error={errors.password?.message}
+                          />
+                        )}
+                      />
+
+                      <Button title="Authenticate as Officer" onPress={handleSubmit(onSubmit)} loading={loading} variant="default" size="lg" style={{ marginTop: SPACING.xs }} />
+
+                      <View style={styles.dividerRow}>
+                        <View style={styles.dividerLine} />
+                        <Text style={styles.dividerText}>OR</Text>
+                        <View style={styles.dividerLine} />
+                      </View>
+
+                      <Button title="Continue with Google" onPress={handleGoogleLogin} loading={googleLoading || loading} variant="outline" size="lg" icon={<Ionicons name="logo-google" size={18} color="#EA4335" />} />
+                    </CardContent>
+                  </Card>
+                </Animated.View>
+
+                <Animated.View entering={FadeInDown.delay(isOfficerSaved ? 600 : 500)}>
+                  <TouchableOpacity onPress={fillDemoOfficer} style={styles.demoPillDesktop}>
+                    <Ionicons name="flash" size={14} color={COLORS.primary} style={{ marginRight: SPACING.xs }} />
+                    <Text style={styles.demoPillTextDesktop}>Auto-fill Demo Officer</Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              </View>
+            </ScrollView>
+          </View>
+        ) : (
+          <ScrollView
+            contentContainerStyle={styles.mobileContainer}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.mobileHeader}>
+              <Animated.View entering={FadeInDown.delay(100)}>
+                <TouchableOpacity
+                  style={styles.backBtnMobile}
+                  onPress={() => navigation.navigate('CitizenLogin')}
+                >
+                  <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
+                  <Text style={styles.backBtnTextMobile}>Citizen Portal</Text>
+                </TouchableOpacity>
+              </Animated.View>
+
+              <Animated.View entering={FadeInDown.delay(200)} style={{ marginBottom: SPACING.lg }}>
+                <CivicTrackLogo size="lg" showText={false} />
+              </Animated.View>
+              <Animated.Text entering={FadeInDown.delay(300)} style={styles.mobileTitle}>Operations Command</Animated.Text>
+              <Animated.Text entering={FadeInDown.delay(400)} style={styles.mobileSubtitle}>Municipal authentication required.</Animated.Text>
+            </View>
+
+            <View style={styles.mobileBody}>
+              {errorMessage && (
+                <Animated.View entering={FadeIn.duration(300)} style={styles.errorBanner}>
+                  <Ionicons name="alert-circle" size={18} color={COLORS.error} style={{ marginRight: SPACING.xs }} />
+                  <Text style={styles.errorBannerText}>{errorMessage}</Text>
+                </Animated.View>
+              )}
+
+              {isOfficerSaved && (
+                <Animated.View entering={FadeInDown.delay(500)}>
                   <Card style={styles.savedSessionCard}>
                     <CardContent style={styles.savedSessionContent}>
                       <View style={styles.savedAvatar}>
@@ -162,13 +280,15 @@ export const AuthorityLoginScreen: React.FC<Props> = ({ navigation }) => {
                         <Text style={styles.savedEmail} numberOfLines={1}>{savedSession.user.email}</Text>
                       </View>
                     </CardContent>
-                    <View style={{ padding: 16, paddingTop: 0 }}>
-                      <Button title={`Resume Officer Session`} onPress={handleResumeSession} loading={resumeLoading || loading} variant="default" style={{ marginBottom: 8 }} />
+                    <View style={{ padding: SPACING.xl, paddingTop: 0 }}>
+                      <Button title={`Resume Officer Session`} onPress={handleResumeSession} loading={resumeLoading || loading} variant="default" style={{ marginBottom: SPACING.sm }} />
                       <Button title="Use another credential" onPress={clearSavedSession} variant="ghost" />
                     </View>
                   </Card>
-                )}
+                </Animated.View>
+              )}
 
+              <Animated.View entering={FadeInDown.delay(isOfficerSaved ? 600 : 500)}>
                 <Card>
                   <CardContent>
                     <Controller
@@ -203,8 +323,8 @@ export const AuthorityLoginScreen: React.FC<Props> = ({ navigation }) => {
                       )}
                     />
 
-                    <Button title="Authenticate as Officer" onPress={handleSubmit(onSubmit)} loading={loading} variant="default" size="lg" style={{ marginTop: 8 }} />
-
+                    <Button title="Authenticate as Officer" onPress={handleSubmit(onSubmit)} loading={loading} variant="default" size="lg" style={{ marginTop: SPACING.xs }} />
+                    
                     <View style={styles.dividerRow}>
                       <View style={styles.dividerLine} />
                       <Text style={styles.dividerText}>OR</Text>
@@ -214,111 +334,14 @@ export const AuthorityLoginScreen: React.FC<Props> = ({ navigation }) => {
                     <Button title="Continue with Google" onPress={handleGoogleLogin} loading={googleLoading || loading} variant="outline" size="lg" icon={<Ionicons name="logo-google" size={18} color="#EA4335" />} />
                   </CardContent>
                 </Card>
+              </Animated.View>
 
+              <Animated.View entering={FadeInDown.delay(isOfficerSaved ? 700 : 600)}>
                 <TouchableOpacity onPress={fillDemoOfficer} style={styles.demoPillDesktop}>
-                  <Ionicons name="flash" size={14} color={COLORS.primary} style={{ marginRight: 6 }} />
+                  <Ionicons name="flash" size={14} color={COLORS.primary} style={{ marginRight: SPACING.xs }} />
                   <Text style={styles.demoPillTextDesktop}>Auto-fill Demo Officer</Text>
                 </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </View>
-        ) : (
-          <ScrollView
-            contentContainerStyle={styles.mobileContainer}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.mobileHeader}>
-              <TouchableOpacity
-                style={styles.backBtnMobile}
-                onPress={() => navigation.navigate('CitizenLogin')}
-              >
-                <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
-                <Text style={styles.backBtnTextMobile}>Citizen Portal</Text>
-              </TouchableOpacity>
-
-              <Ionicons name="shield-checkmark" size={48} color={COLORS.primary} style={{ marginBottom: 16 }} />
-              <Text style={styles.mobileTitle}>Operations Command</Text>
-              <Text style={styles.mobileSubtitle}>Municipal authentication required.</Text>
-            </View>
-
-            <View style={styles.mobileBody}>
-              {errorMessage && (
-                <View style={styles.errorBanner}>
-                  <Ionicons name="alert-circle" size={18} color={COLORS.error} style={{ marginRight: 8 }} />
-                  <Text style={styles.errorBannerText}>{errorMessage}</Text>
-                </View>
-              )}
-
-              {isOfficerSaved && (
-                <Card style={styles.savedSessionCard}>
-                  <CardContent style={styles.savedSessionContent}>
-                    <View style={styles.savedAvatar}>
-                      <Ionicons name="shield" size={20} color="#FFFFFF" />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.savedGreeting}>Remembered Officer Session</Text>
-                      <Text style={styles.savedName} numberOfLines={1}>{savedSession.user.name || 'Municipal Officer'}</Text>
-                      <Text style={styles.savedEmail} numberOfLines={1}>{savedSession.user.email}</Text>
-                    </View>
-                  </CardContent>
-                  <View style={{ padding: 16, paddingTop: 0 }}>
-                    <Button title={`Resume Officer Session`} onPress={handleResumeSession} loading={resumeLoading || loading} variant="default" style={{ marginBottom: 8 }} />
-                    <Button title="Use another credential" onPress={clearSavedSession} variant="ghost" />
-                  </View>
-                </Card>
-              )}
-
-              <Card>
-                <CardContent>
-                  <Controller
-                    control={control}
-                    name="email"
-                    render={({ field: { onChange, value } }) => (
-                      <Input
-                        label="Department Official Email"
-                        placeholder="officer@city.gov"
-                        value={value}
-                        onChangeText={(text) => { onChange(text); if (errorMessage) setErrorMessage(null); }}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        leftIcon="mail-outline"
-                        error={errors.email?.message}
-                      />
-                    )}
-                  />
-
-                  <Controller
-                    control={control}
-                    name="password"
-                    render={({ field: { onChange, value } }) => (
-                      <PasswordInput
-                        label="Officer Security Password"
-                        placeholder="Enter security password"
-                        value={value}
-                        onChangeText={(text) => { onChange(text); if (errorMessage) setErrorMessage(null); }}
-                        error={errors.password?.message}
-                      />
-                    )}
-                  />
-
-                  <Button title="Authenticate as Officer" onPress={handleSubmit(onSubmit)} loading={loading} variant="default" size="lg" style={{ marginTop: 8 }} />
-                  
-                  <View style={styles.dividerRow}>
-                    <View style={styles.dividerLine} />
-                    <Text style={styles.dividerText}>OR</Text>
-                    <View style={styles.dividerLine} />
-                  </View>
-
-                  <Button title="Continue with Google" onPress={handleGoogleLogin} loading={googleLoading || loading} variant="outline" size="lg" icon={<Ionicons name="logo-google" size={18} color="#EA4335" />} />
-                </CardContent>
-              </Card>
-
-              <TouchableOpacity onPress={fillDemoOfficer} style={styles.demoPillDesktop}>
-                <Ionicons name="flash" size={14} color={COLORS.primary} style={{ marginRight: 6 }} />
-                <Text style={styles.demoPillTextDesktop}>Auto-fill Demo Officer</Text>
-              </TouchableOpacity>
+              </Animated.View>
             </View>
           </ScrollView>
         )}
@@ -328,44 +351,44 @@ export const AuthorityLoginScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#0F172A' },
+  safeArea: { flex: 1, backgroundColor: COLORS.authorityDark },
   // Desktop
   desktopContainer: { flex: 1, flexDirection: 'row' },
-  brandingSide: { flex: 1.2, backgroundColor: '#0F172A', padding: 60, justifyContent: 'space-between' },
-  brandingContent: { flex: 1, justifyContent: 'center' },
-  brandingIcon: { marginBottom: 32 },
-  brandingTitle: { fontSize: 42, fontWeight: '900', color: '#FFFFFF', letterSpacing: -1, marginBottom: 16 },
-  brandingSubtitle: { fontSize: 18, color: '#94A3B8', lineHeight: 28, maxWidth: 480 },
-  brandingFooter: {},
-  brandingFooterText: { color: '#64748B', fontSize: 13, fontWeight: '600' },
-  authSide: { flex: 1, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' },
-  authWrapper: { width: '100%', maxWidth: 460, paddingHorizontal: 24, paddingVertical: 40 },
-  backBtnDesktop: { flexDirection: 'row', alignItems: 'center', marginBottom: 32, alignSelf: 'flex-start' },
-  backBtnTextDesktop: { color: COLORS.textSecondary, fontSize: 14, fontWeight: '600', marginLeft: 4 },
-  authTitle: { fontSize: 32, fontWeight: '800', color: COLORS.textPrimary, letterSpacing: -0.5, marginBottom: 8 },
-  authSubtitle: { fontSize: 15, color: COLORS.textSecondary, marginBottom: 32 },
+  brandingSide: { flex: 1.2, backgroundColor: COLORS.authorityDark, padding: SPACING['7xl'], justifyContent: 'center', alignItems: 'center', position: 'relative' },
+  brandingContent: { justifyContent: 'center', alignItems: 'center' },
+  brandingIcon: { marginBottom: SPACING['3xl'], alignItems: 'center' },
+  brandingTitle: { ...TYPOGRAPHY.display, color: '#FFFFFF', marginBottom: SPACING.lg, textAlign: 'center' },
+  brandingSubtitle: { ...TYPOGRAPHY.h3, color: COLORS.authoritySurface, lineHeight: 28, maxWidth: 420, textAlign: 'center' },
+  brandingFooter: { position: 'absolute', bottom: SPACING['4xl'] },
+  brandingFooterText: { ...TYPOGRAPHY.caption, color: COLORS.slateMuted },
+  authSide: { flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center' },
+  authWrapper: { width: '100%', maxWidth: 460, paddingHorizontal: SPACING['3xl'], paddingVertical: SPACING['5xl'] },
+  backBtnDesktop: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING['4xl'], alignSelf: 'flex-start' },
+  backBtnTextDesktop: { ...TYPOGRAPHY.bodySmall, color: COLORS.textSecondary, fontWeight: '600', marginLeft: SPACING.xs },
+  authTitle: { ...TYPOGRAPHY.h1, color: COLORS.textPrimary, marginBottom: SPACING.md },
+  authSubtitle: { ...TYPOGRAPHY.body, color: COLORS.textSecondary, marginBottom: SPACING['4xl'] },
   
   // Mobile
-  mobileContainer: { flexGrow: 1, backgroundColor: '#F8FAFC' },
-  mobileHeader: { backgroundColor: '#0F172A', padding: 24, paddingTop: Platform.OS === 'ios' ? 24 : 40, paddingBottom: 40, borderBottomLeftRadius: 32, borderBottomRightRadius: 32 },
-  backBtnMobile: { flexDirection: 'row', alignItems: 'center', marginBottom: 24, backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, alignSelf: 'flex-start' },
-  backBtnTextMobile: { color: '#FFFFFF', fontSize: 12, fontWeight: '700', marginLeft: 4 },
-  mobileTitle: { fontSize: 28, fontWeight: '900', color: '#FFFFFF', letterSpacing: -0.5, marginBottom: 8 },
-  mobileSubtitle: { fontSize: 14, color: '#94A3B8' },
-  mobileBody: { padding: 20, marginTop: -20 },
+  mobileContainer: { flexGrow: 1, backgroundColor: COLORS.background },
+  mobileHeader: { backgroundColor: COLORS.authorityDark, padding: SPACING['3xl'], paddingTop: Platform.OS === 'ios' ? SPACING['5xl'] : SPACING['6xl'], paddingBottom: SPACING['5xl'], borderBottomLeftRadius: 32, borderBottomRightRadius: 32, alignItems: 'center' },
+  backBtnMobile: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING['3xl'], backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm, borderRadius: BORDER_RADIUS.xl, alignSelf: 'flex-start', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+  backBtnTextMobile: { ...TYPOGRAPHY.caption, color: '#FFFFFF', fontWeight: '700', marginLeft: SPACING.xs },
+  mobileTitle: { ...TYPOGRAPHY.h1, color: '#FFFFFF', marginBottom: SPACING.xs },
+  mobileSubtitle: { ...TYPOGRAPHY.body, color: COLORS.authoritySurface },
+  mobileBody: { padding: SPACING['2xl'], marginTop: -20 },
 
   // Shared
-  errorBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.errorLight, padding: 12, borderRadius: BORDER_RADIUS.md, marginBottom: 16, borderWidth: 1, borderColor: COLORS.errorBorder },
-  errorBannerText: { color: COLORS.errorDark, fontSize: 13, flex: 1, fontWeight: '600' },
-  savedSessionCard: { backgroundColor: '#F8FAFC', borderColor: COLORS.borderLight, marginBottom: 24 },
-  savedSessionContent: { flexDirection: 'row', alignItems: 'center', padding: 16 },
-  savedAvatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
-  savedGreeting: { fontSize: 11, fontWeight: '800', color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 },
-  savedName: { fontSize: 16, fontWeight: '800', color: COLORS.textPrimary },
-  savedEmail: { fontSize: 12, color: COLORS.textSecondary },
-  dividerRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 20 },
+  errorBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.errorLight, padding: SPACING.lg, borderRadius: BORDER_RADIUS.md, marginBottom: SPACING.xl, borderWidth: 1, borderColor: COLORS.errorBorder },
+  errorBannerText: { ...TYPOGRAPHY.caption, color: COLORS.errorDark, flex: 1, fontWeight: '600' },
+  savedSessionCard: { backgroundColor: COLORS.backgroundNeutral, borderColor: COLORS.borderLight, marginBottom: SPACING['3xl'] },
+  savedSessionContent: { flexDirection: 'row', alignItems: 'center', padding: SPACING.xl },
+  savedAvatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center', marginRight: SPACING.lg },
+  savedGreeting: { ...TYPOGRAPHY.overline, color: COLORS.textMuted },
+  savedName: { ...TYPOGRAPHY.h4, color: COLORS.textPrimary },
+  savedEmail: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary },
+  dividerRow: { flexDirection: 'row', alignItems: 'center', marginVertical: SPACING['2xl'] },
   dividerLine: { flex: 1, height: 1, backgroundColor: COLORS.borderLight },
-  dividerText: { marginHorizontal: 12, color: COLORS.textMuted, fontSize: 12, fontWeight: '700' },
-  demoPillDesktop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.primaryLight, padding: 10, borderRadius: BORDER_RADIUS.md, marginTop: 24 },
-  demoPillTextDesktop: { color: COLORS.primary, fontSize: 13, fontWeight: '700' },
+  dividerText: { marginHorizontal: SPACING.lg, ...TYPOGRAPHY.caption, color: COLORS.textMuted },
+  demoPillDesktop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.primaryLight, padding: 10, borderRadius: BORDER_RADIUS.md, marginTop: SPACING['3xl'] },
+  demoPillTextDesktop: { ...TYPOGRAPHY.bodySmall, color: COLORS.primary, fontWeight: '700' },
 });

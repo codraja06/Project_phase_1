@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import {
   Text,
   StyleSheet,
@@ -7,10 +7,13 @@ import {
   TextStyle,
   StyleProp,
   Platform,
-  Animated,
   Pressable,
 } from 'react-native';
-import { COLORS, BORDER_RADIUS } from '../../constants/theme';
+import Animated from 'react-native-reanimated';
+import { COLORS } from '../../theme/colors';
+import { BORDER_RADIUS } from '../../theme/radius';
+import { TYPOGRAPHY } from '../../theme/typography';
+import { usePressAnimation } from '../../hooks/useAnimations';
 
 export type ButtonVariant = 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
 export type ButtonSize = 'default' | 'sm' | 'lg' | 'icon';
@@ -42,25 +45,7 @@ export const Button: React.FC<ButtonProps> = ({
   children,
   accessibilityLabel,
 }) => {
-  const scale = useRef(new Animated.Value(1)).current;
-
-  const handlePressIn = () => {
-    Animated.spring(scale, {
-      toValue: 0.96,
-      useNativeDriver: true,
-      speed: 20,
-      bounciness: 5,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(scale, {
-      toValue: 1,
-      useNativeDriver: true,
-      speed: 20,
-      bounciness: 5,
-    }).start();
-  };
+  const { onPressIn, onPressOut, animatedStyle } = usePressAnimation(0.96);
 
   const getContainerStyle = (pressed: boolean, hovered: boolean): ViewStyle => {
     const base: ViewStyle = {
@@ -118,11 +103,12 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const getTextStyle = (): TextStyle => {
-    const base: TextStyle = {
-      fontWeight: '600',
-      fontSize: size === 'sm' ? 13 : size === 'lg' ? 16 : 14,
-      textAlign: 'center',
-    };
+    const base: TextStyle = { ...TYPOGRAPHY.button };
+    
+    if (size === 'sm') base.fontSize = 13;
+    if (size === 'lg') base.fontSize = 16;
+    
+    base.textAlign = 'center';
 
     switch (variant) {
       case 'default':
@@ -146,11 +132,11 @@ export const Button: React.FC<ButtonProps> = ({
   const isDisabled = disabled || loading;
 
   return (
-    <Animated.View style={[{ transform: [{ scale }] }, style]}>
+    <Animated.View style={[animatedStyle, style]}>
       <Pressable
         onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
         disabled={isDisabled}
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel || title}

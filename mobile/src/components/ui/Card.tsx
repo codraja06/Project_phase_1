@@ -1,51 +1,52 @@
-import React, { useRef } from 'react';
-import { View, StyleSheet, ViewStyle, StyleProp, Animated, Pressable, Platform } from 'react-native';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../../constants/theme';
+import React from 'react';
+import { View, StyleSheet, ViewStyle, StyleProp, Pressable, Platform } from 'react-native';
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { COLORS } from '../../theme/colors';
+import { BORDER_RADIUS } from '../../theme/radius';
+import { SPACING } from '../../theme/spacing';
+import { SHADOWS } from '../..//theme/index'; // Import from existing theme/index which we'll keep
+import { usePressAnimation, useAnimatedEntry } from '../../hooks/useAnimations';
 
 interface CardProps {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   onPress?: () => void;
   interactive?: boolean;
+  delayMs?: number;
+  animateEntry?: boolean;
 }
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export const Card: React.FC<CardProps> = ({ children, style, onPress, interactive = false }) => {
-  const scale = useRef(new Animated.Value(1)).current;
+export const Card: React.FC<CardProps> = ({ 
+  children, 
+  style, 
+  onPress, 
+  interactive = false,
+  delayMs = 0,
+  animateEntry = false
+}) => {
   const isPressable = onPress !== undefined || interactive;
-
-  const handlePressIn = () => {
-    if (!isPressable) return;
-    Animated.spring(scale, {
-      toValue: 0.98,
-      useNativeDriver: Platform.OS !== 'web',
-      speed: 20,
-      bounciness: 5,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    if (!isPressable) return;
-    Animated.spring(scale, {
-      toValue: 1,
-      useNativeDriver: Platform.OS !== 'web',
-      speed: 20,
-      bounciness: 5,
-    }).start();
-  };
+  
+  // Use our shared press animation hook
+  const { onPressIn, onPressOut, animatedStyle: pressStyle } = usePressAnimation(0.98);
+  
+  // Optional entry animation
+  const entryStyle = useAnimatedEntry(delayMs);
 
   if (isPressable) {
     return (
       <AnimatedPressable
         onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        style={({ pressed }: any) => [
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        style={({ pressed, hovered }: any) => [
           styles.card,
-          { transform: [{ scale }] },
+          animateEntry && entryStyle,
+          pressStyle,
           style,
           pressed && styles.pressed,
+          hovered && styles.hovered,
         ]}
       >
         {children}
@@ -54,7 +55,7 @@ export const Card: React.FC<CardProps> = ({ children, style, onPress, interactiv
   }
 
   return (
-    <Animated.View style={[styles.card, style]}>
+    <Animated.View style={[styles.card, animateEntry && entryStyle, style]}>
       {children}
     </Animated.View>
   );
@@ -82,15 +83,15 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   header: {
-    padding: 16,
+    padding: SPACING.xl,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.borderLight,
   },
   content: {
-    padding: 16,
+    padding: SPACING.xl,
   },
   footer: {
-    padding: 16,
+    padding: SPACING.xl,
     borderTopWidth: 1,
     borderTopColor: COLORS.borderLight,
     flexDirection: 'row',
@@ -98,5 +99,9 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.9,
+    backgroundColor: COLORS.cardHover,
   },
+  hovered: {
+    backgroundColor: COLORS.cardHover,
+  }
 });

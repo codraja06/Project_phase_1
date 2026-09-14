@@ -9,10 +9,14 @@ import {
   SafeAreaView,
   StatusBar,
 } from 'react-native';
+import Animated, { FadeInDown, FadeInUp, Layout, ZoomIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { authorityApi } from '../../api/authorityApi';
 import { Complaint } from '../../types/complaint';
-import { COLORS, BORDER_RADIUS } from '../../constants/theme';
+import { COLORS } from '../../theme/colors';
+import { BORDER_RADIUS } from '../../theme/radius';
+import { SPACING } from '../../theme/spacing';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { NotificationItem, NotificationData } from '../../components/NotificationItem';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 
@@ -63,14 +67,17 @@ export const AuthorityNotificationsScreen = ({ navigation }: any) => {
     const citizenObj = c.createdBy || c.citizenId;
     const citizenName =
       typeof citizenObj === 'object' && citizenObj ? (citizenObj as any).name || 'Citizen' : 'Citizen';
+      
+    const priority = c.priority || 'medium';
+    const isUrgent = priority === 'urgent' || priority === 'high';
 
     if (normStatus === 'pending') {
       return {
         id: `auth-notif-${c._id}`,
-        title: `New Report: ${c.title}`,
+        title: isUrgent ? `URGENT Report: ${c.title}` : `New Report: ${c.title}`,
         message: `Submitted by ${citizenName} at ${c.address || 'location recorded'}. Requires review.`,
         timestamp: formattedDate,
-        type: 'alert',
+        type: isUrgent ? 'alert' : 'system',
         isRead: false,
         complaintId: c._id,
       };
@@ -99,10 +106,10 @@ export const AuthorityNotificationsScreen = ({ navigation }: any) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.authorityPrimary} />
+      <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
 
       {/* Screen Header */}
-      <View style={styles.headerBar}>
+      <Animated.View entering={FadeInDown.duration(400)} style={styles.headerBar}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => navigation.navigate('AuthorityDashboard')}
@@ -113,7 +120,7 @@ export const AuthorityNotificationsScreen = ({ navigation }: any) => {
           <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Incident Feed</Text>
-      </View>
+      </Animated.View>
 
       <View style={styles.container}>
         <FlatList
@@ -128,26 +135,31 @@ export const AuthorityNotificationsScreen = ({ navigation }: any) => {
             />
           }
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Ionicons name="notifications-outline" size={44} color={COLORS.textMuted} />
+            <Animated.View entering={ZoomIn.delay(200)} style={styles.emptyContainer}>
+              <View style={styles.emptyIconCircle}>
+                <Ionicons name="notifications-outline" size={44} color={COLORS.textMuted} />
+              </View>
               <Text style={styles.emptyTitle}>No incident alerts</Text>
               <Text style={styles.emptySub}>
                 Incoming citizen submissions and status changes will be listed here.
               </Text>
-            </View>
+            </Animated.View>
           }
-          renderItem={({ item }) => (
-            <NotificationItem
-              item={item}
-              onPress={() => {
-                if (item.complaintId) {
-                  navigation.navigate('AuthorityComplaintDetail', {
-                    complaintId: item.complaintId,
-                  });
-                }
-              }}
-            />
+          renderItem={({ item, index }) => (
+            <Animated.View entering={FadeInUp.delay(100 + index * 40)} layout={Layout.springify()}>
+              <NotificationItem
+                item={item}
+                onPress={() => {
+                  if (item.complaintId) {
+                    navigation.navigate('AuthorityComplaintDetail', {
+                      complaintId: item.complaintId,
+                    });
+                  }
+                }}
+              />
+            </Animated.View>
           )}
+          showsVerticalScrollIndicator={false}
         />
       </View>
     </SafeAreaView>
@@ -157,55 +169,59 @@ export const AuthorityNotificationsScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.authorityPrimary,
+    backgroundColor: '#0F172A',
   },
   headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 14,
-    backgroundColor: COLORS.authorityPrimary,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.lg,
+    backgroundColor: '#0F172A',
   },
   backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: BORDER_RADIUS.full,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.20)',
-    marginRight: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    marginRight: SPACING.md,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    ...TYPOGRAPHY.h3,
     color: '#FFFFFF',
   },
   container: {
     flex: 1,
-    backgroundColor: '#F7F8FC',
+    backgroundColor: COLORS.backgroundNeutral,
   },
   listContent: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 32,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING['5xl'],
   },
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 56,
+    paddingVertical: SPACING['6xl'],
+  },
+  emptyIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: COLORS.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.lg,
   },
   emptyTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    ...TYPOGRAPHY.h4,
     color: COLORS.textPrimary,
-    marginTop: 12,
-    marginBottom: 4,
+    marginBottom: SPACING.xs,
   },
   emptySub: {
-    fontSize: 13,
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
     textAlign: 'center',
     maxWidth: 280,

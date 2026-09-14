@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Image,
   ViewStyle,
   StyleProp,
@@ -11,7 +10,10 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Complaint } from '../types/complaint';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../constants/theme';
+import { COLORS } from '../theme/colors';
+import { BORDER_RADIUS } from '../theme/radius';
+import { SPACING } from '../theme/spacing';
+import { TYPOGRAPHY } from '../theme/typography';
 import { StatusBadge } from './StatusBadge';
 import { formatDate } from '../utils/date';
 import { Card, CardContent } from './ui/Card';
@@ -22,6 +24,7 @@ interface ComplaintCardProps {
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
   showCitizenInfo?: boolean;
+  index?: number;
 }
 
 export const ComplaintCard: React.FC<ComplaintCardProps> = ({
@@ -29,6 +32,7 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = ({
   onPress,
   style,
   showCitizenInfo = false,
+  index = 0,
 }) => {
   const [imgError, setImgError] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -64,19 +68,20 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = ({
         style,
       ]}
       onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`Complaint ${complaintCode}: ${complaint.title}, Status: ${complaint.status}`}
+      interactive={true}
+      animateEntry={true}
+      delayMs={index * 50}
       {...({
         onMouseEnter: () => setIsHovered(true),
         onMouseLeave: () => setIsHovered(false),
       } as any)}
     >
-      <CardContent style={{ padding: 16 }}>
+      <CardContent style={{ padding: SPACING.xl }}>
         {/* ─── Top Header: Complaint ID & Status ─── */}
         <View style={styles.headerRow}>
           <View style={styles.codePillGroup}>
             <Text style={styles.complaintCodeText}>{complaintCode}</Text>
-            {isHighPriority && <Badge label="HIGH" variant="destructive" />}
+            {isHighPriority && <Badge label="URGENT" variant="destructive" animate />}
           </View>
           <StatusBadge status={complaint.status} size="sm" />
         </View>
@@ -94,7 +99,7 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = ({
               />
             ) : (
               <View style={styles.thumbnailPlaceholder}>
-                <Ionicons name="image-outline" size={24} color={COLORS.textMuted} />
+                <Ionicons name="image-outline" size={24} color={COLORS.slateMuted} />
               </View>
             )}
           </View>
@@ -109,7 +114,7 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = ({
             </Text>
             {showCitizenInfo && (
               <View style={styles.citizenRow}>
-                <Ionicons name="person-outline" size={12} color={COLORS.accent} style={{ marginRight: 4 }} />
+                <Ionicons name="person-outline" size={14} color={COLORS.secondary} style={{ marginRight: 6 }} />
                 <Text style={styles.citizenName} numberOfLines={1}>
                   {citizenName}
                 </Text>
@@ -121,21 +126,17 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = ({
         {/* ─── Metadata Footer: Date & Location ─── */}
         <View style={styles.metaFooter}>
           <View style={styles.metaItem}>
-            <Text style={styles.metaIcon}>📅</Text>
+            <Ionicons name="calendar-outline" size={14} color={COLORS.slateMuted} style={styles.metaIcon} />
             <Text style={styles.metaText}>{formattedDate}</Text>
           </View>
           <View style={styles.metaItem}>
-            <Text style={styles.metaIcon}>📍</Text>
+            <Ionicons name="location-outline" size={14} color={COLORS.slateMuted} style={styles.metaIcon} />
             <Text style={styles.metaText} numberOfLines={1}>
               {locationSummary}
             </Text>
           </View>
         </View>
 
-        {/* ─── Bottom Action Link ─── */}
-        <View style={styles.actionRow}>
-          <Text style={styles.viewDetailsText}>View Details →</Text>
-        </View>
       </CardContent>
     </Card>
   );
@@ -143,50 +144,47 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    marginBottom: 12,
+    marginBottom: SPACING.lg,
     padding: 0,
     ...(Platform.OS === 'web' ? {
       cursor: 'pointer' as any,
-      transition: 'all 0.18s cubic-bezier(0.4, 0, 0.2, 1)' as any,
+      transition: 'all 0.2s cubic-bezier(0.2, 0, 0, 1)' as any,
     } : {}),
   },
   cardHovered: {
-    borderColor: COLORS.primary,
-    ...SHADOWS.cardHover,
+    borderColor: COLORS.primarySurface,
     transform: [{ translateY: -2 }],
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: SPACING.lg,
   },
   codePillGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: SPACING.sm,
   },
   complaintCodeText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: COLORS.primary,
+    ...TYPOGRAPHY.badge,
+    color: COLORS.primaryDark,
     backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: BORDER_RADIUS.xs,
-    letterSpacing: 0.2,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    borderRadius: BORDER_RADIUS.sm,
   },
   contentRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
   thumbnailWrapper: {
-    width: 72,
-    height: 72,
+    width: 80,
+    height: 80,
     borderRadius: BORDER_RADIUS.md,
     overflow: 'hidden',
-    backgroundColor: '#F1F5F9',
-    marginRight: 12,
+    backgroundColor: COLORS.backgroundNeutral,
+    marginRight: SPACING.lg,
     borderWidth: 1,
     borderColor: COLORS.borderLight,
   },
@@ -199,41 +197,34 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.backgroundNeutral,
   },
   infoCol: {
     flex: 1,
     justifyContent: 'center',
   },
   categoryTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: COLORS.textPrimary,
-    marginBottom: 3,
-    letterSpacing: -0.2,
+    ...TYPOGRAPHY.h4,
+    marginBottom: SPACING.xs,
   },
   description: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    lineHeight: 18,
-    fontWeight: '400',
+    ...TYPOGRAPHY.bodySmall,
   },
   citizenRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: SPACING.sm,
   },
   citizenName: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.accent,
+    ...TYPOGRAPHY.caption,
+    color: COLORS.secondaryDark,
   },
   metaFooter: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
-    marginTop: 12,
-    paddingTop: 10,
+    gap: SPACING.xl,
+    marginTop: SPACING.lg,
+    paddingTop: SPACING.md,
     borderTopWidth: 1,
     borderTopColor: COLORS.borderLight,
   },
@@ -243,21 +234,9 @@ const styles = StyleSheet.create({
     maxWidth: '55%',
   },
   metaIcon: {
-    fontSize: 12,
-    marginRight: 5,
+    marginRight: SPACING.xs,
   },
   metaText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    fontWeight: '500',
-  },
-  actionRow: {
-    marginTop: 8,
-    alignItems: 'flex-end',
-  },
-  viewDetailsText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
+    ...TYPOGRAPHY.caption,
+  }
 });

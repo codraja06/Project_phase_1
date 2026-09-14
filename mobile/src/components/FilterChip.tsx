@@ -2,14 +2,24 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
   ScrollView,
   StyleProp,
   ViewStyle,
   Platform,
 } from 'react-native';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../constants/theme';
+import Animated, {
+  useAnimatedStyle,
+  withTiming,
+  interpolateColor,
+} from 'react-native-reanimated';
+import { COLORS } from '../theme/colors';
+import { BORDER_RADIUS } from '../theme/radius';
+import { SHADOWS } from '../theme/index';
+import { SPACING } from '../theme/spacing';
+import { TYPOGRAPHY } from '../theme/typography';
+import { usePressAnimation } from '../hooks/useAnimations';
 
 export interface FilterOption {
   label: string;
@@ -25,6 +35,8 @@ interface FilterChipProps {
   style?: StyleProp<ViewStyle>;
 }
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 export const FilterChip: React.FC<FilterChipProps> = ({
   label,
   isSelected,
@@ -32,34 +44,40 @@ export const FilterChip: React.FC<FilterChipProps> = ({
   count,
   style,
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const { onPressIn, onPressOut, animatedStyle: pressStyle } = usePressAnimation(0.95);
   const isWeb = Platform.OS === 'web';
 
+  const animatedContainerStyle = useAnimatedStyle(() => {
+    return {
+      backgroundColor: withTiming(isSelected ? COLORS.secondary : COLORS.surface, { duration: 200 }),
+      borderColor: withTiming(isSelected ? COLORS.secondary : COLORS.border, { duration: 200 }),
+    };
+  }, [isSelected]);
+
+  const animatedTextStyle = useAnimatedStyle(() => {
+    return {
+      color: withTiming(isSelected ? COLORS.textInverse : COLORS.textSecondary, { duration: 200 }),
+    };
+  }, [isSelected]);
+
   return (
-    <TouchableOpacity
+    <AnimatedPressable
       style={[
         styles.chip,
-        isSelected ? styles.chipSelected : styles.chipUnselected,
-        isHovered && !isSelected && (styles.chipHovered as any),
+        animatedContainerStyle,
+        pressStyle,
         style,
+        isSelected && styles.chipSelected,
       ]}
       onPress={onPress}
-      activeOpacity={0.8}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
       accessibilityRole="button"
       accessibilityState={{ selected: isSelected }}
-      {...({
-        onMouseEnter: () => setIsHovered(true),
-        onMouseLeave: () => setIsHovered(false),
-      } as any)}
     >
-      <Text
-        style={[
-          styles.label,
-          isSelected ? styles.labelSelected : styles.labelUnselected,
-        ]}
-      >
+      <Animated.Text style={[styles.label, animatedTextStyle, isSelected && styles.labelSelected]}>
         {label}
-      </Text>
+      </Animated.Text>
       {count !== undefined && (
         <View style={[styles.countBadge, isSelected && styles.countBadgeSelected]}>
           <Text style={[styles.countText, isSelected && styles.countTextSelected]}>
@@ -67,7 +85,7 @@ export const FilterChip: React.FC<FilterChipProps> = ({
           </Text>
         </View>
       )}
-    </TouchableOpacity>
+    </AnimatedPressable>
   );
 };
 
@@ -107,65 +125,47 @@ const styles = StyleSheet.create({
   groupContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
-    gap: 8,
+    paddingVertical: SPACING.xs,
+    gap: SPACING.md,
   },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.md,
     borderRadius: BORDER_RADIUS.full,
     justifyContent: 'center',
     minHeight: 36,
+    borderWidth: 1.5,
     ...(Platform.OS === 'web' ? {
       cursor: 'pointer' as any,
-      transition: 'all 0.18s ease-in-out' as any,
     } : {}),
   },
   chipSelected: {
-    backgroundColor: COLORS.secondary,
-    borderWidth: 1.5,
-    borderColor: COLORS.secondary,
     ...SHADOWS.sm,
   },
-  chipUnselected: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: COLORS.border,
-  },
-  chipHovered: {
-    borderColor: COLORS.borderStrong,
-    backgroundColor: COLORS.surface,
-  },
   label: {
+    ...TYPOGRAPHY.bodyBold,
     fontSize: 13,
-    letterSpacing: 0.1,
   },
   labelSelected: {
-    color: '#1A1A1A', // Dark text on yellow per Requirement 7
     fontWeight: '800',
   },
-  labelUnselected: {
-    color: COLORS.textSecondary,
-    fontWeight: '600',
-  },
   countBadge: {
-    marginLeft: 6,
-    backgroundColor: COLORS.surface,
-    paddingHorizontal: 6,
-    paddingVertical: 1.5,
+    marginLeft: SPACING.xs,
+    backgroundColor: COLORS.backgroundNeutral,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 2,
     borderRadius: BORDER_RADIUS.full,
   },
   countBadgeSelected: {
-    backgroundColor: 'rgba(0, 0, 0, 0.10)',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
   },
   countText: {
-    fontSize: 11,
-    fontWeight: '700',
+    ...TYPOGRAPHY.badge,
     color: COLORS.textSecondary,
   },
   countTextSelected: {
-    color: '#1A1A1A',
+    color: COLORS.textInverse,
   },
 });

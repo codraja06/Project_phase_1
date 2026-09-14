@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,14 +9,18 @@ import {
   SafeAreaView,
   StatusBar,
   Platform,
-  Animated,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import Animated, { FadeInDown, FadeIn, ZoomIn, FadeInUp } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
 import { complaintApi } from '../../api/complaintApi';
 import { Complaint, ComplaintStats } from '../../types/complaint';
-import { COLORS, BORDER_RADIUS, SHADOWS, LAYOUT } from '../../constants/theme';
+import { COLORS } from '../../theme/colors';
+import { BORDER_RADIUS } from '../../theme/radius';
+import { SHADOWS } from '../../theme/index';
+import { SPACING } from '../../theme/spacing';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent } from '../../components/ui/Card';
@@ -36,24 +40,6 @@ export const CitizenDashboardScreen = ({ navigation }: any) => {
     inProgress: 0,
     resolved: 0,
   });
-
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(20)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [fadeAnim, slideAnim]);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -102,188 +88,258 @@ export const CitizenDashboardScreen = ({ navigation }: any) => {
     ? styles.statCardMobileFull
     : styles.statCardGrid2;
 
+  const renderRightColContent = () => (
+    <>
+      <View style={styles.sectionHeaderRow}>
+        <Text style={styles.sectionTitle}>Recent Incidents</Text>
+        <Button variant="link" title="See All →" onPress={() => navigation.navigate('ComplaintHistory', { filter: 'all' })} />
+      </View>
+
+      {recentComplaints.length > 0 ? (
+        recentComplaints.map((item, index) => (
+          <Animated.View key={item._id} entering={FadeInUp.delay(900 + (index * 100))}>
+            <ComplaintCard
+              complaint={item}
+              onPress={() => (navigation as any).navigate('ComplaintDetail', { complaintId: item._id })}
+            />
+          </Animated.View>
+        ))
+      ) : (
+        <Card style={styles.emptyCard}>
+          <CardContent style={styles.emptyContent}>
+            <Ionicons name="document-text-outline" size={40} color={COLORS.textMuted} />
+            <Text style={styles.emptyTitle}>No complaints reported yet</Text>
+            <Text style={styles.emptySub}>
+              Spot a pothole, garbage, or road damage? Tap above to submit your first report.
+            </Text>
+          </CardContent>
+        </Card>
+      )}
+    </>
+  );
+
+  const dashboardContent = (
+    <Animated.View entering={FadeIn.duration(400)} style={{ flex: 1 }}>
+      {/* Top Bar / Header */}
+      <View style={isDesktop ? styles.desktopHeader : styles.mobileHeader}>
+        <View>
+          <Animated.View entering={FadeInDown.delay(100)} style={styles.badgeRow}>
+            <Text style={styles.greetingSub}>{getGreeting()}</Text>
+            <Badge label="Verified Citizen" variant="outline" />
+          </Animated.View>
+          <Animated.Text entering={FadeInDown.delay(200)} style={styles.greetingName}>{firstName} 👋</Animated.Text>
+          <Animated.Text entering={FadeInDown.delay(300)} style={styles.greetingTagline}>
+            Help keep your neighborhood clean, safe, and well-maintained.
+          </Animated.Text>
+        </View>
+        <Animated.View entering={FadeInDown.delay(400)} style={styles.topControls}>
+          {isDesktop && (
+            <View style={styles.headerSearch}>
+              <Ionicons name="search" size={16} color={COLORS.textMuted} />
+              <Text style={styles.headerSearchText}>Search complaints, locations...</Text>
+            </View>
+          )}
+          {!isDesktop && (
+            <TouchableOpacity
+              style={styles.avatarBtn}
+              onPress={() => navigation.navigate('CitizenProfile')}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="person" size={20} color={COLORS.primaryDark} />
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            style={styles.bellBtn}
+            onPress={() => navigation.navigate('Notifications')}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Notifications"
+          >
+            <Ionicons name="notifications-outline" size={22} color={COLORS.textPrimary} />
+            {stats.pending > 0 && <View style={styles.notificationDot} />}
+          </TouchableOpacity>
+          {isDesktop && (
+            <TouchableOpacity
+              style={styles.avatarBtn}
+              onPress={() => navigation.navigate('CitizenProfile')}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="person" size={20} color={COLORS.primaryDark} />
+            </TouchableOpacity>
+          )}
+        </Animated.View>
+      </View>
+
+      {/* Main Content Layout */}
+      <View style={isDesktop ? styles.desktopBody : styles.mobileBody}>
+        {/* Left Column / Top Stack */}
+        <View style={isDesktop ? styles.desktopLeftCol : styles.mobileLeftCol}>
+          {/* Compact Hero: Report CTA */}
+          <Animated.View entering={ZoomIn.duration(600).springify().damping(15)}>
+            <Card interactive onPress={() => navigation.navigate('ReportIssue')} style={styles.compactHeroCard}>
+              <CardContent style={styles.compactHeroContent}>
+                <View style={styles.compactHeroIconCircle}>
+                  <Ionicons name="camera" size={28} color={COLORS.primary} />
+                </View>
+                <View style={styles.compactHeroTextContainer}>
+                  <Text style={styles.compactHeroTitle}>Report an Issue</Text>
+                  <Text style={styles.compactHeroSubtitle}>Take a photo, let AI detect the issue, add location and submit.</Text>
+                </View>
+                <Button
+                  title="Report an Issue"
+                  onPress={() => navigation.navigate('ReportIssue')}
+                  variant="default"
+                  icon={<Ionicons name="add-circle" size={18} color="#FFFFFF" />}
+                  style={styles.compactHeroBtn}
+                />
+              </CardContent>
+            </Card>
+          </Animated.View>
+
+          {/* Secondary Bentos: Action Row */}
+          <Animated.View entering={FadeInUp.delay(500)} style={styles.bentoActionRow}>
+            <Card interactive onPress={() => navigation.navigate('ComplaintHistory', { filter: 'all' })} style={styles.bentoCard}>
+              <CardContent style={styles.bentoContent}>
+                <View style={[styles.bentoIcon, { backgroundColor: COLORS.primaryLight }]}>
+                  <Ionicons name="document-text" size={20} color={COLORS.primary} />
+                </View>
+                <Text style={styles.bentoTitle}>My Reports</Text>
+                <Text style={styles.bentoSub}>{stats.total} Total</Text>
+              </CardContent>
+            </Card>
+
+            <Card interactive onPress={() => navigation.navigate('ComplaintHistory', { filter: 'pending' })} style={styles.bentoCard}>
+              <CardContent style={styles.bentoContent}>
+                <View style={[styles.bentoIcon, { backgroundColor: COLORS.pendingLight }]}>
+                  <Ionicons name="location" size={20} color={COLORS.pending} />
+                </View>
+                <Text style={styles.bentoTitle}>Nearby Issues</Text>
+                <Text style={styles.bentoSub}>{stats.pending} Active</Text>
+              </CardContent>
+            </Card>
+
+            <Card interactive onPress={() => navigation.navigate('Notifications')} style={styles.bentoCard}>
+              <CardContent style={styles.bentoContent}>
+                <View style={[styles.bentoIcon, { backgroundColor: COLORS.inProgressLight }]}>
+                  <Ionicons name="notifications" size={20} color={COLORS.inProgress} />
+                </View>
+                <Text style={styles.bentoTitle}>Notifications</Text>
+                <Text style={styles.bentoSub}>{stats.inProgress > 0 ? `${stats.inProgress} Live` : 'Alerts'}</Text>
+              </CardContent>
+            </Card>
+          </Animated.View>
+
+          {/* Quick Issue Categories */}
+          <Animated.View entering={FadeInUp.delay(600)} style={styles.quickCategorySection}>
+            <Text style={styles.sectionTitle}>QUICK ISSUE CATEGORIES</Text>
+            <View style={styles.quickCategoryGrid}>
+              {[
+                { id: 'pothole', label: 'Pothole', icon: 'car-outline', color: '#10B981', bg: 'rgba(16, 185, 129, 0.1)' },
+                { id: 'road_damage', label: 'Road Damage', icon: 'warning-outline', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.1)' },
+                { id: 'garbage', label: 'Garbage', icon: 'trash-outline', color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.1)' },
+                { id: 'garbage_overflow', label: 'Garbage Overflow', icon: 'water-outline', color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.1)' },
+              ].map((cat) => (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={styles.quickCategoryCard}
+                  onPress={() => navigation.navigate('ReportIssue', { initialCategory: cat.id })}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.quickCategoryIconBox, { backgroundColor: cat.bg }]}>
+                    <Ionicons name={cat.icon as any} size={24} color={cat.color} />
+                  </View>
+                  <Text style={styles.quickCategoryText}>{cat.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </Animated.View>
+
+          {/* Stats Grid */}
+          <Animated.View entering={FadeInUp.delay(700)}>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Activity Overview</Text>
+              <TouchableOpacity style={styles.filterDropdown}>
+                <Text style={styles.filterDropdownText}>Last 30 Days</Text>
+                <Ionicons name="chevron-down" size={12} color={COLORS.textSecondary} style={{ marginLeft: 4 }} />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.statsGrid}>
+              {[
+                { label: 'Total Complaints', count: stats.total, color: COLORS.primary, bg: COLORS.primaryLight, icon: 'document-text-outline', filter: 'all' },
+                { label: 'Pending', count: stats.pending, color: COLORS.pending, bg: COLORS.pendingLight, icon: 'time-outline', filter: 'pending' },
+                { label: 'In Progress', count: stats.inProgress, color: COLORS.inProgress, bg: COLORS.inProgressLight, icon: 'construct-outline', filter: 'in_progress' },
+                { label: 'Resolved', count: stats.resolved, color: COLORS.resolved, bg: COLORS.resolvedLight, icon: 'checkmark-circle-outline', filter: 'resolved' },
+              ].map((stat, i) => (
+                <Card key={i} interactive onPress={() => navigation.navigate('ComplaintHistory', { filter: stat.filter })} style={statCardResponsiveStyle}>
+                  <CardContent style={styles.statContent}>
+                    <View style={styles.statHeader}>
+                      <View style={[styles.statIconWrapper, { backgroundColor: stat.bg }]}>
+                        <Ionicons name={stat.icon as any} size={18} color={stat.color} />
+                      </View>
+                    </View>
+                    <Text numberOfLines={1} style={[styles.statCount, { color: stat.color }]}>{stat.count}</Text>
+                    <Text numberOfLines={1} style={styles.statLabel}>{stat.label}</Text>
+                  </CardContent>
+                </Card>
+              ))}
+            </View>
+          </Animated.View>
+
+          {/* Bottom Community Banner */}
+          <Animated.View entering={FadeInUp.delay(800)} style={styles.communityBanner}>
+            <View style={styles.communityBannerContent}>
+              <View style={styles.communityBannerTextCol}>
+                <Text style={styles.communityBannerTitle}>Cleaner Neighborhoods{'\n'}Stronger Communities</Text>
+                <Text style={styles.communityBannerSub}>Report • Track • Create Change</Text>
+              </View>
+              <Ionicons name="leaf" size={48} color="rgba(16, 185, 129, 0.2)" style={styles.communityBannerIcon} />
+            </View>
+          </Animated.View>
+        </View>
+
+        {/* Right Column / Bottom Stack */}
+        {isDesktop ? (
+          <Animated.View entering={FadeInUp.delay(800)} style={styles.desktopRightColWrapper}>
+            <ScrollView
+              style={styles.desktopRightColScroll}
+              showsVerticalScrollIndicator={true}
+              contentContainerStyle={styles.desktopRightColScrollContent}
+            >
+              {renderRightColContent()}
+            </ScrollView>
+          </Animated.View>
+        ) : (
+          <Animated.View entering={FadeInUp.delay(800)} style={styles.mobileRightCol}>
+            {renderRightColContent()}
+          </Animated.View>
+        )}
+      </View>
+    </Animated.View>
+  );
+
+  if (isDesktop) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="dark-content" backgroundColor={COLORS.backgroundNeutral} />
+        <View style={[styles.container, styles.desktopFixedContainer]}>
+          {dashboardContent}
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FDFBF7" />
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.backgroundNeutral} />
       <ScrollView
         style={styles.container}
-        contentContainerStyle={contentStyle}
+        contentContainerStyle={styles.mobileContent}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />
         }
         showsVerticalScrollIndicator={false}
       >
-        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
-          {/* Top Bar / Header */}
-          <View style={isDesktop ? styles.desktopHeader : styles.mobileHeader}>
-            <View>
-              <View style={styles.badgeRow}>
-                <Text style={styles.greetingSub}>{getGreeting()}</Text>
-                <Badge label="Verified Citizen" variant="outline" />
-              </View>
-              <Text style={styles.greetingName}>{firstName} 👋</Text>
-              <Text style={styles.greetingTagline}>
-                Help keep your neighborhood clean, safe, and well-maintained.
-              </Text>
-            </View>
-            <View style={styles.topControls}>
-              {!isDesktop && (
-                <TouchableOpacity
-                  style={styles.avatarBtn}
-                  onPress={() => navigation.navigate('CitizenProfile')}
-                  activeOpacity={0.8}
-                >
-                  <Ionicons name="person" size={20} color={COLORS.primaryDark} />
-                </TouchableOpacity>
-              )}
-              <TouchableOpacity
-                style={styles.bellBtn}
-                onPress={() => navigation.navigate('Notifications')}
-                activeOpacity={0.8}
-                accessibilityRole="button"
-                accessibilityLabel="Notifications"
-              >
-                <Ionicons name="notifications-outline" size={22} color={COLORS.textPrimary} />
-                {stats.pending > 0 && <View style={styles.notificationDot} />}
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Main Content Layout */}
-          <View style={isDesktop ? styles.desktopBody : styles.mobileBody}>
-            {/* Left Column / Top Stack */}
-            <View style={isDesktop ? styles.desktopLeftCol : styles.mobileLeftCol}>
-              {/* Primary Bento: Report CTA */}
-              <Card interactive onPress={() => navigation.navigate('ReportIssue')} style={styles.heroCard}>
-                <CardContent style={styles.heroContent}>
-                  <View style={styles.heroTextRow}>
-                    <View style={styles.heroIconCircle}>
-                      <Ionicons name="camera" size={24} color={COLORS.secondary} />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.heroTitle}>Civic Hazard Detected?</Text>
-                      <Text style={styles.heroSubtitle}>Instant YOLOv8 AI vision analysis & GPS location tag.</Text>
-                    </View>
-                  </View>
-                  <Button
-                    title="REPORT AN ISSUE NOW"
-                    onPress={() => navigation.navigate('ReportIssue')}
-                    variant="default"
-                    icon={<Ionicons name="add-circle" size={20} color="#FFFFFF" />}
-                    style={styles.heroBtn}
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Secondary Bentos: Action Row */}
-              <View style={styles.bentoActionRow}>
-                <Card interactive onPress={() => navigation.navigate('ComplaintHistory', { filter: 'all' })} style={styles.bentoCard}>
-                  <CardContent style={styles.bentoContent}>
-                    <View style={[styles.bentoIcon, { backgroundColor: COLORS.primaryLight }]}>
-                      <Ionicons name="document-text" size={20} color={COLORS.primary} />
-                    </View>
-                    <Text style={styles.bentoTitle}>My Reports</Text>
-                    <Text style={styles.bentoSub}>{stats.total} Total</Text>
-                  </CardContent>
-                </Card>
-
-                <Card interactive onPress={() => navigation.navigate('ComplaintHistory', { filter: 'pending' })} style={styles.bentoCard}>
-                  <CardContent style={styles.bentoContent}>
-                    <View style={[styles.bentoIcon, { backgroundColor: COLORS.pendingLight }]}>
-                      <Ionicons name="location" size={20} color={COLORS.pending} />
-                    </View>
-                    <Text style={styles.bentoTitle}>Nearby Issues</Text>
-                    <Text style={styles.bentoSub}>{stats.pending} Active</Text>
-                  </CardContent>
-                </Card>
-
-                <Card interactive onPress={() => navigation.navigate('Notifications')} style={styles.bentoCard}>
-                  <CardContent style={styles.bentoContent}>
-                    <View style={[styles.bentoIcon, { backgroundColor: COLORS.inProgressLight }]}>
-                      <Ionicons name="notifications" size={20} color={COLORS.inProgress} />
-                    </View>
-                    <Text style={styles.bentoTitle}>Notifications</Text>
-                    <Text style={styles.bentoSub}>{stats.inProgress > 0 ? `${stats.inProgress} Live` : 'Alerts'}</Text>
-                  </CardContent>
-                </Card>
-              </View>
-
-              {/* Quick Category Chips */}
-              <View style={styles.quickChipsSection}>
-                <Text style={styles.sectionTitle}>QUICK ISSUE CATEGORIES</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickChipsContainer}>
-                  {[
-                    { id: 'pothole', label: 'Pothole', icon: 'car-outline' },
-                    { id: 'road_damage', label: 'Road Damage', icon: 'warning-outline' },
-                    { id: 'garbage', label: 'Garbage', icon: 'trash-outline' },
-                    { id: 'garbage_overflow', label: 'Garbage Overflow', icon: 'trash' },
-                    { id: 'street_light', label: 'Streetlight', icon: 'bulb-outline' },
-                    { id: 'drainage_problem', label: 'Drainage', icon: 'water-outline' },
-                    { id: 'water_leakage', label: 'Water Leak', icon: 'rainy-outline' },
-                  ].map((cat) => (
-                    <TouchableOpacity
-                      key={cat.id}
-                      style={styles.quickChip}
-                      onPress={() => navigation.navigate('ReportIssue', { initialCategory: cat.id })}
-                      activeOpacity={0.75}
-                    >
-                      <Ionicons name={cat.icon as any} size={15} color={COLORS.textPrimary} style={{ marginRight: 6 }} />
-                      <Text style={styles.quickChipText}>{cat.label}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-
-              {/* Stats Grid */}
-              <View style={styles.sectionHeaderRow}>
-                <Text style={styles.sectionTitle}>Activity Overview</Text>
-              </View>
-              <View style={styles.statsGrid}>
-                {[
-                  { label: 'Total Complaints', count: stats.total, color: COLORS.textPrimary, filter: 'all' },
-                  { label: 'Pending', count: stats.pending, color: COLORS.pending, filter: 'pending' },
-                  { label: 'In Progress', count: stats.inProgress, color: COLORS.inProgress, filter: 'in_progress' },
-                  { label: 'Resolved', count: stats.resolved, color: COLORS.resolved, filter: 'resolved' },
-                ].map((stat, i) => (
-                  <Card key={i} interactive onPress={() => navigation.navigate('ComplaintHistory', { filter: stat.filter })} style={statCardResponsiveStyle}>
-                    <CardContent style={styles.statContent}>
-                      <Text numberOfLines={1} style={[styles.statCount, { color: stat.color }]}>{stat.count}</Text>
-                      <Text numberOfLines={2} style={styles.statLabel}>{stat.label}</Text>
-                    </CardContent>
-                  </Card>
-                ))}
-              </View>
-            </View>
-
-            {/* Right Column / Bottom Stack */}
-            <View style={isDesktop ? styles.desktopRightCol : styles.mobileRightCol}>
-              <View style={styles.sectionHeaderRow}>
-                <Text style={styles.sectionTitle}>Recent Incidents</Text>
-                <Button variant="link" title="See All →" onPress={() => navigation.navigate('ComplaintHistory', { filter: 'all' })} />
-              </View>
-
-              {recentComplaints.length > 0 ? (
-                recentComplaints.map((item) => (
-                  <ComplaintCard
-                    key={item._id}
-                    complaint={item}
-                    onPress={() => (navigation as any).navigate('ComplaintDetail', { complaintId: item._id })}
-                  />
-                ))
-              ) : (
-                <Card style={styles.emptyCard}>
-                  <CardContent style={styles.emptyContent}>
-                    <Ionicons name="document-text-outline" size={40} color={COLORS.textMuted} />
-                    <Text style={styles.emptyTitle}>No complaints reported yet</Text>
-                    <Text style={styles.emptySub}>
-                      Spot a pothole, garbage, or road damage? Tap above to submit your first report.
-                    </Text>
-                  </CardContent>
-                </Card>
-              )}
-            </View>
-          </View>
-        </Animated.View>
+        {dashboardContent}
       </ScrollView>
     </SafeAreaView>
   );
@@ -297,60 +353,66 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  desktopFixedContainer: {
+    height: Platform.OS === 'web' ? ('100vh' as any) : '100%',
+    overflow: 'hidden',
+    padding: SPACING['3xl'],
+    paddingTop: SPACING['3xl'],
+    maxWidth: 1200,
+    alignSelf: 'center',
+    width: '100%',
+  },
   desktopContent: {
-    padding: 40,
+    padding: SPACING['7xl'],
     maxWidth: 1200,
     alignSelf: 'center',
     width: '100%',
   },
   mobileContent: {
-    padding: 16,
-    paddingTop: 8,
-    paddingBottom: 40,
+    padding: SPACING.xl,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING['7xl'],
   },
   desktopHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 40,
+    marginBottom: SPACING['3xl'],
   },
   mobileHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 24,
+    marginBottom: SPACING['3xl'],
   },
   badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
   },
   greetingSub: {
-    fontSize: 15,
+    ...TYPOGRAPHY.bodyBold,
     color: COLORS.textSecondary,
-    fontWeight: '600',
-    marginRight: 12,
+    marginRight: SPACING.lg,
   },
   greetingName: {
-    fontSize: 28,
-    fontWeight: '800',
+    ...TYPOGRAPHY.h1,
     color: COLORS.textPrimary,
-    letterSpacing: -0.5,
-    marginBottom: 4,
+    marginBottom: SPACING.xs,
   },
   greetingTagline: {
-    fontSize: 15,
+    ...TYPOGRAPHY.body,
     color: COLORS.textSecondary,
   },
   topControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: SPACING.lg,
   },
   avatarBtn: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: BORDER_RADIUS.full,
     backgroundColor: COLORS.primaryLight,
     borderWidth: 1,
     borderColor: COLORS.primarySurface,
@@ -360,7 +422,7 @@ const styles = StyleSheet.create({
   bellBtn: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: BORDER_RADIUS.full,
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.borderLight,
@@ -374,16 +436,18 @@ const styles = StyleSheet.create({
     right: 10,
     width: 8,
     height: 8,
-    borderRadius: 4,
+    borderRadius: BORDER_RADIUS.full,
     backgroundColor: COLORS.secondary,
   },
   desktopBody: {
     flexDirection: 'row',
-    gap: 40,
+    gap: SPACING['5xl'],
+    flex: 1,
+    overflow: 'hidden',
   },
   mobileBody: {
     flexDirection: 'column',
-    gap: 24,
+    gap: SPACING['3xl'],
   },
   desktopLeftCol: {
     flex: 1,
@@ -392,123 +456,208 @@ const styles = StyleSheet.create({
   mobileLeftCol: {
     width: '100%',
   },
-  desktopRightCol: {
+  desktopRightColWrapper: {
     flex: 1,
+    height: '100%',
+  },
+  desktopRightColScroll: {
+    flex: 1,
+    paddingRight: SPACING.md,
+  },
+  desktopRightColScrollContent: {
+    paddingBottom: SPACING['7xl'],
   },
   mobileRightCol: {
     width: '100%',
   },
-  heroCard: {
-    backgroundColor: '#0F172A', // Deep Charcoal/Dark for contrast
-    borderColor: '#1E293B',
-    marginBottom: 20,
-  },
-  heroContent: {
-    padding: 24,
-  },
-  heroTextRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  heroIconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  compactHeroCard: {
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: COLORS.primaryLight,
+    marginBottom: SPACING['2xl'],
+    ...SHADOWS.sm,
+  },
+  compactHeroContent: {
+    padding: SPACING.xl,
+    flexDirection: Platform.OS === 'web' ? 'row' : 'column',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: SPACING.lg,
+  },
+  compactHeroIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: BORDER_RADIUS.full,
+    backgroundColor: COLORS.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
   },
-  heroTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#FFFFFF',
+  compactHeroTextContainer: {
+    flex: 1,
+    alignItems: Platform.OS === 'web' ? 'flex-start' : 'center',
+  },
+  compactHeroTitle: {
+    ...TYPOGRAPHY.h3,
+    color: COLORS.textPrimary,
     marginBottom: 4,
   },
-  heroSubtitle: {
-    fontSize: 14,
-    color: '#94A3B8',
-    lineHeight: 20,
+  compactHeroSubtitle: {
+    ...TYPOGRAPHY.bodySmall,
+    color: COLORS.textSecondary,
+    textAlign: Platform.OS === 'web' ? 'left' : 'center',
   },
-  heroBtn: {
-    width: '100%',
+  compactHeroBtn: {
+    width: Platform.OS === 'web' ? 'auto' : '100%',
+    minWidth: 180,
   },
   bentoActionRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
+    gap: SPACING.lg,
+    marginBottom: SPACING['3xl'],
   },
   bentoCard: {
     flex: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.8)', // Glass effect
   },
   bentoContent: {
-    padding: 16,
+    padding: SPACING.xl,
     alignItems: 'center',
   },
   bentoIcon: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: BORDER_RADIUS.full,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
   },
   bentoTitle: {
-    fontSize: 13,
-    fontWeight: '700',
+    ...TYPOGRAPHY.bodyBold,
     color: COLORS.textPrimary,
-    marginBottom: 2,
+    marginBottom: SPACING.xs,
   },
   bentoSub: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption,
     color: COLORS.textSecondary,
   },
-  quickChipsSection: {
-    marginBottom: 24,
+  quickCategorySection: {
+    marginBottom: SPACING['3xl'],
   },
   sectionTitle: {
-    fontSize: 13,
-    fontWeight: '700',
+    ...TYPOGRAPHY.overline,
     color: COLORS.textSecondary,
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-    marginBottom: 12,
+    marginBottom: SPACING.lg,
   },
   sectionHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: SPACING.lg,
   },
-  quickChipsContainer: {
-    paddingRight: 16,
-    gap: 8,
+  quickCategoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING.lg,
   },
-  quickChip: {
+  quickCategoryCard: {
+    flexBasis: Platform.OS === 'web' ? ('calc(25% - 12px)' as any) : '47%',
+    flexGrow: 1,
+    flexShrink: 0,
+    minWidth: 130,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    padding: SPACING.lg,
+    alignItems: 'center',
+    ...SHADOWS.sm,
+  },
+  quickCategoryIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: BORDER_RADIUS.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.sm,
+  },
+  quickCategoryText: {
+    ...TYPOGRAPHY.bodySmall,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    textAlign: 'center',
+  },
+  filterDropdown: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.surface,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 6,
+    borderRadius: BORDER_RADIUS.sm,
     borderWidth: 1,
     borderColor: COLORS.borderLight,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: BORDER_RADIUS.full,
-    ...SHADOWS.sm,
   },
-  quickChipText: {
-    fontSize: 13,
+  filterDropdownText: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.textSecondary,
     fontWeight: '600',
-    color: COLORS.textPrimary,
+  },
+  headerSearch: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: 10,
+    borderRadius: BORDER_RADIUS.full,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    minWidth: 260,
+  },
+  headerSearchText: {
+    ...TYPOGRAPHY.bodySmall,
+    color: COLORS.textMuted,
+    marginLeft: SPACING.sm,
+  },
+  communityBanner: {
+    marginTop: SPACING.xl,
+    backgroundColor: '#ECFDF5',
+    borderRadius: BORDER_RADIUS.xl,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    overflow: 'hidden',
+  },
+  communityBannerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING['3xl'],
+  },
+  communityBannerTextCol: {
+    flex: 1,
+    zIndex: 1,
+  },
+  communityBannerTitle: {
+    ...TYPOGRAPHY.h4,
+    color: '#064E3B',
+    marginBottom: SPACING.xs,
+    lineHeight: 26,
+  },
+  communityBannerSub: {
+    ...TYPOGRAPHY.caption,
+    fontWeight: '700',
+    color: '#047857',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  communityBannerIcon: {
+    position: 'absolute',
+    right: -10,
+    bottom: -15,
+    transform: [{ rotate: '-15deg' }, { scale: 2.5 }],
   },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 24,
+    gap: SPACING.lg,
+    marginBottom: SPACING['3xl'],
     width: '100%',
   },
   statCardDesktop: {
@@ -545,29 +694,36 @@ const styles = StyleSheet.create({
     ...SHADOWS.sm,
   },
   statContent: {
-    paddingVertical: 18,
-    paddingHorizontal: 12,
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    minHeight: 110,
+  },
+  statHeader: {
+    marginBottom: SPACING.sm,
+  },
+  statIconWrapper: {
+    width: 32,
+    height: 32,
+    borderRadius: BORDER_RADIUS.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 90,
   },
   statCount: {
-    fontSize: 26,
-    fontWeight: '800',
-    marginBottom: 4,
-    textAlign: 'center',
-    letterSpacing: -0.5,
+    ...TYPOGRAPHY.h2,
+    marginBottom: 2,
+    textAlign: 'left',
   },
   statLabel: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
+    ...TYPOGRAPHY.caption,
     fontWeight: '600',
-    textAlign: 'center',
-    lineHeight: 16,
+    color: COLORS.textSecondary,
+    textAlign: 'left',
     ...(Platform.OS === 'web' ? ({
       wordBreak: 'normal',
       overflowWrap: 'normal',
-      whiteSpace: 'normal',
+      whiteSpace: 'nowrap',
     } as any) : {}),
   },
   emptyCard: {
@@ -577,20 +733,18 @@ const styles = StyleSheet.create({
     borderColor: COLORS.borderStrong,
   },
   emptyContent: {
-    padding: 32,
+    padding: SPACING['4xl'],
     alignItems: 'center',
   },
   emptyTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    ...TYPOGRAPHY.h4,
     color: COLORS.textPrimary,
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: SPACING.xl,
+    marginBottom: SPACING.sm,
   },
   emptySub: {
-    fontSize: 14,
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
     textAlign: 'center',
-    lineHeight: 20,
   },
 });

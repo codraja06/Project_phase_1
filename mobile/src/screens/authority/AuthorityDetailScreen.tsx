@@ -11,11 +11,16 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
+import Animated, { FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthorityStackParamList } from '../../types/navigation';
 import { authorityApi } from '../../api/authorityApi';
 import { Complaint } from '../../types/complaint';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../../constants/theme';
+import { COLORS } from '../../theme/colors';
+import { BORDER_RADIUS } from '../../theme/radius';
+import { SHADOWS } from '../../theme/index';
+import { SPACING } from '../../theme/spacing';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { DetectionOverlay } from '../../components/DetectionOverlay';
 import { ConfirmationDialog } from '../../components/ConfirmationDialog';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -146,157 +151,179 @@ export const AuthorityDetailScreen: React.FC<Props> = ({ route, navigation }) =>
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
-      <View style={styles.headerBar}>
+      <Animated.View entering={FadeInDown.duration(400)} style={styles.headerBar}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Incident Dossier</Text>
         <Badge label={complaint.status.toUpperCase()} variant={isResolved ? 'success' : isInProgress ? 'default' : 'warning'} />
-      </View>
+      </Animated.View>
 
-      <ScrollView style={styles.container} contentContainerStyle={isDesktop ? styles.desktopScrollContent : styles.scrollContent} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#38BDF8']} />}>
+      <ScrollView style={styles.container} contentContainerStyle={isDesktop ? styles.desktopScrollContent : styles.scrollContent} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />}>
         {isDesktop ? (
           <View style={styles.desktopContainer}>
             {/* Left Column */}
             <View style={styles.desktopLeftCol}>
-              <DetectionOverlay imageUri={complaint.imageUrl} detections={complaint.boundingBoxes || []} confidence={complaint.aiConfidence} height={380} />
+              <Animated.View entering={ZoomIn.delay(100)}>
+                <DetectionOverlay imageUri={complaint.imageUrl} detections={complaint.boundingBoxes || []} confidence={complaint.aiConfidence} height={380} />
+              </Animated.View>
               
-              <Card style={{ marginTop: 16 }}>
-                <CardContent>
-                  <View style={styles.metaHeaderRow}><Ionicons name="person-circle" size={20} color={COLORS.accent} /><Text style={styles.metaCardTitle}> Reporting Citizen</Text></View>
-                  <Text style={styles.citizenNameText}>{citizenName}</Text>
-                  {citizenEmail && <Text style={styles.citizenEmailText}>✉ {citizenEmail}</Text>}
-                  {citizenPhone && <Text style={styles.citizenPhoneText}>📞 {citizenPhone}</Text>}
-                </CardContent>
-              </Card>
+              <Animated.View entering={FadeInUp.delay(200)}>
+                <Card style={{ marginTop: SPACING.lg }}>
+                  <CardContent>
+                    <View style={styles.metaHeaderRow}><Ionicons name="person-circle" size={20} color={COLORS.secondary} /><Text style={styles.metaCardTitle}> Reporting Citizen</Text></View>
+                    <Text style={styles.citizenNameText}>{citizenName}</Text>
+                    {citizenEmail && <Text style={styles.citizenEmailText}>✉ {citizenEmail}</Text>}
+                    {citizenPhone && <Text style={styles.citizenPhoneText}>📞 {citizenPhone}</Text>}
+                  </CardContent>
+                </Card>
+              </Animated.View>
 
-              <Card style={{ marginTop: 16 }}>
-                <CardContent>
-                  <View style={styles.metaHeaderRow}><Ionicons name="location" size={20} color={COLORS.primary} /><Text style={styles.metaCardTitle}> Geographic Verification</Text></View>
-                  <Text style={styles.locationText}>{complaint.address || 'Address registered with device GPS sensor'}</Text>
-                  {complaint.latitude && complaint.longitude && <Text style={styles.coordsText}>Lat: {complaint.latitude.toFixed(5)}, Long: {complaint.longitude.toFixed(5)}</Text>}
-                </CardContent>
-              </Card>
+              <Animated.View entering={FadeInUp.delay(300)}>
+                <Card style={{ marginTop: SPACING.lg }}>
+                  <CardContent>
+                    <View style={styles.metaHeaderRow}><Ionicons name="location" size={20} color={COLORS.primary} /><Text style={styles.metaCardTitle}> Geographic Verification</Text></View>
+                    <Text style={styles.locationText}>{complaint.address || 'Address registered with device GPS sensor'}</Text>
+                    {complaint.latitude && complaint.longitude && <Text style={styles.coordsText}>Lat: {complaint.latitude.toFixed(5)}, Long: {complaint.longitude.toFixed(5)}</Text>}
+                  </CardContent>
+                </Card>
+              </Animated.View>
 
-              <Card style={{ marginTop: 16 }}>
-                <CardContent>
-                  <View style={styles.metaHeaderRow}><Ionicons name="git-network-outline" size={18} color={COLORS.textSecondary} /><Text style={styles.metaCardTitle}> Resolution Progress</Text></View>
-                  <ComplaintStatusTimeline status={complaint.status} createdAt={complaint.createdAt} updatedAt={complaint.updatedAt} resolvedAt={complaint.resolvedAt} />
-                </CardContent>
-              </Card>
+              <Animated.View entering={FadeInUp.delay(400)}>
+                <Card style={{ marginTop: SPACING.lg }}>
+                  <CardContent>
+                    <View style={styles.metaHeaderRow}><Ionicons name="git-network-outline" size={18} color={COLORS.textSecondary} /><Text style={styles.metaCardTitle}> Resolution Progress</Text></View>
+                    <ComplaintStatusTimeline status={complaint.status} createdAt={complaint.createdAt} updatedAt={complaint.updatedAt} resolvedAt={complaint.resolvedAt} />
+                  </CardContent>
+                </Card>
+              </Animated.View>
             </View>
 
             {/* Right Column */}
             <View style={styles.desktopRightCol}>
-              <View style={styles.topBadgeRow}>
-                <Text style={styles.complaintCode}>{complaintCode}</Text>
-                <Badge label={`${priority.toUpperCase()} PRIORITY`} variant={(priority === 'urgent' || priority === 'high') ? 'destructive' : 'secondary'} />
-                <Badge label={isVerified ? 'VERIFIED' : 'UNVERIFIED'} variant={isVerified ? 'success' : 'warning'} icon={<Ionicons name={isVerified ? "shield-checkmark" : "shield-outline"} size={10} color="#FFF" />} />
-                <Text style={styles.dateText}>Reported {formattedDate}</Text>
-              </View>
+              <Animated.View entering={FadeInUp.delay(100)}>
+                <View style={styles.topBadgeRow}>
+                  <Text style={styles.complaintCode}>{complaintCode}</Text>
+                  <Badge label={`${priority.toUpperCase()} PRIORITY`} variant={(priority === 'urgent' || priority === 'high') ? 'destructive' : 'secondary'} />
+                  <Badge label={isVerified ? 'VERIFIED' : 'UNVERIFIED'} variant={isVerified ? 'success' : 'warning'} icon={<Ionicons name={isVerified ? "shield-checkmark" : "shield-outline"} size={10} color="#FFF" />} />
+                  <Text style={styles.dateText}>Reported {formattedDate}</Text>
+                </View>
 
-              <Text style={styles.title}>{complaint.title}</Text>
+                <Text style={styles.title}>{complaint.title}</Text>
+              </Animated.View>
 
-              <Card style={{ marginBottom: 16, backgroundColor: '#F8FAFC' }}>
-                <CardContent style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.compareLabel}>AI PREDICTED</Text>
-                    <Text style={styles.compareVal}>{aiLabel}</Text>
-                    <Text style={styles.compareSub}>{complaint.aiConfidence ? `${Math.round(complaint.aiConfidence * 100)}% Confidence` : 'YOLOv8'}</Text>
-                  </View>
-                  <View style={{ width: 1, backgroundColor: COLORS.borderLight, marginHorizontal: 16 }} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.compareLabel}>CITIZEN REPORTED</Text>
-                    <Text style={styles.compareVal}>{citizenCategoryLabel}</Text>
-                    <Text style={styles.compareSub}>{complaint.customCategory ? 'Custom' : 'Standard'}</Text>
-                  </View>
-                </CardContent>
-              </Card>
+              <Animated.View entering={FadeInUp.delay(200)}>
+                <Card style={{ marginBottom: SPACING.lg, backgroundColor: COLORS.surface }}>
+                  <CardContent style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.compareLabel}>AI PREDICTED</Text>
+                      <Text style={styles.compareVal}>{aiLabel}</Text>
+                      <Text style={styles.compareSub}>{complaint.aiConfidence ? `${Math.round(complaint.aiConfidence * 100)}% Confidence` : 'YOLOv8'}</Text>
+                    </View>
+                    <View style={{ width: 1, backgroundColor: COLORS.borderLight, marginHorizontal: SPACING.lg }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.compareLabel}>CITIZEN REPORTED</Text>
+                      <Text style={styles.compareVal}>{citizenCategoryLabel}</Text>
+                      <Text style={styles.compareSub}>{complaint.customCategory ? 'Custom' : 'Standard'}</Text>
+                    </View>
+                  </CardContent>
+                </Card>
+              </Animated.View>
 
-              <View style={styles.descBlock}>
+              <Animated.View entering={FadeInUp.delay(300)} style={styles.descBlock}>
                 <Text style={styles.descLabel}>NARRATIVE</Text>
                 <Text style={styles.descriptionText}>{complaint.description || 'No description provided.'}</Text>
-              </View>
+              </Animated.View>
 
-              <View style={styles.actionsSection}>
+              <Animated.View entering={FadeInUp.delay(400)} style={styles.actionsSection}>
                 <Text style={styles.actionsSectionHeader}>MUNICIPAL ACTION PIPELINE</Text>
                 {!isVerified && <Button title="Verify Incident" onPress={handleVerifyComplaint} variant="secondary" size="lg" loading={actionLoading} style={styles.actionBtn} />}
                 {!isInProgress && !isResolved && <Button title="Mark In Progress" onPress={() => setProgressModalVisible(true)} variant="default" size="lg" loading={actionLoading} style={styles.actionBtn} />}
                 {isInProgress && <Button title="Mark Resolved" onPress={() => setResolveModalVisible(true)} variant="default" size="lg" loading={actionLoading} style={styles.actionBtn} />}
                 {isResolved && <Button title="Resolved ✓" onPress={() => {}} variant="outline" size="lg" disabled style={styles.actionBtn} />}
-                <Button title="Purge Record" onPress={() => setDeleteModalVisible(true)} variant="destructive" style={{ marginTop: 12 }} />
-              </View>
+                <Button title="Purge Record" onPress={() => setDeleteModalVisible(true)} variant="destructive" style={{ marginTop: SPACING.md }} />
+              </Animated.View>
             </View>
           </View>
         ) : (
           <View style={styles.mainWrapper}>
-            <DetectionOverlay imageUri={complaint.imageUrl} detections={complaint.boundingBoxes || []} confidence={complaint.aiConfidence} height={270} />
+            <Animated.View entering={ZoomIn.delay(100)}>
+              <DetectionOverlay imageUri={complaint.imageUrl} detections={complaint.boundingBoxes || []} confidence={complaint.aiConfidence} height={270} />
+            </Animated.View>
             
             <View style={styles.mobileContentPadding}>
-              <View style={styles.topBadgeRowMobile}>
-                <Text style={styles.complaintCode}>{complaintCode}</Text>
-                <Badge label={`${priority.toUpperCase()}`} variant={(priority === 'urgent' || priority === 'high') ? 'destructive' : 'secondary'} />
-                <Badge label={isVerified ? 'VERIFIED' : 'UNVERIFIED'} variant={isVerified ? 'success' : 'warning'} />
-              </View>
+              <Animated.View entering={FadeInUp.delay(200)}>
+                <View style={styles.topBadgeRowMobile}>
+                  <Text style={styles.complaintCode}>{complaintCode}</Text>
+                  <Badge label={`${priority.toUpperCase()}`} variant={(priority === 'urgent' || priority === 'high') ? 'destructive' : 'secondary'} />
+                  <Badge label={isVerified ? 'VERIFIED' : 'UNVERIFIED'} variant={isVerified ? 'success' : 'warning'} />
+                </View>
 
-              <Text style={styles.title}>{complaint.title}</Text>
+                <Text style={styles.title}>{complaint.title}</Text>
+              </Animated.View>
               
-              <Card style={{ marginBottom: 16, backgroundColor: '#F8FAFC' }}>
-                <CardContent style={{ flexDirection: 'row', justifyContent: 'space-between', padding: 12 }}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.compareLabel}>AI PREDICTED</Text>
-                    <Text style={styles.compareVal}>{aiLabel}</Text>
+              <Animated.View entering={FadeInUp.delay(300)}>
+                <Card style={{ marginBottom: SPACING.lg, backgroundColor: COLORS.surface }}>
+                  <CardContent style={{ flexDirection: 'row', justifyContent: 'space-between', padding: SPACING.md }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.compareLabel}>AI PREDICTED</Text>
+                      <Text style={styles.compareVal}>{aiLabel}</Text>
+                    </View>
+                    <View style={{ width: 1, backgroundColor: COLORS.borderLight, marginHorizontal: SPACING.sm }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.compareLabel}>CITIZEN REPORTED</Text>
+                      <Text style={styles.compareVal}>{citizenCategoryLabel}</Text>
+                    </View>
+                  </CardContent>
+                </Card>
+              </Animated.View>
+
+              <Animated.View entering={FadeInUp.delay(400)}>
+                <View style={styles.infoRow}>
+                  <Ionicons name="person-outline" size={16} color={COLORS.secondary} style={{ marginRight: SPACING.sm, marginTop: 2 }} />
+                  <View>
+                    <Text style={styles.infoLabel}>Citizen Contact</Text>
+                    <Text style={styles.infoValue}>{citizenName}</Text>
+                    {citizenEmail && <Text style={styles.infoSubValue}>{citizenEmail}</Text>}
                   </View>
-                  <View style={{ width: 1, backgroundColor: COLORS.borderLight, marginHorizontal: 8 }} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.compareLabel}>CITIZEN REPORTED</Text>
-                    <Text style={styles.compareVal}>{citizenCategoryLabel}</Text>
+                </View>
+
+                <View style={styles.infoRow}>
+                  <Ionicons name="location-outline" size={16} color={COLORS.primary} style={{ marginRight: SPACING.sm, marginTop: 2 }} />
+                  <View>
+                    <Text style={styles.infoLabel}>Location</Text>
+                    <Text style={styles.infoValue}>{complaint.address || 'GPS coordinates logged'}</Text>
                   </View>
-                </CardContent>
-              </Card>
-
-              <View style={styles.infoRow}>
-                <Ionicons name="person-outline" size={16} color={COLORS.accent} style={{ marginRight: 8, marginTop: 2 }} />
-                <View>
-                  <Text style={styles.infoLabel}>Citizen Contact</Text>
-                  <Text style={styles.infoValue}>{citizenName}</Text>
-                  {citizenEmail && <Text style={styles.infoSubValue}>{citizenEmail}</Text>}
                 </View>
-              </View>
 
-              <View style={styles.infoRow}>
-                <Ionicons name="location-outline" size={16} color={COLORS.primary} style={{ marginRight: 8, marginTop: 2 }} />
-                <View>
-                  <Text style={styles.infoLabel}>Location</Text>
-                  <Text style={styles.infoValue}>{complaint.address || 'GPS coordinates logged'}</Text>
+                <View style={styles.infoRow}>
+                  <Ionicons name="document-text-outline" size={16} color={COLORS.textSecondary} style={{ marginRight: SPACING.sm, marginTop: 2 }} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.infoLabel}>Description</Text>
+                    <Text style={styles.infoValue} numberOfLines={expandedDesc ? undefined : 3}>{complaint.description || 'No description provided.'}</Text>
+                    {complaint.description && complaint.description.length > 80 && (
+                      <TouchableOpacity onPress={() => setExpandedDesc(!expandedDesc)}><Text style={styles.readMoreText}>{expandedDesc ? 'Show Less' : 'Read More'}</Text></TouchableOpacity>
+                    )}
+                  </View>
                 </View>
-              </View>
+              </Animated.View>
 
-              <View style={styles.infoRow}>
-                <Ionicons name="document-text-outline" size={16} color={COLORS.textSecondary} style={{ marginRight: 8, marginTop: 2 }} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.infoLabel}>Description</Text>
-                  <Text style={styles.infoValue} numberOfLines={expandedDesc ? undefined : 3}>{complaint.description || 'No description provided.'}</Text>
-                  {complaint.description && complaint.description.length > 80 && (
-                    <TouchableOpacity onPress={() => setExpandedDesc(!expandedDesc)}><Text style={styles.readMoreText}>{expandedDesc ? 'Show Less' : 'Read More'}</Text></TouchableOpacity>
-                  )}
-                </View>
-              </View>
+              <Animated.View entering={FadeInUp.delay(500)}>
+                <Card style={{ marginTop: SPACING.lg }}>
+                  <CardContent>
+                    <Text style={styles.metaCardTitle}>Resolution Pipeline</Text>
+                    <ComplaintStatusTimeline status={complaint.status} createdAt={complaint.createdAt} updatedAt={complaint.updatedAt} resolvedAt={complaint.resolvedAt} />
+                  </CardContent>
+                </Card>
+              </Animated.View>
 
-              <Card style={{ marginTop: 16 }}>
-                <CardContent>
-                  <Text style={styles.metaCardTitle}>Resolution Pipeline</Text>
-                  <ComplaintStatusTimeline status={complaint.status} createdAt={complaint.createdAt} updatedAt={complaint.updatedAt} resolvedAt={complaint.resolvedAt} />
-                </CardContent>
-              </Card>
-
-              <View style={styles.actionsSection}>
+              <Animated.View entering={FadeInUp.delay(600)} style={styles.actionsSection}>
                 {!isVerified && <Button title="Verify Incident" onPress={handleVerifyComplaint} variant="secondary" size="lg" loading={actionLoading} style={styles.actionBtn} />}
                 {!isInProgress && !isResolved && <Button title="Mark In Progress" onPress={() => setProgressModalVisible(true)} variant="default" size="lg" loading={actionLoading} style={styles.actionBtn} />}
                 {isInProgress && <Button title="Mark Resolved" onPress={() => setResolveModalVisible(true)} variant="default" size="lg" loading={actionLoading} style={styles.actionBtn} />}
                 {isResolved && <Button title="Resolved ✓" onPress={() => {}} variant="outline" size="lg" disabled style={styles.actionBtn} />}
-                <Button title="Purge Record" onPress={() => setDeleteModalVisible(true)} variant="destructive" style={{ marginTop: 12 }} />
-              </View>
+                <Button title="Purge Record" onPress={() => setDeleteModalVisible(true)} variant="destructive" style={{ marginTop: SPACING.md }} />
+              </Animated.View>
             </View>
           </View>
         )}
@@ -313,41 +340,41 @@ export const AuthorityDetailScreen: React.FC<Props> = ({ route, navigation }) =>
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#0F172A' },
-  headerBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 14, backgroundColor: '#0F172A' },
-  backBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', marginRight: 12 },
-  headerTitle: { fontSize: 18, fontWeight: '800', color: '#FFFFFF', flex: 1 },
-  container: { flex: 1, backgroundColor: '#F8FAFC' },
-  scrollContent: { paddingBottom: 40 },
-  desktopScrollContent: { padding: 40, maxWidth: 1100, alignSelf: 'center', width: '100%' },
-  desktopContainer: { flexDirection: 'row', gap: 32 },
+  headerBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING.lg, paddingTop: 10, paddingBottom: 14, backgroundColor: '#0F172A' },
+  backBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', marginRight: SPACING.md },
+  headerTitle: { ...TYPOGRAPHY.h3, color: '#FFFFFF', flex: 1 },
+  container: { flex: 1, backgroundColor: COLORS.backgroundNeutral },
+  scrollContent: { paddingBottom: SPACING['5xl'] },
+  desktopScrollContent: { padding: SPACING['5xl'], maxWidth: 1100, alignSelf: 'center', width: '100%' },
+  desktopContainer: { flexDirection: 'row', gap: SPACING['4xl'] },
   desktopLeftCol: { flex: 1 },
   desktopRightCol: { flex: 1.2 },
   mainWrapper: { width: '100%', alignSelf: 'center' },
-  mobileContentPadding: { padding: 16 },
-  metaHeaderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  metaCardTitle: { fontSize: 13, fontWeight: '800', color: COLORS.textSecondary },
-  citizenNameText: { fontSize: 16, fontWeight: '700', color: COLORS.textPrimary },
-  citizenEmailText: { fontSize: 13, color: COLORS.textSecondary, marginTop: 4 },
-  citizenPhoneText: { fontSize: 13, color: COLORS.textSecondary, marginTop: 2 },
-  locationText: { fontSize: 14, color: COLORS.textPrimary, lineHeight: 20 },
-  coordsText: { fontSize: 12, color: COLORS.textMuted, marginTop: 4 },
-  topBadgeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16, flexWrap: 'wrap' },
-  topBadgeRowMobile: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12, marginTop: 12, flexWrap: 'wrap' },
-  complaintCode: { fontSize: 14, fontWeight: '800', color: COLORS.textPrimary, marginRight: 4 },
-  dateText: { fontSize: 12, color: COLORS.textMuted, marginLeft: 'auto' },
-  title: { fontSize: 24, fontWeight: '800', color: COLORS.textPrimary, marginBottom: 20, letterSpacing: -0.5 },
-  compareLabel: { fontSize: 10, fontWeight: '800', color: COLORS.textMuted, marginBottom: 4 },
-  compareVal: { fontSize: 15, fontWeight: '800', color: COLORS.textPrimary, marginBottom: 2 },
-  compareSub: { fontSize: 12, color: COLORS.textSecondary },
-  descBlock: { marginBottom: 24 },
-  descLabel: { fontSize: 11, fontWeight: '800', color: COLORS.textSecondary, marginBottom: 8 },
-  descriptionText: { fontSize: 15, lineHeight: 24, color: COLORS.textPrimary },
-  infoRow: { flexDirection: 'row', marginBottom: 16 },
-  infoLabel: { fontSize: 11, fontWeight: '800', color: COLORS.textMuted, marginBottom: 2 },
-  infoValue: { fontSize: 14, color: COLORS.textPrimary, fontWeight: '500' },
-  infoSubValue: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
-  readMoreText: { fontSize: 12, fontWeight: '700', color: COLORS.primary, marginTop: 4 },
-  actionsSection: { marginTop: 24, padding: 20, backgroundColor: '#FFFFFF', borderRadius: BORDER_RADIUS.md, borderWidth: 1, borderColor: COLORS.borderLight, ...SHADOWS.sm },
-  actionsSectionHeader: { fontSize: 12, fontWeight: '800', color: COLORS.textSecondary, marginBottom: 16, textAlign: 'center' },
-  actionBtn: { marginBottom: 12 },
+  mobileContentPadding: { padding: SPACING.lg },
+  metaHeaderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.md },
+  metaCardTitle: { ...TYPOGRAPHY.bodySmall, fontWeight: '800', color: COLORS.textSecondary },
+  citizenNameText: { ...TYPOGRAPHY.h4, color: COLORS.textPrimary },
+  citizenEmailText: { ...TYPOGRAPHY.bodySmall, color: COLORS.textSecondary, marginTop: 4 },
+  citizenPhoneText: { ...TYPOGRAPHY.bodySmall, color: COLORS.textSecondary, marginTop: 2 },
+  locationText: { ...TYPOGRAPHY.bodySmall, color: COLORS.textPrimary, lineHeight: 20 },
+  coordsText: { ...TYPOGRAPHY.caption, color: COLORS.textMuted, marginTop: 4 },
+  topBadgeRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.lg, flexWrap: 'wrap' },
+  topBadgeRowMobile: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs, marginBottom: SPACING.md, marginTop: SPACING.md, flexWrap: 'wrap' },
+  complaintCode: { ...TYPOGRAPHY.bodySmall, fontWeight: '800', color: COLORS.textPrimary, marginRight: 4 },
+  dateText: { ...TYPOGRAPHY.caption, color: COLORS.textMuted, marginLeft: 'auto' },
+  title: { ...TYPOGRAPHY.h2, color: COLORS.textPrimary, marginBottom: SPACING.xl, letterSpacing: -0.5 },
+  compareLabel: { ...TYPOGRAPHY.caption, fontWeight: '800', color: COLORS.textMuted, marginBottom: 4 },
+  compareVal: { ...TYPOGRAPHY.bodyBold, color: COLORS.textPrimary, marginBottom: 2 },
+  compareSub: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary },
+  descBlock: { marginBottom: SPACING['3xl'] },
+  descLabel: { ...TYPOGRAPHY.caption, fontWeight: '800', color: COLORS.textSecondary, marginBottom: SPACING.sm },
+  descriptionText: { ...TYPOGRAPHY.bodySmall, lineHeight: 24, color: COLORS.textPrimary },
+  infoRow: { flexDirection: 'row', marginBottom: SPACING.lg },
+  infoLabel: { ...TYPOGRAPHY.caption, fontWeight: '800', color: COLORS.textMuted, marginBottom: 2 },
+  infoValue: { ...TYPOGRAPHY.bodySmall, color: COLORS.textPrimary, fontWeight: '500' },
+  infoSubValue: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginTop: 2 },
+  readMoreText: { ...TYPOGRAPHY.caption, fontWeight: '700', color: COLORS.primary, marginTop: 4 },
+  actionsSection: { marginTop: SPACING['3xl'], padding: SPACING.xl, backgroundColor: COLORS.surface, borderRadius: BORDER_RADIUS.md, borderWidth: 1, borderColor: COLORS.borderLight, ...SHADOWS.sm },
+  actionsSectionHeader: { ...TYPOGRAPHY.caption, fontWeight: '800', color: COLORS.textSecondary, marginBottom: SPACING.lg, textAlign: 'center' },
+  actionBtn: { marginBottom: SPACING.md },
 });

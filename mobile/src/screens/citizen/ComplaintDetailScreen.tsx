@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,11 +11,16 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
+import Animated, { FadeIn, FadeInDown, FadeInUp, SlideInRight } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { CitizenStackParamList } from '../../types/navigation';
 import { complaintApi } from '../../api/complaintApi';
 import { Complaint } from '../../types/complaint';
-import { COLORS, BORDER_RADIUS, SHADOWS } from '../../constants/theme';
+import { COLORS } from '../../theme/colors';
+import { BORDER_RADIUS } from '../../theme/radius';
+import { SHADOWS } from '../../theme/index';
+import { SPACING } from '../../theme/spacing';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { DetectionOverlay } from '../../components/DetectionOverlay';
 import { Timeline } from '../../components/Timeline';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -70,10 +75,10 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Complaint Details</Text>
         </View>
-        <View style={styles.errorContainer}>
+        <Animated.View entering={FadeIn} style={styles.errorContainer}>
           <Ionicons name="alert-circle-outline" size={48} color={COLORS.error} />
           <Text style={styles.errorText}>Complaint record not found</Text>
-        </View>
+        </Animated.View>
       </SafeAreaView>
     );
   }
@@ -92,10 +97,10 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
       {/* Screen Header */}
-      <View style={styles.headerBar}>
+      <Animated.View entering={FadeInDown.duration(400)} style={styles.headerBar}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => navigation.goBack()}
@@ -107,7 +112,7 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
         <View style={styles.headerRightBadges}>
           <StatusBadge status={complaint.status} size="sm" />
         </View>
-      </View>
+      </Animated.View>
 
       <ScrollView
         style={styles.container}
@@ -126,17 +131,19 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
           <View style={styles.desktopContainer}>
             {/* Left Column: Visual Media & Geographic Pin */}
             <View style={styles.desktopLeftCol}>
-              <DetectionOverlay
-                imageUri={complaint.imageUrl}
-                detections={complaint.boundingBoxes || []}
-                confidence={complaint.aiConfidence}
-                height={380}
-              />
+              <Animated.View entering={FadeInUp.delay(100)}>
+                <DetectionOverlay
+                  imageUri={complaint.imageUrl}
+                  detections={complaint.boundingBoxes || []}
+                  confidence={complaint.aiConfidence}
+                  height={380}
+                />
+              </Animated.View>
 
               {/* Location Card */}
-              <View style={styles.metaCard}>
+              <Animated.View entering={FadeInUp.delay(200)} style={styles.metaCard}>
                 <View style={styles.locationHeaderRow}>
-                  <Ionicons name="location" size={20} color={COLORS.primary} style={{ marginRight: 8 }} />
+                  <Ionicons name="location" size={20} color={COLORS.primary} style={{ marginRight: SPACING.xs }} />
                   <Text style={styles.metaCardTitle}>Incident Location</Text>
                 </View>
                 <Text style={styles.locationText}>{complaint.address || 'Address logged via device GPS sensor'}</Text>
@@ -145,18 +152,18 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
                     GPS: {complaint.latitude.toFixed(5)}, {complaint.longitude.toFixed(5)}
                   </Text>
                 )}
-              </View>
+              </Animated.View>
             </View>
 
             {/* Right Column: Information Dossier & Status Timeline */}
             <View style={styles.desktopRightCol}>
               <View style={styles.infoCard}>
-                <View style={styles.codeDateRow}>
+                <Animated.View entering={FadeInUp.delay(100)} style={styles.codeDateRow}>
                   <Text style={styles.complaintCode}>{complaintCode}</Text>
 
                   {/* Priority Pill */}
                   <View style={[styles.priorityPill, isHighPriority ? styles.priorityHigh : styles.priorityNormal]}>
-                    <Ionicons name="flame" size={11} color={isHighPriority ? COLORS.error : COLORS.accentDark} style={{ marginRight: 3 }} />
+                    <Ionicons name="flame" size={11} color={isHighPriority ? COLORS.error : COLORS.primaryDark} style={{ marginRight: 3 }} />
                     <Text style={[styles.priorityPillText, isHighPriority ? styles.priorityHighText : styles.priorityNormalText]}>
                       {priority.toUpperCase()} PRIORITY
                     </Text>
@@ -176,12 +183,12 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
                   </View>
 
                   <Text style={styles.dateText}>{formattedDate}</Text>
-                </View>
+                </Animated.View>
 
-                <Text style={styles.title}>{complaint.title}</Text>
+                <Animated.Text entering={FadeInUp.delay(200)} style={styles.title}>{complaint.title}</Animated.Text>
 
                 {/* Tags Row */}
-                <View style={styles.tagRow}>
+                <Animated.View entering={FadeInUp.delay(300)} style={styles.tagRow}>
                   <View style={styles.categoryTag}>
                     <Ionicons name="construct-outline" size={14} color={COLORS.textSecondary} style={{ marginRight: 5 }} />
                     <Text style={styles.categoryTagText}>{categoryLabel}</Text>
@@ -195,24 +202,26 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
                       </Text>
                     </View>
                   )}
-                </View>
+                </Animated.View>
 
                 {/* Description */}
-                <View style={styles.descBlock}>
+                <Animated.View entering={FadeInUp.delay(400)} style={styles.descBlock}>
                   <Text style={styles.descLabel}>CITIZEN REPORT DETAILS</Text>
                   <Text style={styles.descriptionText}>
                     {complaint.description || 'No additional details provided with this report.'}
                   </Text>
-                </View>
+                </Animated.View>
 
                 {/* Live Status Timeline */}
-                <Timeline
-                  status={complaint.status}
-                  verified={complaint.verified}
-                  createdAt={complaint.createdAt}
-                  updatedAt={complaint.updatedAt}
-                  resolvedAt={complaint.resolvedAt}
-                />
+                <Animated.View entering={FadeInUp.delay(500)}>
+                  <Timeline
+                    status={complaint.status}
+                    verified={complaint.verified}
+                    createdAt={complaint.createdAt}
+                    updatedAt={complaint.updatedAt}
+                    resolvedAt={complaint.resolvedAt}
+                  />
+                </Animated.View>
               </View>
             </View>
           </View>
@@ -220,21 +229,23 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
           /* Mobile Stacked Layout */
           <View style={styles.mainWrapper}>
             {/* Issue Photo & YOLO Bounding Box Overlay */}
-            <DetectionOverlay
-              imageUri={complaint.imageUrl}
-              detections={complaint.boundingBoxes || []}
-              confidence={complaint.aiConfidence}
-              height={270}
-            />
+            <Animated.View entering={FadeInDown.delay(100)}>
+              <DetectionOverlay
+                imageUri={complaint.imageUrl}
+                detections={complaint.boundingBoxes || []}
+                confidence={complaint.aiConfidence}
+                height={270}
+              />
+            </Animated.View>
 
             {/* Details Card */}
             <View style={styles.infoCard}>
-              <View style={styles.codeDateRowMobile}>
+              <Animated.View entering={FadeInUp.delay(200)} style={styles.codeDateRowMobile}>
                 <Text style={styles.complaintCode}>{complaintCode}</Text>
                 
                 {/* Priority Pill */}
                 <View style={[styles.priorityPill, isHighPriority ? styles.priorityHigh : styles.priorityNormal]}>
-                  <Ionicons name="flame" size={10} color={isHighPriority ? COLORS.error : COLORS.accentDark} style={{ marginRight: 3 }} />
+                  <Ionicons name="flame" size={10} color={isHighPriority ? COLORS.error : COLORS.primaryDark} style={{ marginRight: 3 }} />
                   <Text style={[styles.priorityPillText, isHighPriority ? styles.priorityHighText : styles.priorityNormalText]}>
                     {priority.toUpperCase()}
                   </Text>
@@ -254,12 +265,12 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
                 </View>
 
                 <Text style={styles.dateText}>{formattedDate}</Text>
-              </View>
+              </Animated.View>
 
-              <Text style={styles.title}>{complaint.title}</Text>
+              <Animated.Text entering={FadeInUp.delay(300)} style={styles.title}>{complaint.title}</Animated.Text>
 
               {/* Tags */}
-              <View style={styles.tagRow}>
+              <Animated.View entering={FadeInUp.delay(400)} style={styles.tagRow}>
                 <View style={styles.categoryTag}>
                   <Ionicons name="construct-outline" size={14} color={COLORS.textSecondary} style={{ marginRight: 4 }} />
                   <Text style={styles.categoryTagText}>{categoryLabel}</Text>
@@ -273,18 +284,18 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
                     </Text>
                   </View>
                 )}
-              </View>
+              </Animated.View>
 
               {/* Location Row */}
-              <View style={styles.locationRow}>
-                <Ionicons name="location" size={18} color={COLORS.primary} style={{ marginRight: 8, marginTop: 1 }} />
+              <Animated.View entering={FadeInUp.delay(500)} style={styles.locationRow}>
+                <Ionicons name="location" size={18} color={COLORS.primary} style={{ marginRight: SPACING.xs, marginTop: 1 }} />
                 <Text style={styles.locationText} numberOfLines={2}>
                   {complaint.address || 'Address logged with GPS'}
                 </Text>
-              </View>
+              </Animated.View>
 
               {/* Description */}
-              <View style={styles.descBlock}>
+              <Animated.View entering={FadeInUp.delay(600)} style={styles.descBlock}>
                 <Text
                   style={styles.descriptionText}
                   numberOfLines={expandedDesc ? undefined : 3}
@@ -298,16 +309,18 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
                     </Text>
                   </TouchableOpacity>
                 )}
-              </View>
+              </Animated.View>
 
               {/* Live Status Timeline */}
-              <Timeline
-                status={complaint.status}
-                verified={complaint.verified}
-                createdAt={complaint.createdAt}
-                updatedAt={complaint.updatedAt}
-                resolvedAt={complaint.resolvedAt}
-              />
+              <Animated.View entering={FadeInUp.delay(700)}>
+                <Timeline
+                  status={complaint.status}
+                  verified={complaint.verified}
+                  createdAt={complaint.createdAt}
+                  updatedAt={complaint.updatedAt}
+                  resolvedAt={complaint.resolvedAt}
+                />
+              </Animated.View>
             </View>
           </View>
         )}
@@ -319,23 +332,23 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.background,
   },
   headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 14,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.sm,
+    paddingBottom: SPACING.md,
     borderBottomWidth: 1.5,
-    borderBottomColor: COLORS.border,
-    backgroundColor: '#FFFFFF',
+    borderBottomColor: COLORS.borderLight,
+    backgroundColor: COLORS.background,
   },
   headerRightBadges: {
     marginLeft: 'auto',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: SPACING.xs,
   },
   backBtn: {
     width: 38,
@@ -346,30 +359,28 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
-    marginRight: 12,
+    marginRight: SPACING.md,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+    ...TYPOGRAPHY.h3,
     color: COLORS.textPrimary,
-    letterSpacing: -0.2,
   },
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.background,
   },
   scrollContent: {
-    paddingHorizontal: 18,
-    paddingTop: 16,
-    paddingBottom: 40,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING['5xl'],
   },
   desktopScrollContent: {
-    padding: 36,
-    paddingBottom: 48,
+    padding: SPACING['4xl'],
+    paddingBottom: SPACING['6xl'],
   },
   desktopContainer: {
     flexDirection: 'row',
-    gap: 32,
+    gap: SPACING['4xl'],
     alignItems: 'flex-start',
     maxWidth: 1100,
     alignSelf: 'center',
@@ -384,33 +395,28 @@ const styles = StyleSheet.create({
   metaCard: {
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.lg,
-    padding: 16,
-    marginTop: 14,
+    padding: SPACING.lg,
+    marginTop: SPACING.md,
     borderWidth: 1.5,
-    borderColor: COLORS.border,
+    borderColor: COLORS.borderLight,
   },
   locationHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: SPACING.xs,
   },
   metaCardTitle: {
-    fontSize: 13,
-    fontWeight: '700',
+    ...TYPOGRAPHY.bodyBold,
     color: COLORS.textSecondary,
-    letterSpacing: 0.2,
   },
   locationText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.body,
     color: COLORS.textPrimary,
-    lineHeight: 20,
-    fontWeight: '500',
   },
   gpsCoordsText: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption,
     color: COLORS.textMuted,
-    fontWeight: '600',
-    marginTop: 4,
+    marginTop: SPACING.xs,
   },
   mainWrapper: {
     width: '100%',
@@ -418,24 +424,24 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   infoCard: {
-    marginTop: 16,
+    marginTop: SPACING.lg,
   },
   codeDateRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 10,
+    gap: SPACING.sm,
+    marginBottom: SPACING.md,
   },
   codeDateRowMobile: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: 6,
-    marginBottom: 8,
+    gap: SPACING.xs,
+    marginBottom: SPACING.sm,
   },
   complaintCode: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption,
     fontWeight: '800',
     color: COLORS.primary,
     backgroundColor: COLORS.primaryLight,
@@ -460,14 +466,13 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
   },
   priorityPillText: {
-    fontSize: 10,
-    fontWeight: '800',
+    ...TYPOGRAPHY.overline,
   },
   priorityHighText: {
     color: COLORS.error,
   },
   priorityNormalText: {
-    color: COLORS.accentDark,
+    color: COLORS.primaryDark,
   },
   verifyPill: {
     flexDirection: 'row',
@@ -486,28 +491,24 @@ const styles = StyleSheet.create({
     borderColor: COLORS.pendingBorder,
   },
   verifyPillText: {
-    fontSize: 10,
-    fontWeight: '800',
+    ...TYPOGRAPHY.overline,
   },
   dateText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption,
     color: COLORS.textMuted,
-    fontWeight: '500',
     marginLeft: 'auto',
   },
   title: {
-    fontSize: 24,
-    fontWeight: '800',
+    ...TYPOGRAPHY.h2,
     color: COLORS.textPrimary,
-    marginBottom: 12,
-    letterSpacing: -0.4,
+    marginBottom: SPACING.md,
   },
   tagRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 14,
+    gap: SPACING.sm,
+    marginBottom: SPACING.md,
   },
   categoryTag: {
     flexDirection: 'row',
@@ -520,7 +521,7 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.md,
   },
   categoryTagText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.bodySmall,
     fontWeight: '700',
     color: COLORS.textPrimary,
   },
@@ -535,57 +536,53 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.md,
   },
   confidenceTagText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.bodySmall,
     fontWeight: '700',
     color: COLORS.primary,
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 14,
+    marginBottom: SPACING.md,
     backgroundColor: COLORS.surface,
-    padding: 12,
+    padding: SPACING.md,
     borderRadius: BORDER_RADIUS.md,
     borderWidth: 1,
     borderColor: COLORS.borderLight,
   },
   descBlock: {
     backgroundColor: COLORS.surface,
-    padding: 16,
+    padding: SPACING.lg,
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 1.5,
     borderColor: COLORS.border,
-    marginBottom: 16,
+    marginBottom: SPACING.lg,
   },
   descLabel: {
-    fontSize: 10,
-    fontWeight: '800',
+    ...TYPOGRAPHY.overline,
     color: COLORS.textMuted,
-    letterSpacing: 0.6,
-    marginBottom: 6,
+    marginBottom: SPACING.xs,
   },
   descriptionText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.body,
     color: COLORS.textPrimary,
-    lineHeight: 21,
   },
   readMoreBtn: {
-    marginTop: 6,
+    marginTop: SPACING.xs,
   },
   readMoreText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.bodySmall,
     color: COLORS.primary,
     fontWeight: '700',
   },
   errorContainer: {
-    padding: 40,
+    padding: SPACING['5xl'],
     alignItems: 'center',
     justifyContent: 'center',
   },
   errorText: {
-    fontSize: 15,
+    ...TYPOGRAPHY.bodyBold,
     color: COLORS.error,
-    fontWeight: '600',
-    marginTop: 10,
+    marginTop: SPACING.md,
   },
 });

@@ -16,7 +16,7 @@ export const DetectionResultCard: React.FC<DetectionResultCardProps> = ({
   detectedClass,
 }) => {
   const hasDetections = detections && detections.length > 0;
-  const topClass = detectedClass || (hasDetections ? detections[0].className : 'No hazard identified');
+  const topClass = detectedClass || (hasDetections ? detections[0].category : 'No hazard identified');
   const formattedTitle = topClass.replace(/_/g, ' ').toUpperCase();
   const confidencePercent = Math.round(confidence * 100);
 

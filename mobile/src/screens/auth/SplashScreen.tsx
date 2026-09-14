@@ -1,8 +1,13 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, StatusBar, ActivityIndicator } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import Animated, { FadeIn, FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated';
 import { AuthStackParamList } from '../../types/navigation';
-import { COLORS } from '../../constants/theme';
+import { COLORS } from '../../theme/colors';
+import { TYPOGRAPHY } from '../../theme/typography';
+import { SPACING } from '../../theme/spacing';
+import { BORDER_RADIUS } from '../../theme/radius';
+import { SHADOWS } from '../../theme/index';
 import { CivicTrackLogo } from '../../components/CivicTrackLogo';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Splash'>;
@@ -11,7 +16,7 @@ export const SplashScreen: React.FC<Props> = ({ navigation }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       navigation.replace('CitizenLogin');
-    }, 1500);
+    }, 2500); // slightly longer for the animation to finish
 
     return () => clearTimeout(timer);
   }, [navigation]);
@@ -20,34 +25,41 @@ export const SplashScreen: React.FC<Props> = ({ navigation }) => {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
 
-      {/* Flag-Inspired Banded Background (Red - Yellow - Red proportions) */}
-      <View style={styles.topBand} />
-      <View style={styles.middleBand} />
-      <View style={styles.bottomBand} />
+      {/* Clean White Background for App Launch */}
 
       {/* Floating Center Brand Card */}
-      <View style={styles.contentCard}>
-        <View style={styles.logoBadgeContainer}>
+      <Animated.View 
+        entering={ZoomIn.springify().damping(15).stiffness(150).delay(600)} 
+        style={styles.contentCard}
+      >
+        <Animated.View entering={FadeInDown.delay(900)} style={styles.logoBadgeContainer}>
           <CivicTrackLogo size="lg" showText={false} />
-        </View>
+        </Animated.View>
 
-        <Text style={styles.appName}>CivicTrack</Text>
-        <View style={styles.badgePill}>
+        <Animated.Text entering={FadeInUp.delay(1000)} style={styles.appName}>
+          CivicTrack
+        </Animated.Text>
+        
+        <Animated.View entering={FadeInUp.delay(1100)} style={styles.badgePill}>
           <Text style={styles.badgePillText}>SMART CIVIC RESOLUTION</Text>
-        </View>
+        </Animated.View>
 
-        <Text style={styles.tagline}>Cleaner Cities • Brighter Tomorrows</Text>
+        <Animated.Text entering={FadeInUp.delay(1200)} style={styles.tagline}>
+          Cleaner Cities • Brighter Tomorrows
+        </Animated.Text>
 
-        <View style={styles.pillarsRow}>
+        <Animated.View entering={FadeInUp.delay(1300)} style={styles.pillarsRow}>
           <Text style={styles.pillarText}>REPORT</Text>
           <Text style={styles.pillarDot}>•</Text>
           <Text style={styles.pillarText}>DETECT</Text>
           <Text style={styles.pillarDot}>•</Text>
           <Text style={styles.pillarText}>RESOLVE</Text>
-        </View>
+        </Animated.View>
 
-        <ActivityIndicator size="small" color={COLORS.primary} style={{ marginTop: 24 }} />
-      </View>
+        <Animated.View entering={FadeIn.delay(1600)}>
+          <ActivityIndicator size="small" color={COLORS.primary} style={{ marginTop: SPACING['3xl'] }} />
+        </Animated.View>
+      </Animated.View>
     </View>
   );
 };
@@ -58,95 +70,59 @@ const styles = StyleSheet.create({
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  topBand: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '33.33%',
-    backgroundColor: COLORS.primary, // Deep Crimson Red
-  },
-  middleBand: {
-    position: 'absolute',
-    top: '33.33%',
-    left: 0,
-    right: 0,
-    height: '33.34%',
-    backgroundColor: COLORS.secondary, // Golden Yellow
-  },
-  bottomBand: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: '33.33%',
-    backgroundColor: COLORS.primary, // Deep Crimson Red
+    backgroundColor: COLORS.backgroundNeutral,
   },
   contentCard: {
     width: '88%',
     maxWidth: 380,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    paddingVertical: 36,
-    paddingHorizontal: 28,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.xl,
+    paddingVertical: SPACING['5xl'],
+    paddingHorizontal: SPACING['3xl'],
     alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 12,
-    borderWidth: 2,
-    borderColor: '#FEF08A',
+    ...SHADOWS.card,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
   },
   logoBadgeContainer: {
-    marginBottom: 8,
+    marginBottom: SPACING.lg,
   },
   appName: {
-    fontSize: 30,
-    fontWeight: '900',
-    color: COLORS.primary,
-    letterSpacing: -0.5,
-    marginTop: 10,
-    marginBottom: 6,
+    ...TYPOGRAPHY.display,
+    color: COLORS.textPrimary,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.xs,
   },
   badgePill: {
     backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.primarySurface,
-    marginBottom: 10,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.xs,
+    borderRadius: BORDER_RADIUS.full,
+    marginBottom: SPACING.xl,
   },
   badgePillText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: COLORS.primaryDark,
-    letterSpacing: 0.8,
+    ...TYPOGRAPHY.overline,
+    color: COLORS.primary,
   },
   tagline: {
-    fontSize: 14,
-    fontWeight: '600',
+    ...TYPOGRAPHY.body,
     color: COLORS.textSecondary,
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: SPACING.lg,
   },
   pillarsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: SPACING.xs,
   },
   pillarText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: COLORS.textPrimary,
-    letterSpacing: 0.6,
+    ...TYPOGRAPHY.overline,
+    color: COLORS.textMuted,
   },
   pillarDot: {
-    fontSize: 12,
-    color: COLORS.secondaryDark,
-    marginHorizontal: 8,
+    fontSize: 14,
+    color: COLORS.primaryLight,
+    marginHorizontal: SPACING.md,
     fontWeight: '900',
   },
 });

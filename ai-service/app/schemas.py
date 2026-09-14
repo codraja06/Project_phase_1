@@ -8,12 +8,13 @@ class BoundingBox(BaseModel):
     y2: float = Field(..., description="Bottom-right Y coordinate")
 
 class DetectionItem(BaseModel):
-    className: str = Field(..., description="Detected civic issue category")
+    category: str = Field(..., description="Detected civic issue category")
     confidence: float = Field(..., description="Detection confidence score between 0 and 1")
     bbox: BoundingBox
+    model: str = Field(..., description="Model that produced this detection")
 
 class PredictResponse(BaseModel):
-    success: bool = True
+    detected: bool = Field(..., description="Whether any issue was detected")
     message: Optional[str] = "Object detection executed successfully"
     detections: List[DetectionItem] = []
 

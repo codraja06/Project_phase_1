@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,8 +8,13 @@ import {
   TouchableOpacity,
   Platform,
 } from 'react-native';
+import Animated, { useAnimatedStyle, withTiming, interpolateColor } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, BORDER_RADIUS } from '../constants/theme';
+import { COLORS } from '../theme/colors';
+import { BORDER_RADIUS } from '../theme/radius';
+import { TYPOGRAPHY } from '../theme/typography';
+import { SPACING } from '../theme/spacing';
+import { useShakeError } from '../hooks/useAnimations';
 
 export interface InputProps extends TextInputProps {
   label?: string;
@@ -33,28 +38,37 @@ export const Input: React.FC<InputProps> = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const { shake, animatedStyle: shakeStyle } = useShakeError();
 
   const shouldSecure = isPassword || secureTextEntry;
   const isWeb = Platform.OS === 'web';
+
+  // Trigger shake animation when error appears
+  useEffect(() => {
+    if (error) {
+      shake();
+    }
+  }, [error, shake]);
 
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
 
-      <View
+      <Animated.View
         style={[
           styles.inputWrapper,
           isFocused && styles.inputFocused,
           Boolean(error) && styles.inputError,
           isFocused && isWeb && (styles.webFocusHalo as any),
           Boolean(error) && isWeb && (styles.webErrorHalo as any),
+          shakeStyle
         ]}
       >
         {leftIcon && (
           <Ionicons
             name={leftIcon}
-            size={19}
-            color={error ? COLORS.error : isFocused ? COLORS.primary : COLORS.slateMedium}
+            size={20}
+            color={error ? COLORS.error : isFocused ? COLORS.primary : COLORS.slateMuted}
             style={styles.leftIcon}
           />
         )}
@@ -94,15 +108,15 @@ export const Input: React.FC<InputProps> = ({
             <Ionicons
               name={showPassword ? 'eye-outline' : 'eye-off-outline'}
               size={20}
-              color={COLORS.slateMedium}
+              color={COLORS.slateMuted}
             />
           </TouchableOpacity>
         )}
-      </View>
+      </Animated.View>
 
       {error ? (
         <View style={styles.errorRow}>
-          <Ionicons name="alert-circle" size={14} color={COLORS.error} style={{ marginRight: 5 }} />
+          <Ionicons name="alert-circle" size={14} color={COLORS.error} style={{ marginRight: 6 }} />
           <Text style={styles.errorText}>{error}</Text>
         </View>
       ) : helperText ? (
@@ -118,53 +132,51 @@ export const PasswordInput: React.FC<Omit<InputProps, 'isPassword'>> = (props) =
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: SPACING.xl,
     width: '100%',
   },
   label: {
-    fontSize: 13,
-    fontWeight: '700',
+    ...TYPOGRAPHY.h4,
     color: COLORS.textPrimary,
-    marginBottom: 6,
-    letterSpacing: 0.1,
+    marginBottom: SPACING.sm,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
     borderWidth: 1.5,
     borderColor: COLORS.border,
     borderRadius: BORDER_RADIUS.md,
     minHeight: 48,
-    paddingHorizontal: 14,
+    paddingHorizontal: SPACING.md,
     position: 'relative',
     ...(Platform.OS === 'web' ? {
-      transition: 'all 0.18s ease-in-out' as any,
+      transition: 'all 0.2s ease' as any,
     } : {}),
   },
   inputFocused: {
-    borderColor: COLORS.secondary, // Golden Yellow focused border
+    borderColor: COLORS.primary,
     borderWidth: 2,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.surface,
   },
   inputError: {
     borderColor: COLORS.error,
-    backgroundColor: '#FFFBFB',
+    backgroundColor: COLORS.errorLight,
   },
   webFocusHalo: {
-    ...(Platform.OS === 'web' ? ({ boxShadow: '0 0 0 3.5px rgba(255, 193, 7, 0.28)' } as any) : {}),
+    ...(Platform.OS === 'web' ? ({ boxShadow: `0 0 0 3px ${COLORS.primaryGlow}` } as any) : {}),
   },
   webErrorHalo: {
-    ...(Platform.OS === 'web' ? ({ boxShadow: '0 0 0 3.5px rgba(220, 38, 38, 0.14)' } as any) : {}),
+    ...(Platform.OS === 'web' ? ({ boxShadow: `0 0 0 3px rgba(220, 38, 38, 0.14)` } as any) : {}),
   },
   leftIcon: {
-    marginRight: 10,
+    marginRight: SPACING.md,
+    marginLeft: SPACING.xs,
   },
   input: {
     flex: 1,
-    fontSize: 14,
-    color: COLORS.textPrimary,
-    paddingVertical: Platform.OS === 'ios' ? 12 : 8,
+    ...TYPOGRAPHY.input,
+    paddingVertical: Platform.OS === 'ios' ? 12 : 10,
     minHeight: 44,
   },
   rightIconBtn: {
@@ -177,16 +189,15 @@ const styles = StyleSheet.create({
   errorRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 5,
+    marginTop: SPACING.xs,
   },
   errorText: {
+    ...TYPOGRAPHY.caption,
     color: COLORS.error,
-    fontSize: 12,
     fontWeight: '600',
   },
   helperText: {
-    color: COLORS.textSecondary,
-    fontSize: 12,
-    marginTop: 5,
+    ...TYPOGRAPHY.caption,
+    marginTop: SPACING.xs,
   },
 });
