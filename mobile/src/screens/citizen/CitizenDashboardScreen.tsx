@@ -85,8 +85,8 @@ export const CitizenDashboardScreen = ({ navigation }: any) => {
   const statCardResponsiveStyle = isDesktop
     ? styles.statCardDesktop
     : width < 300
-    ? styles.statCardMobileFull
-    : styles.statCardGrid2;
+      ? styles.statCardMobileFull
+      : styles.statCardGrid2;
 
   const renderRightColContent = () => (
     <>
@@ -512,11 +512,15 @@ const styles = StyleSheet.create({
   },
   bentoActionRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: SPACING.lg,
     marginBottom: SPACING['3xl'],
   },
   bentoCard: {
-    flex: 1,
+    flexBasis: Platform.OS === 'web' ? ('calc(33.33% - 16px)' as any) : '30%',
+    flexGrow: 1,
+    flexShrink: 0,
+    minWidth: 100,
     backgroundColor: 'rgba(255, 255, 255, 0.8)', // Glass effect
   },
   bentoContent: {

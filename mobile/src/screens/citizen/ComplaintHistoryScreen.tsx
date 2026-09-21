@@ -26,7 +26,7 @@ import { FilterChipGroup } from '../../components/FilterChip';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 
 export const ComplaintHistoryScreen = ({ navigation, route }: any) => {
-  const { isDesktop } = useBreakpoint();
+  const { isDesktop, isWide } = useBreakpoint();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -126,8 +126,8 @@ export const ComplaintHistoryScreen = ({ navigation, route }: any) => {
     </Animated.View>
   );
 
-  // ─── Desktop Layout: wide container + two-column card grid ───────────────
-  if (isDesktop) {
+  // ─── Desktop/Tablet Layout: wide container + two-column card grid ───────────────
+  if (isWide) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />

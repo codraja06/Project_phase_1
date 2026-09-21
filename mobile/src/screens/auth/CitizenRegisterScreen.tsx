@@ -33,7 +33,7 @@ type Props = NativeStackScreenProps<AuthStackParamList, 'CitizenRegister'>;
 
 export const CitizenRegisterScreen: React.FC<Props> = ({ navigation }) => {
   const { register } = useAuth();
-  const { isDesktop } = useBreakpoint();
+  const { isDesktop, isWide } = useBreakpoint();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -80,7 +80,7 @@ export const CitizenRegisterScreen: React.FC<Props> = ({ navigation }) => {
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        {isDesktop ? (
+        {isWide ? (
           <View style={styles.desktopContainer}>
             {/* Left Branding Side */}
             <View style={styles.brandingSide}>

@@ -13,8 +13,8 @@ const router = Router();
 
 router.use(authenticate);
 
-router.post('/', authorizeRoles('citizen'), createComplaint);
-router.get('/my', authorizeRoles('citizen'), getMyComplaints);
+router.post('/', authorizeRoles('citizen', 'authority'), createComplaint);
+router.get('/my', authorizeRoles('citizen', 'authority'), getMyComplaints);
 router.get('/:id', getComplaintById);
 router.patch('/:id/status', authorizeRoles('authority'), updateComplaintStatus);
 

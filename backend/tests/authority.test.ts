@@ -90,6 +90,8 @@ describe('Authority API Endpoints & Role Guard', () => {
   });
 
   it('should reject invalid status transition from Pending directly to Resolved', async () => {
+    await Complaint.findByIdAndUpdate(complaintId, { status: 'Pending' });
+
     const res = await request(app)
       .patch(`/api/authority/complaints/${complaintId}/status`)
       .set('Authorization', `Bearer ${authorityToken}`)

@@ -23,6 +23,8 @@ export const CATEGORY_OPTIONS: CategoryItem[] = [
   { key: 'broken_streetlight', label: 'Broken Streetlight', icon: 'bulb-outline' },
   { key: 'drainage_problem', label: 'Drainage Problem', icon: 'water-outline' },
   { key: 'water_leakage', label: 'Water Leakage', icon: 'rainy-outline' },
+  { key: 'dead_animal', label: 'Dead Animal', icon: 'paw-outline' },
+  { key: 'broken_tree', label: 'Fallen / Broken Tree', icon: 'leaf-outline' },
   { key: 'other', label: 'Other Issue', icon: 'help-circle-outline' },
 ];
 

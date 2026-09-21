@@ -36,6 +36,10 @@ export const getDefaultDescription = (category: string, address?: string): strin
       return `A drainage problem causing water stagnation has been detected${locSuffix}.`;
     case 'water_leakage':
       return `A municipal water pipeline leakage has been observed${locSuffix}.`;
+    case 'dead_animal':
+      return `A deceased animal requiring sanitation clearance has been reported${locSuffix}.`;
+    case 'broken_tree':
+      return `A fallen or broken tree hazard obstructing public space has been reported${locSuffix}.`;
     default:
       return `A civic infrastructure issue has been reported${locSuffix}.`;
   }

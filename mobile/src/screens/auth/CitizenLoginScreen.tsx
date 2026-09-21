@@ -34,7 +34,7 @@ type Props = NativeStackScreenProps<AuthStackParamList, 'CitizenLogin'>;
 
 export const CitizenLoginScreen: React.FC<Props> = ({ navigation }) => {
   const { login, loginWithGoogle, savedSession, resumeSavedSession, clearSavedSession } = useAuth();
-  const { isDesktop } = useBreakpoint();
+  const { isDesktop, isWide } = useBreakpoint();
   const [loading, setLoading] = useState(false);
   const [resumeLoading, setResumeLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -118,7 +118,7 @@ export const CitizenLoginScreen: React.FC<Props> = ({ navigation }) => {
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        {isDesktop ? (
+        {isWide ? (
           <View style={styles.desktopContainer}>
             {/* Left Branding Side */}
             <View style={styles.brandingSide}>

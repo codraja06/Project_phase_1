@@ -20,7 +20,7 @@ import { TYPOGRAPHY } from '../../theme/typography';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
-  const { isDesktop } = useBreakpoint();
+  const { isWide } = useBreakpoint();
   const [refreshing, setRefreshing] = useState(false);
   const [timeframe, setTimeframe] = useState<'7d' | '30d' | 'all'>('7d');
   const [stats, setStats] = useState({
@@ -90,7 +90,7 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
         style={styles.container}
         contentContainerStyle={[
           styles.scrollContent,
-          isDesktop && styles.scrollContentDesktop,
+          isWide && styles.scrollContentDesktop,
         ]}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />

@@ -32,7 +32,7 @@ type Props = NativeStackScreenProps<CitizenStackParamList, 'ComplaintDetail'>;
 
 export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const { complaintId } = route.params;
-  const { isDesktop } = useBreakpoint();
+  const { isDesktop, isWide } = useBreakpoint();
   const [complaint, setComplaint] = useState<Complaint | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -116,7 +116,7 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
 
       <ScrollView
         style={styles.container}
-        contentContainerStyle={isDesktop ? styles.desktopScrollContent : styles.scrollContent}
+        contentContainerStyle={isWide ? styles.desktopScrollContent : styles.scrollContent}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -126,8 +126,8 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
         }
         showsVerticalScrollIndicator={false}
       >
-        {isDesktop ? (
-          /* Desktop Two-Column Layout */
+        {isWide ? (
+          /* Desktop/Tablet Two-Column Layout */
           <View style={styles.desktopContainer}>
             {/* Left Column: Visual Media & Geographic Pin */}
             <View style={styles.desktopLeftCol}>

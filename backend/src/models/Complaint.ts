@@ -9,6 +9,8 @@ export type ComplaintCategory =
   | 'drainage'
   | 'drainage_problem'
   | 'water_leakage'
+  | 'dead_animal'
+  | 'broken_tree'
   | 'other'
   | string;
 
@@ -17,11 +19,19 @@ export type ComplaintPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export interface IBoundingBox {
   category: string;
+  className?: string;
   confidence: number;
   x1: number;
   y1: number;
   x2: number;
   y2: number;
+  bbox?: {
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+  };
+  model?: string;
 }
 
 export interface IComplaint extends Document {
@@ -52,12 +62,20 @@ export interface IComplaint extends Document {
 
 const BoundingBoxSchema = new Schema<IBoundingBox>(
   {
-    category: { type: String, required: true },
+    category: { type: String, default: 'issue' },
+    className: { type: String },
     confidence: { type: Number, required: true },
     x1: { type: Number, required: true },
     y1: { type: Number, required: true },
     x2: { type: Number, required: true },
     y2: { type: Number, required: true },
+    bbox: {
+      x1: { type: Number, default: 0 },
+      y1: { type: Number, default: 0 },
+      x2: { type: Number, default: 0 },
+      y2: { type: Number, default: 0 },
+    },
+    model: { type: String },
   },
   { _id: false }
 );

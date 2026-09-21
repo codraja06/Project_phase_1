@@ -199,19 +199,52 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
       }
 
       setSubmitting(true);
+
+      // Ensure image is uploaded if it's still a local file or blob
+      let finalImageUrl = serverImageUrl || localImageUri || '';
+      if (localImageUri && (!serverImageUrl || serverImageUrl.startsWith('blob:') || serverImageUrl.startsWith('file:') || serverImageUrl.startsWith('ph:'))) {
+        try {
+          const uploadedUrl = await aiApi.uploadImage(localImageUri);
+          if (uploadedUrl && !uploadedUrl.startsWith('blob:') && !uploadedUrl.startsWith('file:')) {
+            finalImageUrl = uploadedUrl;
+            setServerImageUrl(uploadedUrl);
+          }
+        } catch (uploadErr) {
+          console.warn('Image upload fallback notice:', uploadErr);
+        }
+      }
+
+      // Format bounding boxes so both flat coordinates and nested bbox are present
+      const formattedBoxes = (aiDetections || []).map((det) => ({
+        category: det.category || 'issue',
+        className: det.category || 'issue',
+        confidence: det.confidence || 0,
+        x1: det.bbox?.x1 ?? 0,
+        y1: det.bbox?.y1 ?? 0,
+        x2: det.bbox?.x2 ?? 0,
+        y2: det.bbox?.y2 ?? 0,
+        bbox: {
+          x1: det.bbox?.x1 ?? 0,
+          y1: det.bbox?.y1 ?? 0,
+          x2: det.bbox?.x2 ?? 0,
+          y2: det.bbox?.y2 ?? 0,
+        },
+        model: det.model || 'yolov8',
+      }));
+
       const payload = {
         title: title || `${selectedCategory.replace(/_/g, ' ')} Reported`,
         description: description.trim(),
         category: selectedCategory,
         customCategory: selectedCategory === 'other' ? customCategory.trim() : '',
-        imageUrl: serverImageUrl || localImageUri || '',
+        imageUrl: finalImageUrl,
         aiDetected,
         aiClass: aiDetectedClass,
         aiConfidence,
-        boundingBoxes: aiDetections,
+        boundingBoxes: formattedBoxes,
         latitude,
         longitude,
-        address,
+        address: address || 'Captured Location',
         priority: aiConfidence > 0.85 ? 'high' : 'medium',
       };
 

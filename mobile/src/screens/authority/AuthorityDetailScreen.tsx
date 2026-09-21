@@ -35,7 +35,7 @@ type Props = NativeStackScreenProps<AuthorityStackParamList, 'AuthorityComplaint
 
 export const AuthorityDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const { complaintId } = route.params;
-  const { isDesktop } = useBreakpoint();
+  const { isDesktop, isWide } = useBreakpoint();
   const [complaint, setComplaint] = useState<Complaint | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -159,8 +159,8 @@ export const AuthorityDetailScreen: React.FC<Props> = ({ route, navigation }) =>
         <Badge label={complaint.status.toUpperCase()} variant={isResolved ? 'success' : isInProgress ? 'default' : 'warning'} />
       </Animated.View>
 
-      <ScrollView style={styles.container} contentContainerStyle={isDesktop ? styles.desktopScrollContent : styles.scrollContent} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />}>
-        {isDesktop ? (
+      <ScrollView style={styles.container} contentContainerStyle={isWide ? styles.desktopScrollContent : styles.scrollContent} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />}>
+        {isWide ? (
           <View style={styles.desktopContainer}>
             {/* Left Column */}
             <View style={styles.desktopLeftCol}>

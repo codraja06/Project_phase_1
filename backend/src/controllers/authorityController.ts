@@ -47,8 +47,7 @@ export const getAllComplaints = async (req: AuthRequest, res: Response, next: Ne
     startOfToday.setHours(0, 0, 0, 0);
     const today = await Complaint.countDocuments({ createdAt: { $gte: startOfToday } });
 
-    // Category statistics
-    const categories = ['pothole', 'road_damage', 'garbage', 'garbage_overflow', 'broken_streetlight', 'drainage', 'drainage_problem', 'water_leakage'];
+    const categories = ['pothole', 'road_damage', 'garbage', 'garbage_overflow', 'broken_streetlight', 'drainage', 'drainage_problem', 'water_leakage', 'dead_animal', 'broken_tree'];
     const categoryStats: Record<string, number> = {};
     for (const cat of categories) {
       categoryStats[cat] = await Complaint.countDocuments({ category: cat });
@@ -116,6 +115,14 @@ export const updateComplaintStatus = async (req: AuthRequest, res: Response, nex
       throw new ApiError(
         400,
         `Invalid status transition. Complaints in 'In Progress' status can only transition to 'Resolved'.`
+      );
+    }
+
+    // Pending cannot jump directly to Resolved without being In Progress first
+    if (currentStatus === 'Pending' && targetStatus === 'Resolved') {
+      throw new ApiError(
+        400,
+        `Invalid status transition. Complaints in 'Pending' status cannot transition directly to 'Resolved'.`
       );
     }
 

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import FormData from 'form-data';
 import fs from 'fs';
+import path from 'path';
 import { env } from '../config/env';
 import { ApiError } from '../utils/apiError';
 
@@ -25,7 +26,11 @@ export interface PredictResponse {
 export const detectCivicIssue = async (filePath: string): Promise<PredictResponse> => {
   try {
     const formData = new FormData();
-    formData.append('image', fs.createReadStream(filePath));
+    const filename = path.basename(filePath) || 'civic_issue.jpg';
+    formData.append('image', fs.createReadStream(filePath), {
+      filename,
+      contentType: 'image/jpeg',
+    });
 
     const response = await axios.post<PredictResponse>(
       `${env.AI_SERVICE_URL}/predict`,

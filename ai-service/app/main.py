@@ -19,6 +19,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+import io
+from PIL import Image
+
 @app.get("/health", status_code=status.HTTP_200_OK)
 def health_check():
     model_ready = detector_instance.is_ready()
@@ -26,6 +29,8 @@ def health_check():
         "status": "OK",
         "service": "AI Object Detection Microservice",
         "modelConfigured": model_ready,
+        "loadedModels": list(detector_instance.models.keys()),
+        "modelCount": len(detector_instance.models),
         "modelPath": settings.MODEL_PATH
     }
 
@@ -45,14 +50,24 @@ async def predict_issue(image: UploadFile = File(...)):
             detail="AI model weights are not configured. Please provide MODEL_PATH/best.pt."
         )
 
-    if not image.content_type or not image.content_type.startswith("image/"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Provided file must be a valid image."
-        )
-
     try:
         contents = await image.read()
+        if not contents or len(contents) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Uploaded image file is empty."
+            )
+
+        # Validate image content using PIL
+        try:
+            test_img = Image.open(io.BytesIO(contents))
+            test_img.verify()
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Provided file must be a valid image."
+            )
+
         detections = detector_instance.detect(contents)
 
         return PredictResponse(
@@ -60,6 +75,8 @@ async def predict_issue(image: UploadFile = File(...)):
             message="Civic issue detection completed successfully" if len(detections) > 0 else "No supported civic issue detected automatically.",
             detections=detections
         )
+    except HTTPException:
+        raise
     except RuntimeError as re:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
