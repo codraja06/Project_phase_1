@@ -1,0 +1,20 @@
+- generic [ref=f2e10]:
+  - generic [ref=f2e11]:
+    - generic [ref=f2e12]:
+      - generic [ref=f2e13]: CivicTrack
+      - generic [ref=f2e19]: MUNICIPAL OPERATIONS
+    - generic [ref=f2e22]:
+      - generic [ref=f2e23]: OPERATIONS
+      - button "Command Center" [ref=f2e24] [cursor=pointer]
+      - button "All Complaints" [ref=f2e27] [cursor=pointer]
+      - button "Incident Map" [ref=f2e29] [cursor=pointer]
+      - button "Operations Analytics" [ref=f2e31] [cursor=pointer]
+      - button "Alerts & Feed" [ref=f2e33] [cursor=pointer]
+      - generic [ref=f2e36]: SETTINGS
+      - button "Profile & Settings" [ref=f2e37] [cursor=pointer]
+    - generic [ref=f2e40]:
+      - generic [ref=f2e41]: JD
+      - generic [ref=f2e43]:
+        - generic [ref=f2e44]: John Doe
+        - generic [ref=f2e45]: Authorized Officer
+  - generic [ref=f2e47]: Initializing Command Center...

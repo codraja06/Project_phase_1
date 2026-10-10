@@ -34,21 +34,22 @@ export const getMyComplaints = async (req: AuthRequest, res: Response, next: Nex
     const { status, category, search } = req.query;
     const filter: any = { createdBy: req.user._id };
 
-    if (status && status !== 'All' && status !== 'all') {
+    if (typeof status === 'string' && status !== 'All' && status !== 'all') {
       const s = status.toString().toLowerCase().replace('_', ' ');
       if (s === 'pending') filter.status = 'Pending';
       else if (s === 'in progress' || s === 'in_progress') filter.status = 'In Progress';
       else if (s === 'resolved') filter.status = 'Resolved';
       else filter.status = status;
     }
-    if (category && category !== 'All' && category !== 'all') {
+    if (typeof category === 'string' && category !== 'All' && category !== 'all') {
       filter.category = category;
     }
-    if (search) {
+    if (search && typeof search === 'string') {
+      const literalSearch = search.slice(0, 200).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { complaintId: { $regex: search, $options: 'i' } },
+        { title: { $regex: literalSearch, $options: 'i' } },
+        { description: { $regex: literalSearch, $options: 'i' } },
+        { complaintId: { $regex: literalSearch, $options: 'i' } },
       ];
     }
 
@@ -87,7 +88,7 @@ export const getComplaintById = async (req: AuthRequest, res: Response, next: Ne
     const creatorId = (complaint.createdBy as any)?._id
       ? (complaint.createdBy as any)._id.toString()
       : (complaint.createdBy as any)?.toString();
-    if (req.user.role === 'citizen' && creatorId && creatorId !== req.user._id.toString()) {
+    if (req.user.role === 'citizen' && creatorId !== req.user._id.toString()) {
       throw new ApiError(403, 'Forbidden. You do not have permission to view this complaint.');
     }
 

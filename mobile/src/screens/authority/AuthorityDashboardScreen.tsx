@@ -10,6 +10,7 @@ import {
   StatusBar,
   Platform,
   TextInput,
+  useWindowDimensions,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Animated, { FadeIn, FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated';
@@ -22,8 +23,10 @@ import { SHADOWS } from '../../theme/index';
 import { SPACING } from '../../theme/spacing';
 import { TYPOGRAPHY } from '../../theme/typography';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
+import { useMobileMenu } from '../../contexts/MobileMenuContext';
 import { ComplaintCard } from '../../components/ComplaintCard';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { AuthorityMobileHeader } from '../../components/AuthorityMobileHeader';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
@@ -38,7 +41,8 @@ const FILTER_PILLS = [
 ];
 
 export const AuthorityDashboardScreen = ({ navigation }: any) => {
-  const { isDesktop, isTablet, isWide, width } = useBreakpoint();
+  const { isDesktop, isTablet, isWide, isMobile, width } = useBreakpoint();
+  const { toggleMenu } = useMobileMenu();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [allComplaints, setAllComplaints] = useState<Complaint[]>([]);
@@ -105,7 +109,7 @@ export const AuthorityDashboardScreen = ({ navigation }: any) => {
     } else if (activeFilter === 'streetlight') {
       filtered = filtered.filter((c) => (c.category || '').toLowerCase().includes('light'));
     }
-    return filtered; // Do not slice so we can scroll
+    return filtered;
   }, [allComplaints, activeFilter]);
 
   const categoryCounts = useMemo(() => {
@@ -124,547 +128,508 @@ export const AuthorityDashboardScreen = ({ navigation }: any) => {
     return <LoadingSpinner message="Initializing Command Center..." />;
   }
 
-  const statCardResponsiveStyle = isWide
-    ? (width < 1100 ? styles.statCardGrid2 : styles.statCardGrid3)
-    : width < 300
-    ? styles.statCardMobileFull
-    : styles.statCardGrid2;
+  // ─── Responsive padding ─────────────────────────────────────────────────────
+  const screenPadding = isMobile ? (width < 360 ? 12 : 16) : isTablet ? 20 : 24;
+  // KPI grid: 2 columns on mobile, 3 on tablet, 6 on desktop
+  const kpiColumns = isMobile ? 2 : isTablet ? 3 : 6;
+  const kpiGap = isMobile ? (width < 360 ? 8 : 12) : 12;
 
-  const dashboardContent = (
-    <Animated.View entering={FadeIn.duration(400)} style={styles.dashboardWrapper}>
-      {/* Header */}
-      <View style={styles.headerContainer}>
-         <View style={styles.headerLeft}>
-            <View style={styles.badgeRow}>
-               <Badge label="MUNICIPAL OPS" variant="secondary" icon={<Ionicons name="shield-checkmark" size={12} color={COLORS.textPrimary} />} />
-            </View>
-            <Text style={styles.headerTitle}>Command Center</Text>
-            <Text style={styles.headerSubtitle}>Real-time triage and resolution dispatch hub.</Text>
-         </View>
-         <View style={styles.headerRight}>
-            {isDesktop && (
-               <View style={styles.headerSearchWrapper}>
-                  <Ionicons name="search" size={16} color={COLORS.slateMuted} />
-                  <TextInput 
-                     style={styles.headerSearchInput} 
-                     placeholder="Search incidents, locations, or citizens..."
-                     placeholderTextColor={COLORS.slateMuted}
-                  />
-               </View>
-            )}
-            <Button variant="secondary" icon={<Ionicons name="bar-chart-outline" size={18} color={COLORS.textPrimary} />} title={isDesktop ? "Analytics" : undefined} onPress={() => navigation.navigate('AuthorityAnalytics')} />
-            <Button variant="default" icon={<Ionicons name="map-outline" size={18} color="#FFFFFF" />} title={isDesktop ? "GIS Map" : undefined} onPress={() => navigation.navigate('AuthorityMap')} />
-            <TouchableOpacity style={styles.bellBtn} accessibilityLabel="Notifications">
-               <Ionicons name="notifications-outline" size={20} color={COLORS.textPrimary} />
-               <View style={styles.notificationDot} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.avatarBtn}>
-               <Ionicons name="person" size={18} color={COLORS.primaryDark} />
-            </TouchableOpacity>
-         </View>
-      </View>
+  const KPI_DATA = [
+    { label: 'Total Incidents', count: stats.total, filter: 'all', color: '#C91C24', icon: 'layers' as const },
+    { label: 'Pending Triage', count: stats.pending, filter: 'pending', color: '#F59E0B', icon: 'time' as const },
+    { label: 'Under Repair', count: stats.inProgress, filter: 'in_progress', color: '#3B82F6', icon: 'construct' as const },
+    { label: 'Resolved', count: stats.resolved, filter: 'resolved', color: '#10B981', icon: 'checkmark-circle' as const },
+    { label: 'High Priority', count: stats.highPriority || 0, filter: 'urgent', color: '#C91C24', icon: 'alert-circle' as const },
+    { label: "Today's Intake", count: stats.today || 0, filter: 'all', color: '#8B5CF6', icon: 'calendar' as const },
+  ];
 
-      {/* Main Grid */}
-      <View style={isWide ? styles.desktopBody : styles.mobileBody}>
-         {/* Left Column */}
-         <View style={isWide ? styles.desktopLeftCol : styles.mobileLeftCol}>
-             <View style={styles.sectionHeaderRow}>
-               <Text style={styles.sectionTitle}>OPERATIONAL KPIs</Text>
-               <TouchableOpacity style={styles.filterDropdown}>
-                  <Text style={styles.filterDropdownText}>Last 30 Days</Text>
-                  <Ionicons name="chevron-down" size={12} color={COLORS.textSecondary} style={{ marginLeft: 4 }} />
-               </TouchableOpacity>
-             </View>
-             
-             <View style={styles.statsGrid}>
-               {[
-                 { label: 'Total Incidents', count: stats.total, filter: 'all', color: '#C91C24', icon: 'layers' },
-                 { label: 'Pending Triage', count: stats.pending, filter: 'pending', color: '#F59E0B', icon: 'time' },
-                 { label: 'Under Repair', count: stats.inProgress, filter: 'in_progress', color: '#3B82F6', icon: 'construct' },
-                 { label: 'Resolved', count: stats.resolved, filter: 'resolved', color: '#10B981', icon: 'checkmark-circle' },
-                 { label: 'High Priority', count: stats.highPriority || 0, filter: 'urgent', color: '#C91C24', icon: 'alert-circle' },
-                 { label: 'Today\'s Intake', count: stats.today || 0, filter: 'all', color: '#8B5CF6', icon: 'calendar' },
-               ].map((stat, i) => (
-                 <Card key={i} interactive onPress={() => navigation.navigate('AllComplaints', { filter: stat.filter })} style={[statCardResponsiveStyle, styles.kpiCardHover]}>
-                   <View style={styles.statContent}>
-                     <View style={styles.statIconContainer}>
-                        <View style={[styles.statIconCircle, { backgroundColor: `${stat.color}15` }]}>
-                          <Ionicons name={stat.icon as any} size={20} color={stat.color} />
-                        </View>
-                     </View>
-                     <Text numberOfLines={1} style={styles.statCount}>{stat.count}</Text>
-                     <Text numberOfLines={1} style={styles.statLabel}>{stat.label}</Text>
-                   </View>
-                 </Card>
-               ))}
-             </View>
-
-             <Card style={styles.opsIntelCard}>
-               <CardContent style={styles.opsContent}>
-                 <View style={styles.opsHeader}>
-                   <Text style={styles.opsTitle}>SLA & Operational Performance</Text>
-                   <Text style={styles.opsSlaText}>87% On-Time SLA</Text>
-                 </View>
-
-                 <View style={styles.opsMetricsRow}>
-                   <View style={styles.opsMetric}>
-                     <Text style={styles.opsMetricVal}>~24.5h</Text>
-                     <Text style={styles.opsMetricLabel}>Avg Resolution</Text>
-                   </View>
-                   <View style={styles.opsDivider} />
-                   <View style={styles.opsMetric}>
-                     <Text style={styles.opsMetricVal}>&lt; 48h</Text>
-                     <Text style={styles.opsMetricLabel}>City Target</Text>
-                   </View>
-                   <View style={styles.opsDivider} />
-                   <View style={styles.opsMetric}>
-                     <Text style={[styles.opsMetricVal, { color: COLORS.resolved }]}>94%</Text>
-                     <Text style={styles.opsMetricLabel}>Triage Rate</Text>
-                   </View>
-                 </View>
-
-                 <View style={styles.catDistSection}>
-                   <Text style={styles.catDistTitle}>INCIDENT DISTRIBUTION</Text>
-                   <View style={styles.catDistRow}>
-                     <View style={styles.catDistItem}>
-                       <Text style={styles.catDistLabel}>Potholes: {categoryCounts.pothole}</Text>
-                       <View style={styles.catDistBarBg}>
-                         <View style={[styles.catDistBarFill, { width: `${stats.total ? Math.min(100, Math.round((categoryCounts.pothole / stats.total) * 100)) : 0}%`, backgroundColor: COLORS.error }]} />
-                       </View>
-                     </View>
-                     <View style={styles.catDistItem}>
-                       <Text style={styles.catDistLabel}>Garbage: {categoryCounts.garbage}</Text>
-                       <View style={styles.catDistBarBg}>
-                         <View style={[styles.catDistBarFill, { width: `${stats.total ? Math.min(100, Math.round((categoryCounts.garbage / stats.total) * 100)) : 0}%`, backgroundColor: COLORS.pending }]} />
-                       </View>
-                     </View>
-                     <View style={styles.catDistItem}>
-                       <Text style={styles.catDistLabel}>Streetlight: {categoryCounts.streetlight}</Text>
-                       <View style={styles.catDistBarBg}>
-                         <View style={[styles.catDistBarFill, { width: `${stats.total ? Math.min(100, Math.round((categoryCounts.streetlight / stats.total) * 100)) : 0}%`, backgroundColor: COLORS.info }]} />
-                       </View>
-                     </View>
-                   </View>
-                 </View>
-               </CardContent>
-             </Card>
-
-             <Animated.View style={styles.communityBanner}>
-               <View style={styles.communityBannerContent}>
-                 <View style={styles.communityBannerTextCol}>
-                   <Text style={styles.communityBannerTitle}>Cleaner Neighborhoods • Stronger Communities</Text>
-                   <Text style={styles.communityBannerSub}>REPORT • TRACK • RESOLVE</Text>
-                 </View>
-                 <Ionicons name="leaf" size={40} color="rgba(16, 185, 129, 0.2)" style={styles.communityBannerIcon} />
-               </View>
-             </Animated.View>
-         </View>
-
-         {/* Right Column (Incident Queue) */}
-         <View style={isWide ? styles.desktopRightCol : styles.mobileRightCol}>
-             <View style={styles.queueHeaderContainer}>
-                <View style={styles.queueHeaderTitleBox}>
-                   <Text style={styles.queueHeaderTitle}>Incident Queue</Text>
-                   <Text style={styles.queueHeaderSubtitle}>Live incident reports from citizens across the city.</Text>
-                </View>
-                <Button variant="link" title="Manage Queue →" onPress={() => navigation.navigate('AllComplaints')} />
-             </View>
-
-             <View style={styles.filterScrollWrapper}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll} contentContainerStyle={styles.filterContainer}>
-                  {FILTER_PILLS.map((pill) => {
-                    const isSelected = activeFilter === pill.id;
-                    const count = pill.id === 'all' ? displayedComplaints.length : undefined; 
-                    return (
-                      <TouchableOpacity
-                        key={pill.id}
-                        style={[styles.filterPill, isSelected && styles.filterPillActive]}
-                        onPress={() => setActiveFilter(pill.id)}
-                        activeOpacity={0.7}
-                      >
-                        <Text style={[styles.filterPillText, isSelected && styles.filterPillTextActive]}>
-                           {pill.label} {count !== undefined ? `(${count})` : ''}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </ScrollView>
-             </View>
-
-             <View style={styles.incidentListContainer}>
-                <ScrollView 
-                   showsVerticalScrollIndicator={true}
-                   style={styles.incidentListScroll}
-                   contentContainerStyle={styles.incidentListScrollContent}
-                >
-                  {displayedComplaints.length > 0 ? (
-                    displayedComplaints.map((item, index) => (
-                      <Animated.View key={item._id} entering={FadeInUp.delay(300 + Math.min(index * 50, 500))}>
-                        <ComplaintCard
-                          complaint={item}
-                          showCitizenInfo={true}
-                          onPress={() => navigation.navigate('AuthorityComplaintDetail', { complaintId: item._id })}
-                          style={styles.compactComplaintCard}
-                        />
-                      </Animated.View>
-                    ))
-                  ) : (
-                    <Animated.View entering={FadeInUp.delay(300)}>
-                      <Card style={styles.emptyCard}>
-                        <CardContent style={styles.emptyContent}>
-                          <Ionicons name="shield-checkmark-outline" size={40} color={COLORS.textMuted} />
-                          <Text style={styles.emptyTitle}>No matching incidents</Text>
-                          <Text style={styles.emptySub}>Queue is clear for this category.</Text>
-                        </CardContent>
-                      </Card>
-                    </Animated.View>
-                  )}
-                </ScrollView>
-             </View>
-         </View>
-      </View>
-    </Animated.View>
-  );
-
-  if (isWide) {
+  if (!isDesktop) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
-        <View style={styles.desktopFixedContainer}>
-          {dashboardContent}
+      <View style={s.safeAreaMobile}>
+        <StatusBar barStyle="light-content" backgroundColor="#0F172A" translucent={false} />
+        <View style={{ flex: 1, backgroundColor: COLORS.backgroundNeutral }}>
+          <AuthorityMobileHeader 
+            title="Command Center" 
+            subtitle="Triage & dispatch hub" 
+            rightNode={
+              <TouchableOpacity style={s.mobileHeaderIcon} accessibilityLabel="Notifications">
+                <Ionicons name="notifications-outline" size={20} color="#FFFFFF" />
+                <View style={s.notifDot} />
+              </TouchableOpacity>
+            }
+          />
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ padding: screenPadding, paddingBottom: 120 }}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#38BDF8']} tintColor="#38BDF8" />}
+          >
+            {/* Operational KPIs */}
+            <Text style={[s.sectionLabel, { marginTop: 16, marginBottom: 12, color: COLORS.textSecondary }]}>OPERATIONAL KPIs</Text>
+            <View style={[s.kpiGrid, { gap: kpiGap }]}>
+              {KPI_DATA.map((stat, i) => (
+                <Card key={i} interactive onPress={() => navigation.navigate('AllComplaints', { filter: stat.filter })}
+                  style={[s.kpiCard, { flexBasis: isMobile ? (width < 360 ? '46%' : '47%') : `${(100 / kpiColumns) - 2}%` }]}>
+                  <View style={s.kpiContent}>
+                    <View style={[s.kpiIconCircle, { backgroundColor: `${stat.color}15`, marginBottom: 8 }]}>
+                      <Ionicons name={stat.icon} size={width < 360 ? 16 : 18} color={stat.color} />
+                    </View>
+                    <Text style={[s.kpiCount, { fontSize: width < 360 ? 18 : 22 }]}>{stat.count}</Text>
+                    <Text style={s.kpiLabel} numberOfLines={1}>{stat.label}</Text>
+                  </View>
+                </Card>
+              ))}
+            </View>
+
+            {/* SLA Card */}
+            <Card style={[s.slaCard, { marginTop: 16 }]}>
+              <CardContent style={{ padding: 16 }}>
+                <View style={s.slaHeader}>
+                  <Text style={s.slaTitle}>SLA & Perf</Text>
+                  <Text style={s.slaBadge}>87% On-Time</Text>
+                </View>
+                <View style={s.slaMetrics}>
+                  <View style={s.slaMetric}>
+                    <Text style={s.slaMetricVal}>~24.5h</Text>
+                    <Text style={s.slaMetricLabel}>Avg</Text>
+                  </View>
+                  <View style={s.slaDivider} />
+                  <View style={s.slaMetric}>
+                    <Text style={s.slaMetricVal}>&lt; 48h</Text>
+                    <Text style={s.slaMetricLabel}>Target</Text>
+                  </View>
+                  <View style={s.slaDivider} />
+                  <View style={s.slaMetric}>
+                    <Text style={[s.slaMetricVal, { color: COLORS.resolved }]}>94%</Text>
+                    <Text style={s.slaMetricLabel}>Triage</Text>
+                  </View>
+                </View>
+                {/* Incident Distribution Mobile */}
+                <Text style={s.distTitle}>INCIDENT DISTRIBUTION</Text>
+                {[
+                  { label: 'Potholes', count: categoryCounts.pothole, color: COLORS.error },
+                  { label: 'Garbage', count: categoryCounts.garbage, color: COLORS.pending },
+                  { label: 'Streetlight', count: categoryCounts.streetlight, color: COLORS.info },
+                ].map((cat, i) => (
+                  <View key={i} style={s.distRow}>
+                    <Text style={s.distLabel}>{cat.label}: {cat.count}</Text>
+                    <View style={s.distBarBg}>
+                      <View style={[s.distBarFill, { width: `${stats.total ? Math.min(100, Math.round((cat.count / stats.total) * 100)) : 0}%`, backgroundColor: cat.color }]} />
+                    </View>
+                  </View>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Banner */}
+            <View style={[s.banner, { marginTop: 12 }]}>
+              <Text style={s.bannerTitle}>Cleaner Neighborhoods</Text>
+              <Text style={s.bannerSub}>REPORT • TRACK • RESOLVE</Text>
+            </View>
+
+            {/* Incident Queue */}
+            <View style={{ marginTop: 24 }}>
+              <View style={s.queueHeader}>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.queueTitle}>Incident Queue</Text>
+                  <Text style={s.queueSub}>Live reports from citizens.</Text>
+                </View>
+                <Button variant="link" title="View All →" onPress={() => navigation.navigate('AllComplaints')} />
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, marginBottom: 12 }} contentContainerStyle={{ gap: 6 }}>
+                {FILTER_PILLS.map((pill) => (
+                  <TouchableOpacity key={pill.id} style={[s.filterPill, activeFilter === pill.id && s.filterPillActive]} onPress={() => setActiveFilter(pill.id)}>
+                    <Text style={[s.filterPillText, activeFilter === pill.id && s.filterPillTextActive]}>
+                      {pill.label}{pill.id === 'all' ? ` (${displayedComplaints.length})` : ''}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              <View style={{ display: 'flex', flexDirection: 'column' }}>
+                {displayedComplaints.length > 0 ? displayedComplaints.map((item, index) => (
+                  <Animated.View key={item._id} entering={FadeInUp.delay(200 + Math.min(index * 50, 500))}>
+                    <ComplaintCard complaint={item} showCitizenInfo={true} onPress={() => navigation.navigate('AuthorityComplaintDetail', { complaintId: item._id })} style={{ marginBottom: 10, borderRadius: 12 }} />
+                  </Animated.View>
+                )) : (
+                  <View style={s.emptyState}>
+                    <Ionicons name="shield-checkmark-outline" size={40} color={COLORS.textMuted} />
+                    <Text style={s.emptyTitle}>No matching incidents</Text>
+                    <Text style={s.emptySub}>Queue is clear for this category.</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          </ScrollView>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={s.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.mobileContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#38BDF8']} tintColor="#38BDF8" />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        {dashboardContent}
-      </ScrollView>
+
+      {isDesktop ? (
+        // ─── Desktop/Tablet: fixed container ────────────────────────────────
+        <View style={s.desktopFixedContainer}>
+          <View style={[s.scrollContent, { padding: screenPadding, flex: 1, display: 'flex', flexDirection: 'column' }]}>
+            {/* Header */}
+            <View style={s.headerBar}>
+              <View style={{ flex: 1 }}>
+                <View style={{ marginBottom: 6 }}>
+                  <Badge label="MUNICIPAL OPS" variant="secondary" icon={<Ionicons name="shield-checkmark" size={12} color={COLORS.textPrimary} />} />
+                </View>
+                <Text style={s.headerTitle}>Command Center</Text>
+                <Text style={s.headerSubtitle}>Real-time triage and resolution dispatch hub.</Text>
+              </View>
+              <View style={s.headerActions}>
+                <View style={s.headerSearch}>
+                  <Ionicons name="search" size={16} color={COLORS.slateMuted} />
+                  <TextInput
+                    style={s.headerSearchInput}
+                    placeholder="Search incidents..."
+                    placeholderTextColor={COLORS.slateMuted}
+                  />
+                </View>
+                <TouchableOpacity style={s.headerIconBtn} accessibilityLabel="Notifications">
+                  <Ionicons name="notifications-outline" size={20} color={COLORS.textPrimary} />
+                  <View style={s.notifDot} />
+                </TouchableOpacity>
+                <TouchableOpacity style={s.avatarBtn}>
+                  <Ionicons name="person" size={18} color={COLORS.primaryDark} />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Desktop body: two columns */}
+            <View style={[s.desktopBody, { flex: 1, minHeight: 0 }]}>
+              {/* Left column */}
+              <View style={s.desktopLeftCol}>
+                <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
+                {/* KPI Section */}
+                <View style={s.sectionHeaderRow}>
+                  <Text style={s.sectionLabel}>OPERATIONAL KPIs</Text>
+                </View>
+                <View style={[s.kpiGrid, { gap: 12 }]}>
+                  {KPI_DATA.map((stat, i) => (
+                    <Card key={i} interactive onPress={() => navigation.navigate('AllComplaints', { filter: stat.filter })}
+                      style={[s.kpiCard, { flexBasis: `${(100 / kpiColumns) - 2}%` }]}>
+                      <View style={s.kpiContent}>
+                        <View style={[s.kpiIconCircle, { backgroundColor: `${stat.color}15` }]}>
+                          <Ionicons name={stat.icon} size={18} color={stat.color} />
+                        </View>
+                        <Text style={s.kpiCount}>{stat.count}</Text>
+                        <Text style={s.kpiLabel} numberOfLines={1}>{stat.label}</Text>
+                      </View>
+                    </Card>
+                  ))}
+                </View>
+
+                {/* SLA Card */}
+                <Card style={s.slaCard}>
+                  <CardContent style={{ padding: SPACING.xl }}>
+                    <View style={s.slaHeader}>
+                      <Text style={s.slaTitle}>SLA & Operational Performance</Text>
+                      <Text style={s.slaBadge}>87% On-Time SLA</Text>
+                    </View>
+                    <View style={s.slaMetrics}>
+                      <View style={s.slaMetric}>
+                        <Text style={s.slaMetricVal}>~24.5h</Text>
+                        <Text style={s.slaMetricLabel}>Avg Resolution</Text>
+                      </View>
+                      <View style={s.slaDivider} />
+                      <View style={s.slaMetric}>
+                        <Text style={s.slaMetricVal}>&lt; 48h</Text>
+                        <Text style={s.slaMetricLabel}>City Target</Text>
+                      </View>
+                      <View style={s.slaDivider} />
+                      <View style={s.slaMetric}>
+                        <Text style={[s.slaMetricVal, { color: COLORS.resolved }]}>94%</Text>
+                        <Text style={s.slaMetricLabel}>Triage Rate</Text>
+                      </View>
+                    </View>
+                    {/* Incident Distribution */}
+                    <Text style={s.distTitle}>INCIDENT DISTRIBUTION</Text>
+                    {[
+                      { label: 'Potholes', count: categoryCounts.pothole, color: COLORS.error },
+                      { label: 'Garbage', count: categoryCounts.garbage, color: COLORS.pending },
+                      { label: 'Streetlight', count: categoryCounts.streetlight, color: COLORS.info },
+                    ].map((cat, i) => (
+                      <View key={i} style={s.distRow}>
+                        <Text style={s.distLabel}>{cat.label}: {cat.count}</Text>
+                        <View style={s.distBarBg}>
+                          <View style={[s.distBarFill, { width: `${stats.total ? Math.min(100, Math.round((cat.count / stats.total) * 100)) : 0}%`, backgroundColor: cat.color }]} />
+                        </View>
+                      </View>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                {/* Banner */}
+                <View style={s.banner}>
+                  <Text style={s.bannerTitle}>Cleaner Neighborhoods • Stronger Communities</Text>
+                  <Text style={s.bannerSub}>REPORT • TRACK • RESOLVE</Text>
+                </View>
+                </ScrollView>
+              </View>
+
+              {/* Right column — Incident Queue */}
+              <View style={[s.desktopRightCol, { flex: 1, display: 'flex', flexDirection: 'column' }]}>
+                <View style={s.queueHeader}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.queueTitle}>Incident Queue</Text>
+                    <Text style={s.queueSub}>Live incident reports from citizens.</Text>
+                  </View>
+                  <Button variant="link" title="Manage Queue →" onPress={() => navigation.navigate('AllComplaints')} />
+                </View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, marginBottom: 12 }} contentContainerStyle={{ gap: 6 }}>
+                  {FILTER_PILLS.map((pill) => (
+                    <TouchableOpacity key={pill.id} style={[s.filterPill, activeFilter === pill.id && s.filterPillActive]} onPress={() => setActiveFilter(pill.id)}>
+                      <Text style={[s.filterPillText, activeFilter === pill.id && s.filterPillTextActive]}>
+                        {pill.label}{pill.id === 'all' ? ` (${displayedComplaints.length})` : ''}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+                <ScrollView showsVerticalScrollIndicator={true} style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }}>
+                  {displayedComplaints.length > 0 ? displayedComplaints.map((item, index) => (
+                    <Animated.View key={item._id} entering={FadeInUp.delay(200 + Math.min(index * 50, 500))}>
+                      <ComplaintCard complaint={item} showCitizenInfo={true} onPress={() => navigation.navigate('AuthorityComplaintDetail', { complaintId: item._id })} style={{ marginBottom: 10, borderRadius: 12 }} />
+                    </Animated.View>
+                  )) : (
+                    <View style={s.emptyState}>
+                      <Ionicons name="shield-checkmark-outline" size={40} color={COLORS.textMuted} />
+                      <Text style={s.emptyTitle}>No matching incidents</Text>
+                      <Text style={s.emptySub}>Queue is clear for this category.</Text>
+                    </View>
+                  )}
+                </ScrollView>
+              </View>
+            </View>
+          </View>
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const s = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#0F172A' },
-  container: { flex: 1, backgroundColor: COLORS.backgroundNeutral },
+  safeAreaMobile: { flex: 1, backgroundColor: COLORS.backgroundNeutral },
   desktopFixedContainer: {
     flex: 1,
-    height: Platform.OS === 'web' ? ('100vh' as any) : '100%',
-    overflow: 'hidden',
     backgroundColor: COLORS.backgroundNeutral,
+    ...(Platform.OS === 'web' ? { height: '100dvh' as any, overflow: 'hidden' as any } : {}),
   },
-  dashboardWrapper: {
-    flex: 1,
-    padding: SPACING['3xl'],
+  scrollContent: {
     maxWidth: 1920,
-    alignSelf: 'center',
+    alignSelf: 'center' as any,
     width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
   },
-  mobileContent: { padding: SPACING.lg, paddingTop: SPACING.xl, paddingBottom: SPACING['5xl'] },
-  
-  // Header
-  headerContainer: { 
-     flexDirection: 'row', 
-     justifyContent: 'space-between', 
-     alignItems: 'center', 
-     marginBottom: SPACING['3xl'], 
-     backgroundColor: '#0F172A', 
-     paddingHorizontal: SPACING['3xl'], 
-     paddingVertical: SPACING.xl,
-     borderRadius: BORDER_RADIUS.lg, 
-     minHeight: 90,
-     ...SHADOWS.card 
+
+  // ─── Header (Desktop) ─────────────────────────────────────────────────────
+  headerBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#0F172A',
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    borderRadius: BORDER_RADIUS.lg,
+    marginBottom: 24,
+    ...SHADOWS.card,
   },
-  headerLeft: {
-     flex: 1,
-  },
-  badgeRow: { marginBottom: 6 },
   headerTitle: { ...TYPOGRAPHY.h2, color: '#F8FAFC', marginBottom: 2, letterSpacing: -0.5 },
   headerSubtitle: { ...TYPOGRAPHY.bodySmall, color: '#94A3B8' },
-  headerRight: { flexDirection: 'row', gap: SPACING.md, alignItems: 'center' },
-  headerSearchWrapper: {
-     flexDirection: 'row',
-     alignItems: 'center',
-     backgroundColor: '#1E293B',
-     paddingHorizontal: SPACING.lg,
-     height: 38,
-     borderRadius: BORDER_RADIUS.full,
-     borderWidth: 1,
-     borderColor: '#334155',
-     minWidth: 280,
-     marginRight: SPACING.md,
-  },
-  headerSearchInput: {
-     flex: 1,
-     ...TYPOGRAPHY.bodySmall,
-     color: '#F8FAFC',
-     marginLeft: SPACING.sm,
-     ...(Platform.OS === 'web' ? { outlineStyle: 'none' } as any : {}),
-  },
-  bellBtn: {
-     width: 38,
-     height: 38,
-     borderRadius: BORDER_RADIUS.full,
-     backgroundColor: '#1E293B',
-     borderWidth: 1,
-     borderColor: '#334155',
-     alignItems: 'center',
-     justifyContent: 'center',
-     ...(Platform.OS === 'web' ? { cursor: 'pointer' as any } : {}),
-  },
-  notificationDot: {
-     position: 'absolute',
-     top: 10,
-     right: 10,
-     width: 6,
-     height: 6,
-     borderRadius: BORDER_RADIUS.full,
-     backgroundColor: COLORS.error,
-  },
-  avatarBtn: {
-     width: 38,
-     height: 38,
-     borderRadius: BORDER_RADIUS.full,
-     backgroundColor: COLORS.primaryLight,
-     borderWidth: 1,
-     borderColor: COLORS.primarySurface,
-     alignItems: 'center',
-     justifyContent: 'center',
-     ...(Platform.OS === 'web' ? { cursor: 'pointer' as any } : {}),
-  },
-
-  // Body Layout
-  desktopBody: { 
-     flexDirection: 'row', 
-     gap: SPACING['3xl'], 
-     flex: 1, 
-     overflow: 'hidden' 
-  },
-  mobileBody: { flexDirection: 'column', gap: SPACING['3xl'] },
-  desktopLeftCol: { 
-     flex: 0.45, 
-     display: 'flex',
-     flexDirection: 'column',
-  },
-  mobileLeftCol: { width: '100%' },
-  desktopRightCol: { 
-     flex: 0.55,
-     display: 'flex',
-     flexDirection: 'column',
-     backgroundColor: '#FFFFFF',
-     borderRadius: BORDER_RADIUS.xl,
-     padding: SPACING['2xl'],
-     ...SHADOWS.card,
-  },
-  mobileRightCol: { width: '100%' },
-  
-  sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: SPACING.md },
-  sectionTitle: { ...TYPOGRAPHY.overline, color: COLORS.textSecondary, letterSpacing: 0.5 },
-  filterDropdown: {
+  headerActions: { flexDirection: 'row', gap: 10, alignItems: 'center' },
+  headerSearch: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: 6,
-    borderRadius: BORDER_RADIUS.sm,
+    backgroundColor: '#1E293B',
+    paddingHorizontal: 16,
+    height: 38,
+    borderRadius: BORDER_RADIUS.full,
     borderWidth: 1,
-    borderColor: COLORS.borderLight,
+    borderColor: '#334155',
+    minWidth: 220,
   },
-  filterDropdownText: {
-    ...TYPOGRAPHY.caption,
-    color: COLORS.textSecondary,
-    fontWeight: '600',
+  headerSearchInput: {
+    flex: 1,
+    ...TYPOGRAPHY.bodySmall,
+    color: '#F8FAFC',
+    marginLeft: 8,
+    ...(Platform.OS === 'web' ? { outlineStyle: 'none' } as any : {}),
+  },
+  headerIconBtn: {
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  notifDot: {
+    position: 'absolute', top: 10, right: 10,
+    width: 6, height: 6, borderRadius: 3,
+    backgroundColor: COLORS.error,
+  },
+  avatarBtn: {
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: COLORS.primaryLight, borderWidth: 1, borderColor: COLORS.primarySurface,
+    alignItems: 'center', justifyContent: 'center',
   },
 
-  // KPI Grid
-  statsGrid: {
+  // ─── Mobile Header ─────────────────────────────────────────────────────────
+  mobileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0F172A',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginBottom: 4,
+  },
+  menuBtn: {
+    width: 40, height: 40, borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center', justifyContent: 'center',
+    flexShrink: 0,
+  },
+  mobileHeaderTitle: { ...TYPOGRAPHY.h4, color: '#F8FAFC', fontSize: 17 },
+  mobileHeaderSub: { ...TYPOGRAPHY.caption, color: '#94A3B8', fontSize: 12 },
+  mobileHeaderIcon: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center', justifyContent: 'center',
+    flexShrink: 0,
+  },
+
+  // ─── Desktop Body ──────────────────────────────────────────────────────────
+  desktopBody: {
+    flexDirection: 'row',
+    gap: 24,
+    flex: 1,
+  },
+  desktopLeftCol: { flex: 0.45 },
+  desktopRightCol: {
+    flex: 0.55,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    ...SHADOWS.card,
+  },
+
+  // ─── Section Header ────────────────────────────────────────────────────────
+  sectionHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 10 },
+  sectionLabel: { ...TYPOGRAPHY.overline, letterSpacing: 0.5 },
+
+  // ─── KPI Grid (mobile-first: 2 columns) ───────────────────────────────────
+  kpiGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 16,
-    marginBottom: SPACING.xl,
+    gap: 10,
   },
-  statCardGrid3: {
-    flexBasis: Platform.OS === 'web' ? ('calc(33.333% - 11px)' as any) : '31%',
+  kpiCard: {
     flexGrow: 1,
-    flexShrink: 0,
-    minWidth: 110,
+    flexShrink: 1,
+    minWidth: 0,
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 10,
-    elevation: 2,
+    ...SHADOWS.sm,
   },
-  statCardGrid2: { flexBasis: Platform.OS === 'web' ? ('calc(50% - 8px)' as any) : '47%', flexGrow: 1, flexShrink: 0, minWidth: 130, backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1, borderColor: '#E5E7EB', shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 10, elevation: 2 },
-  statCardMobileFull: { width: '100%', flexBasis: '100%', flexGrow: 1, flexShrink: 0, backgroundColor: '#FFFFFF', borderRadius: 14, borderWidth: 1, borderColor: '#E5E7EB', shadowColor: '#0F172A', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 10, elevation: 2 },
-  kpiCardHover: Platform.OS === 'web' ? ({
-    transition: 'all 0.2s ease',
-    ':hover': {
-      transform: 'translateY(-2px)',
-      boxShadow: '0 4px 12px rgba(15, 23, 42, 0.08)',
-      borderColor: '#D1D5DB'
-    }
-  } as any) : {},
-  statContent: {
-    padding: 18,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    minHeight: 120,
+  kpiContent: {
+    padding: 12,
+    minHeight: 90,
   },
-  statIconContainer: {
-    marginBottom: 12,
-    alignItems: 'flex-start',
+  kpiIconCircle: {
+    width: 30, height: 30, borderRadius: 15,
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 10,
   },
-  statIconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  statCount: {
-    ...TYPOGRAPHY.h2,
-    fontSize: 26,
+  kpiCount: {
+    fontSize: 24,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 4,
+    marginBottom: 2,
     letterSpacing: -0.5,
   },
-  statLabel: {
-    ...TYPOGRAPHY.caption,
-    fontSize: 13,
+  kpiLabel: {
+    fontSize: 12,
     fontWeight: '500',
     color: '#6B7280',
-    ...(Platform.OS === 'web' ? ({
-      wordBreak: 'normal',
-      overflowWrap: 'normal',
-      whiteSpace: 'normal',
-    } as any) : {}),
   },
 
-  // SLA Card
-  opsIntelCard: { backgroundColor: '#1E293B', borderColor: '#334155', borderRadius: 16, marginBottom: SPACING.lg },
-  opsContent: { padding: SPACING.xl },
-  opsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.lg },
-  opsTitle: { ...TYPOGRAPHY.h4, color: '#F8FAFC' },
-  opsSlaText: { ...TYPOGRAPHY.bodySmall, fontWeight: '700', color: '#94A3B8' },
-  opsMetricsRow: { flexDirection: 'row', backgroundColor: '#0F172A', borderRadius: BORDER_RADIUS.md, paddingVertical: SPACING.lg, paddingHorizontal: SPACING.md, marginBottom: SPACING.xl, justifyContent: 'space-between', alignItems: 'center' },
-  opsMetric: { flex: 1, alignItems: 'center' },
-  opsMetricVal: { ...TYPOGRAPHY.h3, color: '#F8FAFC', marginBottom: SPACING.xs },
-  opsMetricLabel: { ...TYPOGRAPHY.caption, fontWeight: '600', color: '#94A3B8' },
-  opsDivider: { width: 1, height: 30, backgroundColor: '#334155' },
-  catDistSection: { marginTop: 4 },
-  catDistTitle: { ...TYPOGRAPHY.overline, color: '#94A3B8', letterSpacing: 0.5, marginBottom: SPACING.md },
-  catDistRow: { flexDirection: 'row', gap: SPACING.lg },
-  catDistItem: { flex: 1 },
-  catDistLabel: { ...TYPOGRAPHY.caption, fontWeight: '600', color: '#E2E8F0', marginBottom: SPACING.xs },
-  catDistBarBg: { height: 6, backgroundColor: '#334155', borderRadius: 3, overflow: 'hidden' },
-  catDistBarFill: { height: '100%', borderRadius: 3 },
+  // ─── SLA Card ──────────────────────────────────────────────────────────────
+  slaCard: { backgroundColor: '#1E293B', borderColor: '#334155', borderRadius: 16, marginBottom: 16 },
+  slaHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  slaTitle: { ...TYPOGRAPHY.h4, color: '#F8FAFC' },
+  slaBadge: { ...TYPOGRAPHY.bodySmall, fontWeight: '700', color: '#94A3B8' },
+  slaMetrics: {
+    flexDirection: 'row',
+    backgroundColor: '#0F172A',
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: 14,
+    paddingHorizontal: 10,
+    marginBottom: 16,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  slaMetric: { flex: 1, alignItems: 'center' },
+  slaMetricVal: { ...TYPOGRAPHY.h3, color: '#F8FAFC', marginBottom: 4 },
+  slaMetricLabel: { ...TYPOGRAPHY.caption, fontWeight: '600', color: '#94A3B8' },
+  slaDivider: { width: 1, height: 30, backgroundColor: '#334155' },
 
-  // Banner
-  communityBanner: {
-    marginTop: 'auto',
+  // ─── Distribution ──────────────────────────────────────────────────────────
+  distTitle: { ...TYPOGRAPHY.overline, color: '#94A3B8', letterSpacing: 0.5, marginBottom: 10 },
+  distRow: { marginBottom: 6 },
+  distLabel: { ...TYPOGRAPHY.caption, fontWeight: '600', color: '#E2E8F0', marginBottom: 4 },
+  distBarBg: { height: 6, backgroundColor: '#334155', borderRadius: 3, overflow: 'hidden' },
+  distBarFill: { height: '100%', borderRadius: 3 },
+
+  // ─── Banner ────────────────────────────────────────────────────────────────
+  banner: {
     backgroundColor: '#ECFDF5',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#A7F3D0',
-    overflow: 'hidden',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    marginTop: 'auto' as any,
   },
-  communityBannerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.lg,
-  },
-  communityBannerTextCol: {
-    flex: 1,
-    zIndex: 1,
-  },
-  communityBannerTitle: {
-    ...TYPOGRAPHY.bodyBold,
-    color: '#064E3B',
-    marginBottom: 2,
-  },
-  communityBannerSub: {
-    ...TYPOGRAPHY.caption,
-    fontWeight: '800',
-    color: '#047857',
-    letterSpacing: 0.5,
-  },
-  communityBannerIcon: {
-    position: 'absolute',
-    right: 10,
-    bottom: -10,
-    transform: [{ rotate: '-15deg' }],
-  },
+  bannerTitle: { ...TYPOGRAPHY.bodyBold, color: '#064E3B', marginBottom: 2 },
+  bannerSub: { ...TYPOGRAPHY.caption, fontWeight: '800', color: '#047857', letterSpacing: 0.5 },
 
-  // Incident Queue Area
-  queueHeaderContainer: {
-     flexDirection: 'row',
-     justifyContent: 'space-between',
-     alignItems: 'flex-start',
-     marginBottom: SPACING.md,
+  // ─── Queue ─────────────────────────────────────────────────────────────────
+  queueHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 10,
   },
-  queueHeaderTitleBox: {
-     flex: 1,
+  queueTitle: { ...TYPOGRAPHY.h3, color: COLORS.textPrimary, marginBottom: 2 },
+  queueSub: { ...TYPOGRAPHY.bodySmall, color: COLORS.textSecondary },
+
+  // ─── Filters ───────────────────────────────────────────────────────────────
+  filterPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: BORDER_RADIUS.full,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
   },
-  queueHeaderTitle: {
-     ...TYPOGRAPHY.h3,
-     color: COLORS.textPrimary,
-     marginBottom: 2,
-  },
-  queueHeaderSubtitle: {
-     ...TYPOGRAPHY.bodySmall,
-     color: COLORS.textSecondary,
-  },
-  filterScrollWrapper: {
-     marginBottom: SPACING.lg,
-  },
-  filterScroll: { flexGrow: 0 },
-  filterContainer: { gap: SPACING.sm, paddingBottom: SPACING.xs },
-  filterPill: { paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm, borderRadius: BORDER_RADIUS.full, backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: COLORS.borderLight },
   filterPillActive: { backgroundColor: '#0F172A', borderColor: '#0F172A' },
   filterPillText: { ...TYPOGRAPHY.bodySmall, fontWeight: '600', color: COLORS.textSecondary },
   filterPillTextActive: { color: '#FFFFFF' },
 
-  // Scrollable Incident List
-  incidentListContainer: {
-     flex: 1,
-     display: 'flex',
-     flexDirection: 'column',
+  // ─── Empty ─────────────────────────────────────────────────────────────────
+  emptyState: {
+    padding: 40,
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: COLORS.borderLight,
   },
-  incidentListScroll: {
-     flex: 1,
-     paddingRight: SPACING.sm,
-  },
-  incidentListScrollContent: {
-     paddingBottom: SPACING['4xl'],
-  },
-  compactComplaintCard: {
-     padding: 0,
-     marginBottom: SPACING.md,
-     borderRadius: 14,
-  },
-
-  // Empty State
-  emptyCard: { backgroundColor: '#FFFFFF', borderStyle: 'dashed', borderWidth: 2, borderColor: COLORS.borderLight, borderRadius: 16 },
-  emptyContent: { padding: SPACING['5xl'], alignItems: 'center' },
-  emptyTitle: { ...TYPOGRAPHY.bodyBold, color: COLORS.textPrimary, marginTop: SPACING.md, marginBottom: SPACING.xs },
+  emptyTitle: { ...TYPOGRAPHY.bodyBold, color: COLORS.textPrimary, marginTop: 12, marginBottom: 4 },
   emptySub: { ...TYPOGRAPHY.bodySmall, color: COLORS.textSecondary, textAlign: 'center' },
 });

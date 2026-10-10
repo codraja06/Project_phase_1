@@ -27,12 +27,7 @@ export const locationService = {
     if (Platform.OS === 'web') {
       return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
-          // Default to Bangalore if no geolocation on web
-          resolve({
-            latitude: 12.9716,
-            longitude: 77.5946,
-            address: 'Location unavailable in web mode. Using default coordinates.',
-          });
+          reject(new Error('Geolocation is unavailable. Enter the incident coordinates manually.'));
           return;
         }
 
@@ -56,12 +51,7 @@ export const locationService = {
             resolve({ latitude, longitude, address });
           },
           (err) => {
-            // Default fallback coordinates
-            resolve({
-              latitude: 12.9716,
-              longitude: 77.5946,
-              address: `GPS denied (${err.message}). Using default location.`,
-            });
+            reject(new Error(`GPS unavailable: ${err.message}. Enter the incident coordinates manually.`));
           },
           { timeout: 10000, enableHighAccuracy: true }
         );

@@ -1,0 +1,38 @@
+[     395ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:26768
+[     463ms] [WARNING] "shadow*" style props are deprecated. Use "boxShadow". @ http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:33141
+[     508ms] [LOG] Running application "main" with appParams:
+ {rootTag: #root, hydrate: false} 
+Development-level warnings: ON.
+Performance optimizations: OFF. @ http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:856
+[    3190ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:8081/CitizenLogin:0
+[    6958ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:8081/AuthorityLogin:0
+[   14343ms] [LOG] Button Pressed: Resume Officer Session @ http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:132850
+[   14356ms] [WARNING] props.pointerEvents is deprecated. Use style.pointerEvents @ http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:33141
+[   39317ms] [ERROR] The action 'NAVIGATE' with payload {"name":"AuthorityUsers"} was not handled by any navigator.
+
+Do you have a screen named 'AuthorityUsers'?
+
+If you're trying to navigate to a screen in a nested navigator, see https://reactnavigation.org/docs/nesting-navigators#navigating-to-a-screen-in-a-nested-navigator.
+
+This is a development-only warning and won't be shown in production. @ http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:62282
+[   40371ms] [ERROR] The action 'NAVIGATE' with payload {"name":"AuthorityUsers"} was not handled by any navigator.
+
+Do you have a screen named 'AuthorityUsers'?
+
+If you're trying to navigate to a screen in a nested navigator, see https://reactnavigation.org/docs/nesting-navigators#navigating-to-a-screen-in-a-nested-navigator.
+
+This is a development-only warning and won't be shown in production. @ http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:62282
+[   42756ms] [ERROR] The action 'NAVIGATE' with payload {"name":"AuthorityUsers"} was not handled by any navigator.
+
+Do you have a screen named 'AuthorityUsers'?
+
+If you're trying to navigate to a screen in a nested navigator, see https://reactnavigation.org/docs/nesting-navigators#navigating-to-a-screen-in-a-nested-navigator.
+
+This is a development-only warning and won't be shown in production. @ http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:62282
+[   43453ms] [ERROR] The action 'NAVIGATE' with payload {"name":"AuthorityUsers"} was not handled by any navigator.
+
+Do you have a screen named 'AuthorityUsers'?
+
+If you're trying to navigate to a screen in a nested navigator, see https://reactnavigation.org/docs/nesting-navigators#navigating-to-a-screen-in-a-nested-navigator.
+
+This is a development-only warning and won't be shown in production. @ http://localhost:8081/node_modules%5Cexpo%5CAppEntry.bundle?platform=web&dev=true&hot=false&lazy=true&transform.engine=hermes&transform.routerRoot=app:62282

@@ -103,7 +103,7 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const getTextStyle = (): TextStyle => {
-    const base: TextStyle = { ...TYPOGRAPHY.button };
+    const base: TextStyle = { ...TYPOGRAPHY.button, flexShrink: 1 };
     
     if (size === 'sm') base.fontSize = 13;
     if (size === 'lg') base.fontSize = 16;
@@ -134,7 +134,9 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <Animated.View style={[animatedStyle, style]}>
       <Pressable
-        onPress={onPress}
+        onPress={(e) => {
+          if (onPress) onPress();
+        }}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
         disabled={isDisabled}

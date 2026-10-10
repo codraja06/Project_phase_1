@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   Image,
   Platform,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -22,6 +23,7 @@ import { SHADOWS } from '../../theme/index';
 import { SPACING } from '../../theme/spacing';
 import { TYPOGRAPHY } from '../../theme/typography';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
+import { useMobileMenu } from '../../contexts/MobileMenuContext';
 import { SearchBar } from '../../components/SearchBar';
 import { FilterChipGroup } from '../../components/FilterChip';
 import { StatusBadge } from '../../components/StatusBadge';
@@ -31,6 +33,7 @@ import { Toast } from '../../components/Toast';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
+import { AuthorityMobileHeader } from '../../components/AuthorityMobileHeader';
 
 const formatCategory = (cat?: string) => {
   if (!cat) return 'Unspecified';
@@ -293,7 +296,8 @@ const MobileAuthorityCard: React.FC<MobileCardProps> = ({
 
 // ─── Main Screen Component ───────────────────────────────────────────────────
 export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
-  const { isDesktop } = useBreakpoint();
+  const { toggleMenu } = useMobileMenu();
+  const { isDesktop, isMobile } = useBreakpoint();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -338,7 +342,7 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
 
   const handleVerify = async (item: Complaint) => {
     try {
-      const updated = await authorityApi.verifyComplaint(item._id);
+      await authorityApi.verifyComplaint(item._id);
       setComplaints((prev) => prev.map((c) => (c._id === item._id ? { ...c, verified: true } : c)));
       setToast({ visible: true, message: `Incident verified.`, type: 'success' });
     } catch (error: any) {
@@ -471,12 +475,14 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
 
         {selectedIds.length > 0 && (
           <Animated.View entering={FadeInUp.duration(200)} exiting={FadeOut.duration(200)} style={styles.bulkActionButtons}>
-            <Button title="In Progress" variant="secondary" size="sm" onPress={() => handleBulkStatus('In Progress')} disabled={bulkLoading} style={{ height: 32 }} icon={<Ionicons name="time" size={14} />} />
-            <Button title="Resolve" variant="default" size="sm" onPress={() => handleBulkStatus('Resolved')} disabled={bulkLoading} style={{ height: 32 }} icon={<Ionicons name="checkmark-circle" size={14} color="#FFF" />} />
-            <Button title="Verify" variant="outline" size="sm" onPress={handleBulkVerify} disabled={bulkLoading} style={{ height: 32 }} icon={<Ionicons name="shield-checkmark" size={14} />} />
-            <TouchableOpacity onPress={() => setSelectedIds([])} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingLeft: SPACING.xs }}>
-              <Ionicons name="close-circle" size={20} color={COLORS.textMuted} />
-            </TouchableOpacity>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, alignItems: 'center' }}>
+              <Button title={isMobile ? "" : "In Progress"} variant="secondary" size="sm" onPress={() => handleBulkStatus('In Progress')} disabled={bulkLoading} style={{ height: 32 }} icon={<Ionicons name="time" size={14} />} />
+              <Button title={isMobile ? "" : "Resolve"} variant="default" size="sm" onPress={() => handleBulkStatus('Resolved')} disabled={bulkLoading} style={{ height: 32 }} icon={<Ionicons name="checkmark-circle" size={14} color="#FFF" />} />
+              <Button title={isMobile ? "" : "Verify"} variant="outline" size="sm" onPress={handleBulkVerify} disabled={bulkLoading} style={{ height: 32 }} icon={<Ionicons name="shield-checkmark" size={14} />} />
+              <TouchableOpacity onPress={() => setSelectedIds([])} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingLeft: 4 }}>
+                <Ionicons name="close-circle" size={20} color={COLORS.textMuted} />
+              </TouchableOpacity>
+            </ScrollView>
           </Animated.View>
         )}
       </View>
@@ -551,18 +557,17 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
   }
 
   return (
-    <SafeAreaView style={styles.safeAreaMobile}>
-      <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
+    <View style={styles.safeAreaMobile}>
+      <StatusBar barStyle="light-content" backgroundColor="#0F172A" translucent={false} />
 
-      <Animated.View entering={FadeInDown.duration(400)} style={styles.headerBar}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.navigate('AuthorityDashboard')}>
-          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Incident Registry</Text>
-        <View style={styles.countPill}>
-          <Text style={styles.countPillText}>{filteredComplaints.length}</Text>
-        </View>
-      </Animated.View>
+      <AuthorityMobileHeader 
+        title="Incident Registry" 
+        rightNode={
+          <View style={styles.countPill}>
+            <Text style={styles.countPillText}>{filteredComplaints.length}</Text>
+          </View>
+        }
+      />
 
       <Animated.View entering={FadeInDown.delay(100).duration(400)} style={styles.filterSection}>
         <SearchBar value={searchQuery} onChangeText={setSearchQuery} placeholder="Search incidents..." style={styles.searchBar} />
@@ -598,7 +603,7 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
 
       <ConfirmationDialog visible={rejectModalVisible} title="Purge Incident" message={`Remove '${selectedComplaint?.title || 'this complaint'}' from the database?`} confirmText="Purge Record" confirmVariant="danger" loading={actionLoading} onConfirm={handleConfirmReject} onCancel={() => { setRejectModalVisible(false); setSelectedComplaint(null); }} />
       <Toast visible={toast.visible} message={toast.message} type={toast.type} onDismiss={() => setToast((prev) => ({ ...prev, visible: false }))} />
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -642,7 +647,7 @@ const styles = StyleSheet.create({
   tableColActions: { width: 130, flexDirection: 'row', alignItems: 'center' },
   
   // ── Mobile ────────────────────────────────────────────────────────────────
-  headerBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING.lg, paddingTop: Platform.OS === 'ios' ? SPACING.md : SPACING['3xl'], paddingBottom: SPACING.lg, backgroundColor: '#0F172A' },
+  headerBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING.lg, paddingTop: Platform.OS === 'ios' ? SPACING.md : SPACING.lg, paddingBottom: SPACING.lg, backgroundColor: '#0F172A' },
   backBtn: { width: 38, height: 38, borderRadius: BORDER_RADIUS.full, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.1)', marginRight: SPACING.md },
   headerTitle: { ...TYPOGRAPHY.h3, color: '#FFFFFF', flex: 1 },
   countPill: { backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: BORDER_RADIUS.full },
@@ -652,12 +657,12 @@ const styles = StyleSheet.create({
   filterChips: { paddingVertical: SPACING.xs },
   listContent: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.lg, paddingBottom: SPACING['5xl'] },
   mobileCard: { marginBottom: SPACING.md, padding: 0 },
-  mobileCardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: SPACING.md },
-  mobileCardHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs, flexWrap: 'wrap' },
-  mobileCardBody: { flexDirection: 'row', gap: SPACING.md, alignItems: 'center' },
-  mobileCardImg: { width: 74, height: 74, borderRadius: BORDER_RADIUS.md },
-  mobileCardImgPlaceholder: { width: 74, height: 74, borderRadius: BORDER_RADIUS.md, backgroundColor: COLORS.backgroundNeutral, alignItems: 'center', justifyContent: 'center' },
-  mobileCardContent: { flex: 1 },
+  mobileCardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: SPACING.md, gap: SPACING.xs },
+  mobileCardHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs, flexWrap: 'wrap', flex: 1, minWidth: 0 },
+  mobileCardBody: { flexDirection: 'row', gap: SPACING.md, alignItems: 'center', minWidth: 0 },
+  mobileCardImg: { width: 68, height: 68, borderRadius: BORDER_RADIUS.md, flexShrink: 0 },
+  mobileCardImgPlaceholder: { width: 68, height: 68, borderRadius: BORDER_RADIUS.md, backgroundColor: COLORS.backgroundNeutral, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  mobileCardContent: { flex: 1, minWidth: 0 },
   mobileCardTitle: { ...TYPOGRAPHY.bodyBold, color: COLORS.textPrimary, marginBottom: 4 },
   mobileCardLocation: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, marginBottom: 2 },
   mobileCardCitizen: { ...TYPOGRAPHY.caption, color: COLORS.textMuted, fontWeight: '500' },
@@ -668,7 +673,7 @@ const styles = StyleSheet.create({
   mobileCompareDivider: { width: 1, backgroundColor: COLORS.borderLight, marginHorizontal: SPACING.sm },
   mobileCardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: SPACING.xl, paddingTop: SPACING.md, borderTopWidth: 1, borderTopColor: COLORS.borderLight },
   mobileCardDate: { ...TYPOGRAPHY.caption, color: COLORS.textMuted, fontWeight: '500' },
-  mobileActionGroup: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
+  mobileActionGroup: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs, flexShrink: 0 },
   emptyContainer: { padding: SPACING['5xl'], alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.surface, borderRadius: BORDER_RADIUS.lg, borderWidth: 1, borderColor: COLORS.borderLight, marginTop: SPACING.xl },
   emptyIconCircle: { width: 68, height: 68, borderRadius: 34, backgroundColor: COLORS.background, alignItems: 'center', justifyContent: 'center', marginBottom: SPACING.lg },
   emptyTitle: { ...TYPOGRAPHY.h4, color: COLORS.textPrimary, marginBottom: SPACING.xs },
@@ -678,8 +683,8 @@ const styles = StyleSheet.create({
   tableRowSelected: { backgroundColor: COLORS.backgroundNeutral, borderColor: COLORS.border },
   mobileCheckboxBtn: { marginRight: 4, padding: 2 },
   mobileCardSelected: { borderColor: COLORS.border, backgroundColor: COLORS.backgroundNeutral },
-  bulkToolbar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: COLORS.surface, paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
+  bulkToolbar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: COLORS.surface, paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
   bulkSelectAllBtn: { flexDirection: 'row', alignItems: 'center' },
   bulkSelectAllText: { ...TYPOGRAPHY.bodySmall, fontWeight: '800', color: COLORS.textPrimary },
-  bulkActionButtons: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
+  bulkActionButtons: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, flex: 1, justifyContent: 'flex-end', minWidth: 0, overflow: 'hidden' as any },
 });

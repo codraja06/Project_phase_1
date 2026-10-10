@@ -7,9 +7,8 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
-  StatusBar,
-} from 'react-native';
+  StatusBar} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -44,14 +43,11 @@ export const CitizenLoginScreen: React.FC<Props> = ({ navigation }) => {
     control,
     handleSubmit,
     setValue,
-    formState: { errors },
-  } = useForm<CitizenLoginForm>({
+    formState: { errors }} = useForm<CitizenLoginForm>({
     resolver: zodResolver(citizenLoginSchema),
     defaultValues: {
       email: savedSession?.user?.email || '',
-      password: '',
-    },
-  });
+      password: ''}});
 
   useEffect(() => {
     if (savedSession?.user?.email) {
@@ -416,5 +412,4 @@ const styles = StyleSheet.create({
   backBtnMobile: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING['3xl'], backgroundColor: COLORS.surface, paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm, borderRadius: BORDER_RADIUS.xl, alignSelf: 'flex-start', borderWidth: 1, borderColor: COLORS.borderLight, ...SHADOWS.sm },
   backBtnTextMobile: { ...TYPOGRAPHY.caption, color: COLORS.textPrimary, fontWeight: '700', marginLeft: SPACING.xs },
   authoritySwitch: { flexDirection: 'row', alignItems: 'center', paddingVertical: SPACING.xs },
-  authoritySwitchText: { ...TYPOGRAPHY.caption, fontWeight: '800', color: COLORS.primary },
-});
+  authoritySwitchText: { ...TYPOGRAPHY.caption, fontWeight: '800', color: COLORS.primary }});

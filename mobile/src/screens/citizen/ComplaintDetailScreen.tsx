@@ -5,10 +5,9 @@ import {
   StyleSheet,
   ScrollView,
   RefreshControl,
-  SafeAreaView,
   StatusBar,
-  TouchableOpacity,
-} from 'react-native';
+  TouchableOpacity} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import Animated, { FadeIn, FadeInDown, FadeInUp, SlideInRight } from 'react-native-reanimated';
@@ -70,7 +69,7 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.headerBar}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Back" style={styles.backBtn} onPress={() => navigation.goBack()}>
             <Ionicons name="chevron-back" size={24} color={COLORS.textPrimary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Complaint Details</Text>
@@ -101,7 +100,7 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
 
       {/* Screen Header */}
       <Animated.View entering={FadeInDown.duration(400)} style={styles.headerBar}>
-        <TouchableOpacity
+        <TouchableOpacity hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Back"
           style={styles.backBtn}
           onPress={() => navigation.goBack()}
           activeOpacity={0.7}
@@ -332,8 +331,7 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
-  },
+    backgroundColor: COLORS.background},
   headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -342,14 +340,12 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.md,
     borderBottomWidth: 1.5,
     borderBottomColor: COLORS.borderLight,
-    backgroundColor: COLORS.background,
-  },
+    backgroundColor: COLORS.background},
   headerRightBadges: {
     marginLeft: 'auto',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.xs,
-  },
+    gap: SPACING.xs},
   backBtn: {
     width: 38,
     height: 38,
@@ -359,87 +355,70 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
-    marginRight: SPACING.md,
-  },
+    marginRight: SPACING.md},
   headerTitle: {
     ...TYPOGRAPHY.h3,
-    color: COLORS.textPrimary,
-  },
+    color: COLORS.textPrimary},
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
-  },
+    backgroundColor: COLORS.background},
   scrollContent: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.lg,
-    paddingBottom: SPACING['5xl'],
-  },
+    paddingBottom: SPACING['5xl']},
   desktopScrollContent: {
     padding: SPACING['4xl'],
-    paddingBottom: SPACING['6xl'],
-  },
+    paddingBottom: SPACING['6xl']},
   desktopContainer: {
     flexDirection: 'row',
     gap: SPACING['4xl'],
     alignItems: 'flex-start',
     maxWidth: 1100,
     alignSelf: 'center',
-    width: '100%',
-  },
+    width: '100%'},
   desktopLeftCol: {
-    flex: 1.1,
-  },
+    flex: 1.1},
   desktopRightCol: {
-    flex: 1.2,
-  },
+    flex: 1.2},
   metaCard: {
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.lg,
     padding: SPACING.lg,
     marginTop: SPACING.md,
     borderWidth: 1.5,
-    borderColor: COLORS.borderLight,
-  },
+    borderColor: COLORS.borderLight},
   locationHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.xs,
-  },
+    marginBottom: SPACING.xs},
   metaCardTitle: {
     ...TYPOGRAPHY.bodyBold,
-    color: COLORS.textSecondary,
-  },
+    color: COLORS.textSecondary},
   locationText: {
     ...TYPOGRAPHY.body,
-    color: COLORS.textPrimary,
-  },
+    color: COLORS.textPrimary},
   gpsCoordsText: {
     ...TYPOGRAPHY.caption,
     color: COLORS.textMuted,
-    marginTop: SPACING.xs,
-  },
+    marginTop: SPACING.xs},
   mainWrapper: {
     width: '100%',
     maxWidth: 600,
-    alignSelf: 'center',
-  },
+    alignSelf: 'center'},
   infoCard: {
-    marginTop: SPACING.lg,
-  },
+    marginTop: SPACING.lg},
   codeDateRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: SPACING.sm,
-    marginBottom: SPACING.md,
-  },
+    marginBottom: SPACING.md},
   codeDateRowMobile: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: SPACING.xs,
-    marginBottom: SPACING.sm,
-  },
+    marginBottom: SPACING.sm},
   complaintCode: {
     ...TYPOGRAPHY.caption,
     fontWeight: '800',
@@ -447,69 +426,55 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryLight,
     paddingHorizontal: 7,
     paddingVertical: 2.5,
-    borderRadius: BORDER_RADIUS.xs,
-  },
+    borderRadius: BORDER_RADIUS.xs},
   priorityPill: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 6,
     paddingVertical: 2.5,
     borderRadius: BORDER_RADIUS.xs,
-    borderWidth: 1,
-  },
+    borderWidth: 1},
   priorityHigh: {
     backgroundColor: COLORS.errorLight,
-    borderColor: COLORS.errorBorder,
-  },
+    borderColor: COLORS.errorBorder},
   priorityNormal: {
     backgroundColor: COLORS.surface,
-    borderColor: COLORS.border,
-  },
+    borderColor: COLORS.border},
   priorityPillText: {
-    ...TYPOGRAPHY.overline,
-  },
+    ...TYPOGRAPHY.overline},
   priorityHighText: {
-    color: COLORS.error,
-  },
+    color: COLORS.error},
   priorityNormalText: {
-    color: COLORS.primaryDark,
-  },
+    color: COLORS.primaryDark},
   verifyPill: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 6,
     paddingVertical: 2.5,
     borderRadius: BORDER_RADIUS.xs,
-    borderWidth: 1,
-  },
+    borderWidth: 1},
   verifiedBg: {
     backgroundColor: COLORS.successLight,
-    borderColor: COLORS.successBorder,
-  },
+    borderColor: COLORS.successBorder},
   unverifiedBg: {
     backgroundColor: COLORS.pendingLight,
-    borderColor: COLORS.pendingBorder,
-  },
+    borderColor: COLORS.pendingBorder},
   verifyPillText: {
-    ...TYPOGRAPHY.overline,
-  },
+    ...TYPOGRAPHY.overline},
   dateText: {
     ...TYPOGRAPHY.caption,
     color: COLORS.textMuted,
-    marginLeft: 'auto',
-  },
+    marginLeft: 'auto'},
   title: {
     ...TYPOGRAPHY.h2,
     color: COLORS.textPrimary,
-    marginBottom: SPACING.md,
-  },
+    marginBottom: SPACING.md},
   tagRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: SPACING.sm,
-    marginBottom: SPACING.md,
-  },
+    marginBottom: SPACING.md},
   categoryTag: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -518,13 +483,11 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: BORDER_RADIUS.md,
-  },
+    borderRadius: BORDER_RADIUS.md},
   categoryTagText: {
     ...TYPOGRAPHY.bodySmall,
     fontWeight: '700',
-    color: COLORS.textPrimary,
-  },
+    color: COLORS.textPrimary},
   confidenceTag: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -533,13 +496,11 @@ const styles = StyleSheet.create({
     borderColor: COLORS.borderMaroon,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: BORDER_RADIUS.md,
-  },
+    borderRadius: BORDER_RADIUS.md},
   confidenceTagText: {
     ...TYPOGRAPHY.bodySmall,
     fontWeight: '700',
-    color: COLORS.primary,
-  },
+    color: COLORS.primary},
   locationRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -548,41 +509,32 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     borderRadius: BORDER_RADIUS.md,
     borderWidth: 1,
-    borderColor: COLORS.borderLight,
-  },
+    borderColor: COLORS.borderLight},
   descBlock: {
     backgroundColor: COLORS.surface,
     padding: SPACING.lg,
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 1.5,
     borderColor: COLORS.border,
-    marginBottom: SPACING.lg,
-  },
+    marginBottom: SPACING.lg},
   descLabel: {
     ...TYPOGRAPHY.overline,
     color: COLORS.textMuted,
-    marginBottom: SPACING.xs,
-  },
+    marginBottom: SPACING.xs},
   descriptionText: {
     ...TYPOGRAPHY.body,
-    color: COLORS.textPrimary,
-  },
+    color: COLORS.textPrimary},
   readMoreBtn: {
-    marginTop: SPACING.xs,
-  },
+    marginTop: SPACING.xs},
   readMoreText: {
     ...TYPOGRAPHY.bodySmall,
     color: COLORS.primary,
-    fontWeight: '700',
-  },
+    fontWeight: '700'},
   errorContainer: {
     padding: SPACING['5xl'],
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center'},
   errorText: {
     ...TYPOGRAPHY.bodyBold,
     color: COLORS.error,
-    marginTop: SPACING.md,
-  },
-});
+    marginTop: SPACING.md}});

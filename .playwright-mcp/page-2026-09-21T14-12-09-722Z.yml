@@ -1,0 +1,53 @@
+- generic [ref=f5e20]:
+  - generic [ref=f5e21]:
+    - generic [ref=f5e22]:
+      - generic [ref=f5e26]:
+        - generic [ref=f5e27]: 
+        - generic [ref=f5e28]: 
+      - generic [ref=f5e29]: Civic Action Portal
+      - generic [ref=f5e30]: Report hazards, track infrastructure fixes, and empower your neighborhood through intelligent civic participation.
+    - generic [ref=f5e31]: City Resident Access • CivicTrack v2.0
+  - generic [ref=f5e35]:
+    - generic [ref=f5e36]: Sign In
+    - generic [ref=f5e37]: Welcome back to CivicTrack.
+    - generic [ref=f5e39]:
+      - generic [ref=f5e40]:
+        - generic [ref=f5e41]: T
+        - generic [ref=f5e43]:
+          - generic [ref=f5e44]: Remembered Session
+          - generic [ref=f5e45]: Test Citizen
+          - generic [ref=f5e46]: citizen@example.com
+      - generic [ref=f5e47]:
+        - button "Continue as Test" [ref=f5e49] [cursor=pointer]
+        - button "Use another account" [ref=f5e52] [cursor=pointer]
+    - generic [ref=f5e56]:
+      - generic [ref=f5e57]:
+        - generic [ref=f5e58]: Email Address
+        - generic [ref=f5e59]:
+          - generic [ref=f5e60]: 
+          - textbox "Email Address" [ref=f5e61]:
+            - /placeholder: name@example.com
+            - text: citizen@example.com
+      - generic [ref=f5e62]:
+        - generic [ref=f5e63]: Password
+        - generic [ref=f5e64]:
+          - generic [ref=f5e65]: 
+          - textbox "Password" [ref=f5e66]:
+            - /placeholder: Enter your password
+          - button "Show password" [ref=f5e67] [cursor=pointer]:
+            - generic [ref=f5e68]: 
+      - generic [ref=f5e69] [cursor=pointer]: Forgot password?
+      - button "Sign In" [ref=f5e72] [cursor=pointer]
+      - generic [ref=f5e74]: or continue with
+      - button "Continue with Google" [ref=f5e79] [cursor=pointer]:
+        - generic [ref=f5e80]: 
+    - generic [ref=f5e82]:
+      - generic [ref=f5e83]: Don't have an account?
+      - generic [ref=f5e84] [cursor=pointer]: Create Account
+    - generic [ref=f5e86]:
+      - generic [ref=f5e87] [cursor=pointer]:
+        - generic [ref=f5e88]: 
+        - generic [ref=f5e89]: Auto-fill Demo
+      - generic [ref=f5e90] [cursor=pointer]:
+        - generic [ref=f5e91]: 
+        - generic [ref=f5e92]: Officer Portal →

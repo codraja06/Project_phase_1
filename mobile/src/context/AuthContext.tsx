@@ -48,6 +48,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setOnUnauthorizedCallback(() => {
       setToken(null);
       setUser(null);
+      setSavedSession(null);
     });
     loadSession();
   }, []);
@@ -96,10 +97,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     }
 
-    // Activate session into context
+    const verifiedUser = await authApi.getMe();
+    if (expectedRole && verifiedUser.role !== expectedRole) throw new Error('Please use the correct account portal.');
     setToken(savedSession.token);
-    setUser(savedSession.user);
-    return savedSession.user;
+    setUser(verifiedUser);
+    return verifiedUser;
   };
 
   const clearSavedSession = async () => {
@@ -126,31 +128,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     }
 
+    await storageService.setToken(result.token);
+    await storageService.setUser(result.user);
     setToken(result.token);
     setUser(result.user);
     setSavedSession({ user: result.user, token: result.token });
-    await storageService.setToken(result.token);
-    await storageService.setUser(result.user);
     return result.user;
   };
 
   const loginWithGoogle = async (role: 'citizen' | 'authority'): Promise<User> => {
     const result = await googleAuthService.signInWithGoogle(role);
+    await storageService.setToken(result.token);
+    await storageService.setUser(result.user);
     setToken(result.token);
     setUser(result.user);
     setSavedSession({ user: result.user, token: result.token });
-    await storageService.setToken(result.token);
-    await storageService.setUser(result.user);
     return result.user;
   };
 
   const register = async (data: any): Promise<User> => {
     const result = await authApi.register(data);
+    await storageService.setToken(result.token);
+    await storageService.setUser(result.user);
     setToken(result.token);
     setUser(result.user);
     setSavedSession({ user: result.user, token: result.token });
-    await storageService.setToken(result.token);
-    await storageService.setUser(result.user);
     return result.user;
   };
 

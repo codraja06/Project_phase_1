@@ -1,0 +1,9 @@
+- generic [ref=f3e12]:
+  - generic [ref=f3e13]: Initializing Command Center...
+  - generic [ref=f3e20]:
+    - button "Dashboard" [ref=f3e21] [cursor=pointer]
+    - button "Complaints" [ref=f3e23] [cursor=pointer]
+    - button "Map" [ref=f3e25] [cursor=pointer]
+    - button "Analytics" [ref=f3e27] [cursor=pointer]
+    - button "Feed" [ref=f3e29] [cursor=pointer]
+    - button "Profile" [ref=f3e31] [cursor=pointer]

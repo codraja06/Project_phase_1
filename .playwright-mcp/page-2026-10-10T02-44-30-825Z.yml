@@ -1,0 +1,39 @@
+- generic [ref=f7e10]:
+  - generic [ref=f7e11]:
+    - generic [ref=f7e12]:
+      - generic [ref=f7e14]:
+        - generic [ref=f7e16]:
+          - generic [ref=f7e56]: 
+          - generic [ref=f7e57]: 
+        - generic [ref=f7e17]: CivicTrack
+      - generic [ref=f7e19]: MUNICIPAL OPERATIONS
+    - generic [ref=f7e22]:
+      - generic [ref=f7e23]: OPERATIONS
+      - button "Command Center" [ref=f7e24] [cursor=pointer]:
+        - generic [ref=f7e58]: 
+      - button "All Complaints" [ref=f7e27] [cursor=pointer]:
+        - generic [ref=f7e59]: 
+      - button "Incident Map" [ref=f7e29] [cursor=pointer]:
+        - generic [ref=f7e60]: 
+      - button "Operations Analytics" [active] [ref=f7e31] [cursor=pointer]:
+        - generic [ref=f7e62]: 
+      - button "Alerts & Feed" [ref=f7e33] [cursor=pointer]:
+        - generic [ref=f7e63]: 
+      - generic [ref=f7e36]: SETTINGS
+      - button "Profile & Settings" [ref=f7e37] [cursor=pointer]:
+        - generic [ref=f7e64]: 
+    - generic [ref=f7e40]:
+      - generic [ref=f7e41]: JD
+      - generic [ref=f7e43]:
+        - generic [ref=f7e44]: John Doe
+        - generic [ref=f7e45]:
+          - generic [ref=f7e65]: 
+          - generic [ref=f7e46]: Authorized Officer
+  - generic [ref=f7e86]:
+    - generic [ref=f7e87]:
+      - generic [ref=f7e88]: OPERATIONS INTELLIGENCE
+      - generic [ref=f7e90]: Municipal Analytics
+    - generic [ref=f7e91]:
+      - generic [ref=f7e92] [cursor=pointer]: 7 Days
+      - generic [ref=f7e94] [cursor=pointer]: 30 Days
+      - generic [ref=f7e96] [cursor=pointer]: All Time

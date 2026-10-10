@@ -12,7 +12,8 @@ export const aiApi = {
       try {
         const response = await fetch(imageUri);
         const blob = await response.blob();
-        const filename = `civic_issue_${Date.now()}.jpg`;
+        const ext = blob.type === 'image/png' ? 'png' : blob.type === 'image/webp' ? 'webp' : 'jpg';
+        const filename = `civic_issue_${Date.now()}.${ext}`;
         formData.append('image', blob, filename);
       } catch {
         throw new Error('Failed to read image for AI detection.');
@@ -21,7 +22,7 @@ export const aiApi = {
       // Native: append as React Native file object
       const filename = imageUri.split('/').pop() || 'photo.jpg';
       const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : 'image/jpeg';
+      const type = match ? `image/${match[1] === 'jpg' ? 'jpeg' : match[1]}` : 'image/jpeg';
       formData.append('image', { uri: imageUri, name: filename, type } as any);
     }
 
@@ -51,16 +52,16 @@ export const aiApi = {
       try {
         const response = await fetch(imageUri);
         const blob = await response.blob();
-        const filename = `civic_issue_${Date.now()}.jpg`;
+        const ext = blob.type === 'image/png' ? 'png' : blob.type === 'image/webp' ? 'webp' : 'jpg';
+        const filename = `civic_issue_${Date.now()}.${ext}`;
         formData.append('image', blob, filename);
       } catch {
-        // Return the original uri as fallback on web if upload fails
-        return imageUri;
+        throw new Error('Failed to read the selected image. Please select it again.');
       }
     } else {
       const filename = imageUri.split('/').pop() || 'photo.jpg';
       const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : 'image/jpeg';
+      const type = match ? `image/${match[1] === 'jpg' ? 'jpeg' : match[1]}` : 'image/jpeg';
       formData.append('image', { uri: imageUri, name: filename, type } as any);
     }
 
@@ -71,6 +72,8 @@ export const aiApi = {
     });
 
     // Read imageUrl from envelope.data (the inner data payload)
-    return envelope?.data?.imageUrl || envelope?.imageUrl || imageUri;
+    const imageUrl = envelope?.data?.imageUrl;
+    if (typeof imageUrl !== 'string' || !/^https?:\/\//i.test(imageUrl)) throw new Error('Image upload did not return a permanent URL. Please retry.');
+    return imageUrl;
   },
 };

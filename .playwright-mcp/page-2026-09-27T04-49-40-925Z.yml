@@ -1,0 +1,48 @@
+- generic [ref=e16]:
+  - generic [ref=e17]:
+    - generic [ref=e18]:
+      - generic [ref=e22]:
+        - generic [ref=e23]: 
+        - generic [ref=e24]: 
+      - generic [ref=e25]: Municipal Operations Command
+      - generic [ref=e26]: Access jurisdictional triage, automated defect verification, and field dispatch workflows.
+    - generic [ref=e27]: Secure 256-Bit TLS Connection • CivicTrack v2.0
+  - generic [ref=e31]:
+    - button "Back" [ref=e33] [cursor=pointer]:
+      - generic [ref=e34]: 
+      - generic [ref=e35]: Back to Citizen Portal
+    - generic [ref=e36]: Officer Sign In
+    - generic [ref=e37]: Authenticate to access the command center.
+    - generic [ref=e39]:
+      - generic [ref=e40]:
+        - generic [ref=e41]: 
+        - generic [ref=e43]:
+          - generic [ref=e44]: Remembered Officer Session
+          - generic [ref=e45]: Municipal Officer
+          - generic [ref=e46]: officer@city.gov
+      - generic [ref=e47]:
+        - button "Resume Officer Session" [ref=e49] [cursor=pointer]
+        - button "Use another credential" [ref=e52] [cursor=pointer]
+    - generic [ref=e56]:
+      - generic [ref=e57]:
+        - generic [ref=e58]: Department Official Email
+        - generic [ref=e59]:
+          - generic [ref=e60]: 
+          - textbox "Department Official Email" [ref=e61]:
+            - /placeholder: officer@city.gov
+            - text: officer@city.gov
+      - generic [ref=e62]:
+        - generic [ref=e63]: Officer Security Password
+        - generic [ref=e64]:
+          - generic [ref=e65]: 
+          - textbox "Officer Security Password" [ref=e66]:
+            - /placeholder: Enter security password
+          - button "Show password" [ref=e67] [cursor=pointer]:
+            - generic [ref=e68]: 
+      - button "Authenticate as Officer" [ref=e70] [cursor=pointer]
+      - generic [ref=e72]: OR
+      - button "Continue with Google" [ref=e77] [cursor=pointer]:
+        - generic [ref=e78]: 
+    - generic [ref=e81] [cursor=pointer]:
+      - generic [ref=e82]: 
+      - generic [ref=e83]: Auto-fill Demo Officer

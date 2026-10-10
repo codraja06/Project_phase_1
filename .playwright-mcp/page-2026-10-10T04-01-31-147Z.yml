@@ -1,0 +1,60 @@
+- generic [ref=f6e20]:
+  - generic [ref=f6e64]:
+    - generic [ref=f6e65]:
+      - generic "Back" [ref=f6e66] [cursor=pointer]: 
+      - generic [ref=f6e68]: Report Civic Hazard
+    - generic [ref=f6e70]:
+      - generic [ref=f6e71]:
+        - generic [ref=f6e72]: "1"
+        - generic [ref=f6e74]: Photo
+      - generic [ref=f6e76]:
+        - generic [ref=f6e77]: "2"
+        - generic [ref=f6e79]: AI Vision
+      - generic [ref=f6e81]:
+        - generic [ref=f6e82]: "3"
+        - generic [ref=f6e84]: GPS Pin
+      - generic [ref=f6e86]:
+        - generic [ref=f6e87]: "4"
+        - generic [ref=f6e89]: Submit
+    - generic [ref=f6e96]:
+      - generic [ref=f6e97]: 
+      - generic [ref=f6e99]: Upload an Issue Image
+      - generic [ref=f6e100]: Capture a photo or choose an image from your device
+      - generic [ref=f6e101]:
+        - button " Capture Photo" [ref=f6e102] [cursor=pointer]:
+          - generic [ref=f6e103]: 
+          - generic [ref=f6e104]: Capture Photo
+        - button " Upload Image" [ref=f6e105] [cursor=pointer]:
+          - generic [ref=f6e106]: 
+          - generic [ref=f6e107]: Upload Image
+  - tablist [ref=f6e30]:
+    - link "  Home" [ref=f6e31] [cursor=pointer]:
+      - /url: /citizen/dashboard
+      - generic:
+        - generic [ref=f6e32]: 
+        - generic [ref=f6e34]: 
+      - generic [ref=f6e36]: Home
+    - link "  Report" [active] [ref=f6e37] [cursor=pointer]:
+      - /url: /citizen/report
+      - generic:
+        - generic [ref=f6e38]: 
+        - generic [ref=f6e40]: 
+      - generic [ref=f6e42]: Report
+    - link "  Complaints" [ref=f6e43] [cursor=pointer]:
+      - /url: /citizen/history
+      - generic:
+        - generic [ref=f6e44]: 
+        - generic [ref=f6e46]: 
+      - generic [ref=f6e48]: Complaints
+    - link "  Alerts" [ref=f6e49] [cursor=pointer]:
+      - /url: /citizen/alerts
+      - generic:
+        - generic [ref=f6e50]: 
+        - generic [ref=f6e52]: 
+      - generic [ref=f6e54]: Alerts
+    - link "  Profile" [ref=f6e55] [cursor=pointer]:
+      - /url: /citizen/profile
+      - generic:
+        - generic [ref=f6e56]: 
+        - generic [ref=f6e58]: 
+      - generic [ref=f6e60]: Profile

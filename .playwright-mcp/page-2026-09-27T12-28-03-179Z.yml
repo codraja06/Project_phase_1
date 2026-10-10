@@ -1,0 +1,31 @@
+- generic [ref=f2e73]:
+  - generic [ref=f2e74]:
+    - button "Back" [ref=f2e76] [cursor=pointer]:
+      - generic [ref=f2e77]: 
+      - generic [ref=f2e78]: Citizen Portal
+    - generic [ref=f2e82]:
+      - generic [ref=f2e83]: 
+      - generic [ref=f2e84]: 
+    - generic [ref=f2e85]: Operations Command
+    - generic [ref=f2e86]: Municipal authentication required.
+  - generic [ref=f2e87]:
+    - generic [ref=f2e89]:
+      - generic [ref=f2e90]:
+        - generic [ref=f2e91]: 
+        - generic [ref=f2e93]:
+          - generic [ref=f2e94]: Remembered Officer Session
+          - generic [ref=f2e95]: Municipal Officer
+          - generic [ref=f2e96]: officer@city.gov
+      - generic [ref=f2e97]:
+        - button "Resume Officer Session" [ref=f2e99] [cursor=pointer]
+        - button "Use another credential" [ref=f2e102] [cursor=pointer]
+    - generic [ref=f2e106]:
+      - generic [ref=f2e107]: Department Official Email
+      - generic [ref=f2e109]: Officer Security Password
+      - button "Authenticate as Officer" [ref=f2e112] [cursor=pointer]
+      - generic [ref=f2e114]: OR
+      - button "Continue with Google" [ref=f2e119] [cursor=pointer]:
+        - generic [ref=f2e120]: 
+    - generic [ref=f2e123] [cursor=pointer]:
+      - generic [ref=f2e124]: 
+      - generic [ref=f2e125]: Auto-fill Demo Officer

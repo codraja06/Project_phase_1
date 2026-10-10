@@ -14,6 +14,7 @@ export const BREAKPOINTS = {
 
 export interface BreakpointResult {
   width: number;
+  height: number;
   isMobile: boolean;
   isTablet: boolean;
   isDesktop: boolean;
@@ -22,12 +23,12 @@ export interface BreakpointResult {
 }
 
 export function useBreakpoint(): BreakpointResult {
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
 
   const isMobile = width < BREAKPOINTS.tablet;
   const isTablet = width >= BREAKPOINTS.tablet && width < BREAKPOINTS.desktop;
   const isDesktop = width >= BREAKPOINTS.desktop;
   const isWide = !isMobile; // tablet or desktop
 
-  return { width, isMobile, isTablet, isDesktop, isWide };
+  return { width, height, isMobile, isTablet, isDesktop, isWide };
 }

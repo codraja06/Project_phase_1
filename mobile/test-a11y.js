@@ -1,0 +1,1 @@
+const fs = require('fs'); let c = fs.readFileSync('src/screens/citizen/ProfileScreen.tsx', 'utf8'); console.log('Contains style:', c.includes('style={styles.backBtn}')); console.log('Contains a11y:', c.includes('accessibilityLabel="Back"')); const match = c.match(/<TouchableOpacity([^>]*style=\{styles\.backBtn\})/g); console.log('Match:', match);

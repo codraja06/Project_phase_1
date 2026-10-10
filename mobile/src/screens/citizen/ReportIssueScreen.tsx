@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,13 +6,12 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  SafeAreaView,
   StatusBar,
   KeyboardAvoidingView,
   Platform,
   Image,
-  Alert,
-} from 'react-native';
+  Alert} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown, FadeInUp, ZoomIn, FadeOut, SlideInRight, SlideOutLeft } from 'react-native-reanimated';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -44,6 +43,8 @@ type Step = 'capture' | 'ai_analysis' | 'location' | 'review';
 
 export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
   const { isDesktop } = useBreakpoint();
+  const imageRequest = useRef(0);
+  const [locationConfirmed, setLocationConfirmed] = useState(false);
   const [currentStep, setCurrentStep] = useState<Step>('capture');
 
   // Form & Detection States
@@ -73,6 +74,8 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
   const [createdComplaint, setCreatedComplaint] = useState<Complaint | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
 
+  useEffect(() => () => { if (localImageUri?.startsWith('blob:')) URL.revokeObjectURL(localImageUri); }, [localImageUri]);
+
   useEffect(() => {
     fetchCurrentLocation();
     if (route.params?.initialCategory) {
@@ -93,14 +96,19 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
       setLatitude(loc.latitude);
       setLongitude(loc.longitude);
       setAddress(loc.address);
+      setLocationConfirmed(true);
+      setErrorMessage(null);
     } catch (error: any) {
-      console.warn('GPS location fetch error:', error.message);
+      setAddress('Choose the incident location');
+      setErrorMessage(error.message);
     } finally {
       setLocationLoading(false);
     }
   };
 
   const handleImageSelected = async (uri: string) => {
+    const request = ++imageRequest.current;
+    setServerImageUrl('');
     setLocalImageUri(uri);
     setAiDetections([]);
     setAiConfidence(0);
@@ -116,10 +124,11 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
           console.warn('AI detection service warning:', e.message);
           return { detected: false, detections: [], message: e.message };
         }),
-        aiApi.uploadImage(uri).catch(() => uri),
+        aiApi.uploadImage(uri).catch((e) => { if (request === imageRequest.current) setErrorMessage(e.message); return ''; }),
       ]);
 
-      setServerImageUrl(uploadUrl || uri);
+      if (request !== imageRequest.current) return;
+      setServerImageUrl(uploadUrl);
 
       if (detectRes && detectRes.detected && detectRes.detections && detectRes.detections.length > 0) {
         setAiDetections(detectRes.detections);
@@ -145,7 +154,7 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
       setTitle('Civic Hazard Reported');
       setDescription(getDefaultDescription('pothole', address));
     } finally {
-      setDetectingAI(false);
+      if (request === imageRequest.current) setDetectingAI(false);
     }
   };
 
@@ -157,6 +166,8 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const handleRetake = () => {
+    imageRequest.current++;
+    setDetectingAI(false);
     setLocalImageUri(null);
     setServerImageUrl('');
     setAiDetections([]);
@@ -198,21 +209,16 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
         return;
       }
 
+      if (!locationConfirmed) { setErrorMessage('Confirm a real incident location before submitting.'); return; }
       setSubmitting(true);
 
       // Ensure image is uploaded if it's still a local file or blob
       let finalImageUrl = serverImageUrl || localImageUri || '';
       if (localImageUri && (!serverImageUrl || serverImageUrl.startsWith('blob:') || serverImageUrl.startsWith('file:') || serverImageUrl.startsWith('ph:'))) {
-        try {
-          const uploadedUrl = await aiApi.uploadImage(localImageUri);
-          if (uploadedUrl && !uploadedUrl.startsWith('blob:') && !uploadedUrl.startsWith('file:')) {
-            finalImageUrl = uploadedUrl;
-            setServerImageUrl(uploadedUrl);
-          }
-        } catch (uploadErr) {
-          console.warn('Image upload fallback notice:', uploadErr);
-        }
+        finalImageUrl = await aiApi.uploadImage(localImageUri);
+        setServerImageUrl(finalImageUrl);
       }
+      if (!/^https?:\/\//i.test(finalImageUrl)) throw new Error('Image upload failed. Please retry.');
 
       // Format bounding boxes so both flat coordinates and nested bbox are present
       const formattedBoxes = (aiDetections || []).map((det) => ({
@@ -227,10 +233,8 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
           x1: det.bbox?.x1 ?? 0,
           y1: det.bbox?.y1 ?? 0,
           x2: det.bbox?.x2 ?? 0,
-          y2: det.bbox?.y2 ?? 0,
-        },
-        model: det.model || 'yolov8',
-      }));
+          y2: det.bbox?.y2 ?? 0},
+        model: det.model || 'yolov8'}));
 
       const payload = {
         title: title || `${selectedCategory.replace(/_/g, ' ')} Reported`,
@@ -245,8 +249,7 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
         latitude,
         longitude,
         address: address || 'Captured Location',
-        priority: aiConfidence > 0.85 ? 'high' : 'medium',
-      };
+        priority: aiConfidence > 0.85 ? 'high' : 'medium'};
 
       const result = await complaintApi.createComplaint(payload);
       setCreatedComplaint(result);
@@ -274,7 +277,7 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
 
       {/* Screen Header Bar */}
       <View style={styles.headerBar}>
-        <TouchableOpacity style={styles.backBtn} onPress={handleBackStep} activeOpacity={0.7} accessibilityLabel="Back">
+        <TouchableOpacity hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} style={styles.backBtn} onPress={handleBackStep} activeOpacity={0.7} accessibilityLabel="Back">
           <Ionicons name="chevron-back" size={20} color={COLORS.textPrimary} />
         </TouchableOpacity>
         <View style={styles.headerTextWrapper}>
@@ -364,8 +367,8 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
                     </Animated.View>
                     
                     <Animated.View entering={FadeInUp.delay(400)} style={styles.buttonRow}>
-                      <Button title="Retake Photo" onPress={handleRetake} variant="secondary" size="lg" style={{ flex: 1 }} />
-                      <Button title="Continue to Location" onPress={() => animateStepChange('location')} variant="default" size="lg" style={{ flex: 1.5 }} />
+                      <Button title="Remove / Replace Photo" onPress={handleRetake} variant="secondary" size="lg" style={{ flexGrow: 1, flexBasis: 160 }} />
+                      <Button title="Continue to Location" onPress={() => animateStepChange('location')} variant="default" size="lg" style={{ flexGrow: 1, flexBasis: 220 }} />
                     </Animated.View>
                   </>
                 ) : null}
@@ -386,13 +389,13 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
                 ) : (
                   <>
                     <Animated.View entering={FadeInUp.delay(100)}>
-                      <MapLocationPicker latitude={latitude} longitude={longitude} address={address} height={290} showCard={true} onSelectLocation={(lat, lng) => { setLatitude(lat); setLongitude(lng); setAddress(`Coordinates Lat: ${lat.toFixed(4)}, Long: ${lng.toFixed(4)}`); }} onUseCurrentLocation={fetchCurrentLocation} />
+                      <MapLocationPicker latitude={latitude} longitude={longitude} address={address} height={290} showCard={true} onSelectLocation={(lat, lng) => { setLocationConfirmed(true); setErrorMessage(null); setLatitude(lat); setLongitude(lng); setAddress(`Coordinates Lat: ${lat.toFixed(4)}, Long: ${lng.toFixed(4)}`); }} onUseCurrentLocation={fetchCurrentLocation} />
                     </Animated.View>
                     <Animated.View entering={FadeInUp.delay(200)}>
                       <LocationCard address={address} latitude={latitude} longitude={longitude} onRefreshLocation={fetchCurrentLocation} />
                     </Animated.View>
                     <Animated.View entering={FadeInUp.delay(300)}>
-                      <Button title="Confirm Location & Review" onPress={() => animateStepChange('review')} variant="default" size="lg" style={{ marginTop: SPACING.xs }} />
+                      <Button title="Confirm Location & Review" disabled={!locationConfirmed} onPress={() => animateStepChange('review')} variant="default" size="lg" style={{ marginTop: SPACING.xs }} />
                     </Animated.View>
                   </>
                 )}
@@ -437,7 +440,7 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      <SuccessModal visible={showSuccessModal} complaintId={createdComplaint?.complaintId || 'CIV-100245'} title="Complaint registered successfully" message="Your complaint has been successfully registered and routed to municipal operations." onViewComplaint={() => { setShowSuccessModal(false); if (createdComplaint?._id) { handleRetake(); (navigation as any).navigate('ComplaintDetail', { complaintId: createdComplaint._id }); } else { handleRetake(); navigation.navigate('ComplaintHistory'); } }} onClose={() => { setShowSuccessModal(false); handleRetake(); navigation.navigate('CitizenDashboard'); }} />
+      <SuccessModal visible={showSuccessModal} complaintId={createdComplaint?.complaintId || ''} title="Complaint registered successfully" message="Your complaint has been successfully registered and routed to municipal operations." onViewComplaint={() => { setShowSuccessModal(false); if (createdComplaint?._id) { handleRetake(); (navigation as any).navigate('ComplaintDetail', { complaintId: createdComplaint._id }); } else { handleRetake(); navigation.navigate('ComplaintHistory'); } }} onClose={() => { setShowSuccessModal(false); handleRetake(); navigation.navigate('CitizenDashboard'); }} />
     </SafeAreaView>
   );
 };
@@ -449,7 +452,7 @@ const styles = StyleSheet.create({
   headerTextWrapper: { flex: 1 },
   headerTitle: { ...TYPOGRAPHY.h3, color: COLORS.textPrimary },
   stepperContainer: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING.xl, paddingVertical: SPACING.lg, backgroundColor: COLORS.surface, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight, ...SHADOWS.sm },
-  stepPill: { flexDirection: 'row', alignItems: 'center' },
+  stepPill: { flex: 1, flexDirection: 'column', gap: 4, alignItems: 'center' },
   stepCircle: { width: 24, height: 24, borderRadius: 12, backgroundColor: COLORS.borderLight, alignItems: 'center', justifyContent: 'center', marginRight: SPACING.xs },
   stepCircleCurrent: { backgroundColor: COLORS.primary },
   stepCircleDone: { backgroundColor: COLORS.primaryDark },
@@ -470,7 +473,7 @@ const styles = StyleSheet.create({
   loadingContent: { padding: SPACING['5xl'], alignItems: 'center' },
   loadingTitle: { ...TYPOGRAPHY.h4, color: COLORS.textPrimary, marginBottom: SPACING.xs },
   loadingSubtitle: { ...TYPOGRAPHY.bodySmall, color: COLORS.textSecondary, textAlign: 'center' },
-  buttonRow: { flexDirection: 'row', gap: SPACING.lg, marginTop: SPACING.md, marginBottom: SPACING.xl },
+  buttonRow: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.lg, marginTop: SPACING.md, marginBottom: SPACING.xl },
   reviewCard: { marginBottom: SPACING.xl },
   reviewContent: { padding: SPACING['2xl'] },
   reviewCardTitle: { ...TYPOGRAPHY.h4, color: COLORS.textPrimary, marginBottom: SPACING.lg },
@@ -482,5 +485,4 @@ const styles = StyleSheet.create({
   reviewSectionLabel: { ...TYPOGRAPHY.overline, color: COLORS.textMuted, marginBottom: SPACING.xs },
   reviewSectionBody: { ...TYPOGRAPHY.body, color: COLORS.textPrimary },
   reviewLocationRow: { flexDirection: 'row', alignItems: 'center' },
-  reviewLocationText: { ...TYPOGRAPHY.bodySmall, fontWeight: '600', color: COLORS.textPrimary, flex: 1 },
-});
+  reviewLocationText: { ...TYPOGRAPHY.bodySmall, fontWeight: '600', color: COLORS.textPrimary, flex: 1 }});

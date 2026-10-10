@@ -1,3 +1,4 @@
+import * as Crypto from 'expo-crypto';
 import * as WebBrowser from 'expo-web-browser';
 import * as AuthSession from 'expo-auth-session';
 import { Platform } from 'react-native';
@@ -31,7 +32,7 @@ export const googleAuthService = {
         `client_id=${encodeURIComponent(clientId)}&` +
         `response_type=token%20id_token&` +
         `scope=openid%20profile%20email&` +
-        `nonce=${Math.random().toString(36).substring(7)}&` +
+        `nonce=${Crypto.randomUUID()}&` +
         `redirect_uri=${encodeURIComponent(redirectUri)}`;
 
       const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
@@ -44,7 +45,7 @@ export const googleAuthService = {
         // Parse token from fragment (#access_token=... or #id_token=...) or query (?id_token=...)
         const hash = result.url.includes('#') ? result.url.split('#')[1] : (result.url.split('?')[1] || '');
         const params = new URLSearchParams(hash);
-        const idToken = params.get('id_token') || params.get('access_token');
+        const idToken = params.get('id_token');
 
         if (!idToken) {
           throw new Error('No authentication token received from Google.');
@@ -60,25 +61,7 @@ export const googleAuthService = {
 
       throw new Error('Google authentication could not be completed.');
     } else {
-      // Robust development sign-in creating a verified user directly on the backend
-      const timestamp = Date.now().toString().slice(-4);
-      const email =
-        role === 'authority'
-          ? `officer.ops${timestamp}@city.gov`
-          : `citizen.alex${timestamp}@gmail.com`;
-      const name = role === 'authority' ? 'Officer Alex Sharma' : 'Alex Citizen';
-
-      const authResponse = await authApi.googleLogin({
-        role,
-        userInfo: {
-          email,
-          name,
-          picture: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-          id: `google-uid-${Date.now()}`,
-        },
-      });
-
-      return authResponse;
+      throw new Error('Google sign-in is not configured. Please use email and password.');
     }
   },
 };

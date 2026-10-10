@@ -7,9 +7,8 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
-  StatusBar,
-} from 'react-native';
+  StatusBar} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -40,17 +39,14 @@ export const CitizenRegisterScreen: React.FC<Props> = ({ navigation }) => {
   const {
     control,
     handleSubmit,
-    formState: { errors },
-  } = useForm<CitizenRegisterForm>({
+    formState: { errors }} = useForm<CitizenRegisterForm>({
     resolver: zodResolver(citizenRegisterSchema),
     defaultValues: {
       name: '',
       email: '',
       phone: '',
       password: '',
-      confirmPassword: '',
-    },
-  });
+      confirmPassword: ''}});
 
   const onSubmit = async (data: CitizenRegisterForm) => {
     try {
@@ -61,8 +57,7 @@ export const CitizenRegisterScreen: React.FC<Props> = ({ navigation }) => {
         email: data.email,
         phone: data.phone,
         password: data.password,
-        role: 'citizen',
-      });
+        role: 'citizen'});
     } catch (error: any) {
       setErrorMessage(
         error.message || 'Registration failed. Please verify your details and try again.'
@@ -102,7 +97,7 @@ export const CitizenRegisterScreen: React.FC<Props> = ({ navigation }) => {
             <ScrollView contentContainerStyle={styles.authSide}>
               <View style={styles.authWrapper}>
                 <Animated.View entering={FadeInDown.delay(100)}>
-                  <TouchableOpacity
+                  <TouchableOpacity hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Back"
                     style={styles.backBtnDesktop}
                     onPress={() => navigation.goBack()}
                   >
@@ -223,7 +218,7 @@ export const CitizenRegisterScreen: React.FC<Props> = ({ navigation }) => {
           >
             <View style={styles.mobileHeader}>
               <Animated.View entering={FadeInDown.delay(100)}>
-                <TouchableOpacity
+                <TouchableOpacity hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Back"
                   style={styles.backBtnMobile}
                   onPress={() => navigation.goBack()}
                 >
@@ -378,5 +373,4 @@ const styles = StyleSheet.create({
   errorBannerText: { ...TYPOGRAPHY.caption, color: COLORS.errorDark, flex: 1, fontWeight: '600' },
   signInRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: SPACING['3xl'] },
   signInText: { ...TYPOGRAPHY.bodySmall, color: COLORS.textSecondary },
-  signInLink: { ...TYPOGRAPHY.bodySmall, fontWeight: '800', color: COLORS.primary },
-});
+  signInLink: { ...TYPOGRAPHY.bodySmall, fontWeight: '800', color: COLORS.primary }});

@@ -1,0 +1,51 @@
+- generic [ref=f6e20]:
+  - generic [ref=f6e111]:
+    - generic [ref=f6e112]:
+      - button "Back" [ref=f6e113] [cursor=pointer]:
+        - generic [ref=f6e114]: 
+      - generic [ref=f6e115]: My Complaints
+      - generic [ref=f6e116]: "0"
+    - generic [ref=f6e120]:
+      - button "All Reports 0" [ref=f6e121] [cursor=pointer]:
+        - generic [ref=f6e122]: All Reports
+        - generic [ref=f6e123]: "0"
+      - button "Pending 0" [ref=f6e125] [cursor=pointer]:
+        - generic [ref=f6e126]: Pending
+        - generic [ref=f6e127]: "0"
+      - button "In Progress 0" [ref=f6e129] [cursor=pointer]:
+        - generic [ref=f6e130]: In Progress
+        - generic [ref=f6e131]: "0"
+      - button "Resolved 0" [ref=f6e133] [cursor=pointer]:
+        - generic [ref=f6e134]: Resolved
+        - generic [ref=f6e135]: "0"
+  - tablist [ref=f6e30]:
+    - link "  Home" [ref=f6e31] [cursor=pointer]:
+      - /url: /citizen/dashboard
+      - generic:
+        - generic [ref=f6e32]: 
+        - generic [ref=f6e34]: 
+      - generic [ref=f6e36]: Home
+    - link "  Report" [ref=f6e37] [cursor=pointer]:
+      - /url: /citizen/report
+      - generic:
+        - generic [ref=f6e38]: 
+        - generic [ref=f6e40]: 
+      - generic [ref=f6e42]: Report
+    - link "  Complaints" [active] [ref=f6e43] [cursor=pointer]:
+      - /url: /citizen/history
+      - generic:
+        - generic [ref=f6e44]: 
+        - generic [ref=f6e46]: 
+      - generic [ref=f6e48]: Complaints
+    - link "  Alerts" [ref=f6e49] [cursor=pointer]:
+      - /url: /citizen/alerts
+      - generic:
+        - generic [ref=f6e50]: 
+        - generic [ref=f6e52]: 
+      - generic [ref=f6e54]: Alerts
+    - link "  Profile" [ref=f6e55] [cursor=pointer]:
+      - /url: /citizen/profile
+      - generic:
+        - generic [ref=f6e56]: 
+        - generic [ref=f6e58]: 
+      - generic [ref=f6e60]: Profile

@@ -1,0 +1,113 @@
+- generic [ref=f1e81]:
+  - generic [ref=f1e82]:
+    - generic [ref=f1e83]:
+      - generic [ref=f1e85]:
+        - generic [ref=f1e87]:
+          - generic [ref=f1e88]: 
+          - generic [ref=f1e89]: 
+        - generic [ref=f1e90]: CivicTrack
+      - generic [ref=f1e92]: MUNICIPAL OPERATIONS
+    - generic [ref=f1e95]:
+      - generic [ref=f1e96]: OPERATIONS
+      - button "Command Center" [ref=f1e97] [cursor=pointer]:
+        - generic [ref=f1e98]: 
+      - button "All Complaints" [ref=f1e101] [cursor=pointer]:
+        - generic [ref=f1e102]: 
+      - button "Incident Map" [ref=f1e104] [cursor=pointer]:
+        - generic [ref=f1e105]: 
+      - button "Operations Analytics" [ref=f1e107] [cursor=pointer]:
+        - generic [ref=f1e108]: 
+      - button "Alerts & Feed" [ref=f1e110] [cursor=pointer]:
+        - generic [ref=f1e111]: 
+      - generic [ref=f1e114]: SETTINGS
+      - button "Profile & Settings" [ref=f1e115] [cursor=pointer]:
+        - generic [ref=f1e116]: 
+    - generic [ref=f1e119]:
+      - generic [ref=f1e120]: MO
+      - generic [ref=f1e122]:
+        - generic [ref=f1e123]: Municipal Officer
+        - generic [ref=f1e124]:
+          - generic [ref=f1e125]: 
+          - generic [ref=f1e126]: Authorized Officer
+  - generic [ref=f1e135]:
+    - generic [ref=f1e136]:
+      - generic [ref=f1e137]:
+        - generic [ref=f1e139]:
+          - generic [ref=f1e140]: 
+          - generic [ref=f1e142]: MUNICIPAL OPS
+        - generic [ref=f1e143]: Command Center
+        - generic [ref=f1e144]: Real-time triage and resolution dispatch hub.
+      - generic [ref=f1e145]:
+        - generic [ref=f1e146]:
+          - generic [ref=f1e147]: 
+          - textbox "Search incidents..." [ref=f1e148]
+        - generic "Notifications" [ref=f1e149] [cursor=pointer]: 
+        - generic [ref=f1e152] [cursor=pointer]: 
+    - generic [ref=f1e154]:
+      - generic [ref=f1e155]:
+        - generic [ref=f1e156]: OPERATIONAL KPIs
+        - generic [ref=f1e158]:
+          - button " 14 Total Incidents" [ref=f1e159] [cursor=pointer]:
+            - generic [ref=f1e160]:
+              - generic [ref=f1e161]: 
+              - generic [ref=f1e163]: "14"
+              - generic [ref=f1e164]: Total Incidents
+          - button " 12 Pending Triage" [ref=f1e165] [cursor=pointer]:
+            - generic [ref=f1e166]:
+              - generic [ref=f1e167]: 
+              - generic [ref=f1e169]: "12"
+              - generic [ref=f1e170]: Pending Triage
+          - button " 0 Under Repair" [ref=f1e171] [cursor=pointer]:
+            - generic [ref=f1e172]:
+              - generic [ref=f1e173]: 
+              - generic [ref=f1e175]: "0"
+              - generic [ref=f1e176]: Under Repair
+          - button " 2 Resolved" [ref=f1e177] [cursor=pointer]:
+            - generic [ref=f1e178]:
+              - generic [ref=f1e179]: 
+              - generic [ref=f1e181]: "2"
+              - generic [ref=f1e182]: Resolved
+          - button " 0 High Priority" [ref=f1e183] [cursor=pointer]:
+            - generic [ref=f1e184]:
+              - generic [ref=f1e185]: 
+              - generic [ref=f1e187]: "0"
+              - generic [ref=f1e188]: High Priority
+          - button " 0 Today's Intake" [ref=f1e189] [cursor=pointer]:
+            - generic [ref=f1e190]:
+              - generic [ref=f1e191]: 
+              - generic [ref=f1e193]: "0"
+              - generic [ref=f1e194]: Today's Intake
+        - generic [ref=f1e196]:
+          - generic [ref=f1e197]:
+            - generic [ref=f1e198]: SLA & Operational Performance
+            - generic [ref=f1e199]: 87% On-Time SLA
+          - generic [ref=f1e200]:
+            - generic [ref=f1e201]:
+              - generic [ref=f1e202]: ~24.5h
+              - generic [ref=f1e203]: Avg Resolution
+            - generic [ref=f1e205]:
+              - generic [ref=f1e206]: < 48h
+              - generic [ref=f1e207]: City Target
+            - generic [ref=f1e209]:
+              - generic [ref=f1e210]: 94%
+              - generic [ref=f1e211]: Triage Rate
+          - generic [ref=f1e212]: INCIDENT DISTRIBUTION
+          - generic [ref=f1e213]: "Potholes: 13"
+          - generic [ref=f1e217]: "Garbage: 0"
+          - generic [ref=f1e220]: "Streetlight: 1"
+        - generic [ref=f1e224]:
+          - generic [ref=f1e225]: Cleaner Neighborhoods • Stronger Communities
+          - generic [ref=f1e226]: REPORT • TRACK • RESOLVE
+      - generic [ref=f1e227]:
+        - generic [ref=f1e228]:
+          - generic [ref=f1e229]:
+            - generic [ref=f1e230]: Incident Queue
+            - generic [ref=f1e231]: Live incident reports from citizens.
+          - button "Manage Queue →" [ref=f1e233] [cursor=pointer]
+        - generic [ref=f1e236]:
+          - generic [ref=f1e237] [cursor=pointer]: All Activity (14)
+          - generic [ref=f1e239] [cursor=pointer]: Urgent / High
+          - generic [ref=f1e241] [cursor=pointer]: Potholes
+          - generic [ref=f1e243] [cursor=pointer]: Garbage
+          - generic [ref=f1e245] [cursor=pointer]: Water / Drain
+          - generic [ref=f1e247] [cursor=pointer]: Streetlights

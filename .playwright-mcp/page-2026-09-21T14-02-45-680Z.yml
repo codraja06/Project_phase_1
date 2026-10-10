@@ -1,0 +1,131 @@
+- generic [ref=e87]:
+  - generic [ref=e96]:
+    - generic [ref=e97]:
+      - generic [ref=e98]:
+        - generic [ref=e99]:
+          - generic [ref=e100]: Good evening,
+          - generic [ref=e101]: Verified Citizen
+        - generic [ref=e103]: Test 👋
+        - generic [ref=e104]: Help keep your neighborhood clean, safe, and well-maintained.
+      - generic [ref=e105]:
+        - generic [ref=e106] [cursor=pointer]: 
+        - button "Notifications" [ref=e108] [cursor=pointer]:
+          - generic [ref=e109]: 
+    - generic [ref=e111]:
+      - generic [ref=e112]:
+        - generic [ref=e115] [cursor=pointer]:
+          - generic [ref=e116]: 
+          - generic [ref=e118]:
+            - generic [ref=e119]: Report an Issue
+            - generic [ref=e120]: Take a photo, let AI detect the issue, add location and submit.
+          - button "Report an Issue" [ref=e122]:
+            - generic [ref=e123]: 
+        - generic [ref=e125]:
+          - generic [ref=e127] [cursor=pointer]:
+            - generic [ref=e128]: 
+            - generic [ref=e130]: My Reports
+            - generic [ref=e131]: 1 Total
+          - generic [ref=e133] [cursor=pointer]:
+            - generic [ref=e134]: 
+            - generic [ref=e136]: Nearby Issues
+            - generic [ref=e137]: 1 Active
+          - generic [ref=e139] [cursor=pointer]:
+            - generic [ref=e140]: 
+            - generic [ref=e142]: Notifications
+            - generic [ref=e143]: Alerts
+        - generic [ref=e144]:
+          - generic [ref=e145]: QUICK ISSUE CATEGORIES
+          - generic [ref=e146]:
+            - generic [ref=e147] [cursor=pointer]:
+              - generic [ref=e148]: 
+              - generic [ref=e150]: Pothole
+            - generic [ref=e151] [cursor=pointer]:
+              - generic [ref=e152]: 
+              - generic [ref=e154]: Road Damage
+            - generic [ref=e155] [cursor=pointer]:
+              - generic [ref=e156]: 
+              - generic [ref=e158]: Garbage
+            - generic [ref=e159] [cursor=pointer]:
+              - generic [ref=e160]: 
+              - generic [ref=e162]: Garbage Overflow
+        - generic [ref=e163]:
+          - generic [ref=e164]:
+            - generic [ref=e165]: Activity Overview
+            - generic [ref=e166] [cursor=pointer]:
+              - generic [ref=e167]: Last 30 Days
+              - generic [ref=e168]: 
+          - generic [ref=e169]:
+            - generic [ref=e171] [cursor=pointer]:
+              - generic [ref=e172]: 
+              - generic [ref=e175]: "1"
+              - generic [ref=e176]: Total Complaints
+            - generic [ref=e178] [cursor=pointer]:
+              - generic [ref=e179]: 
+              - generic [ref=e182]: "1"
+              - generic [ref=e183]: Pending
+            - generic [ref=e185] [cursor=pointer]:
+              - generic [ref=e186]: 
+              - generic [ref=e189]: "0"
+              - generic [ref=e190]: In Progress
+            - generic [ref=e192] [cursor=pointer]:
+              - generic [ref=e193]: 
+              - generic [ref=e196]: "0"
+              - generic [ref=e197]: Resolved
+        - generic [ref=e199]:
+          - generic [ref=e200]:
+            - generic [ref=e201]: Cleaner Neighborhoods Stronger Communities
+            - generic [ref=e202]: Report • Track • Create Change
+          - generic [ref=e203]: 
+      - generic [ref=e204]:
+        - generic [ref=e205]:
+          - generic [ref=e206]: Recent Incidents
+          - button "See All →" [ref=e208] [cursor=pointer]
+        - generic [ref=e212] [cursor=pointer]:
+          - generic [ref=e213]:
+            - generic [ref=e214]: CIV-150247
+            - 'generic "Status: Pending" [ref=e216]':
+              - generic [ref=e217]: 
+              - generic [ref=e218]: Pending
+          - generic [ref=e219]:
+            - generic [ref=e220]: 
+            - generic [ref=e223]:
+              - generic [ref=e224]: Road Damage
+              - generic [ref=e225]: Cracks on road
+          - generic [ref=e226]:
+            - generic [ref=e227]:
+              - generic [ref=e228]: 
+              - generic [ref=e229]: 21 Sept 2026
+            - generic [ref=e230]:
+              - generic [ref=e231]: 
+              - generic [ref=e232]: City Center
+  - tablist [ref=e234]:
+    - link "  Home" [ref=e235] [cursor=pointer]:
+      - /url: /CitizenTabs/CitizenDashboard
+      - generic:
+        - generic [ref=e236]: 
+        - generic [ref=e238]: 
+      - generic [ref=e240]: Home
+    - link "  Report" [ref=e241] [cursor=pointer]:
+      - /url: /CitizenTabs/ReportIssue
+      - generic:
+        - generic [ref=e242]: 
+        - generic [ref=e244]: 
+      - generic [ref=e246]: Report
+    - link "  Complaints" [ref=e247] [cursor=pointer]:
+      - /url: /CitizenTabs/ComplaintHistory
+      - generic:
+        - generic [ref=e248]: 
+        - generic [ref=e250]: 
+      - generic [ref=e252]: Complaints
+    - link "  Alerts" [ref=e253] [cursor=pointer]:
+      - /url: /CitizenTabs/Notifications
+      - generic:
+        - generic [ref=e254]: 
+        - generic [ref=e256]: 
+      - generic [ref=e258]: Alerts
+    - link "  Profile" [ref=e259] [cursor=pointer]:
+      - /url: /CitizenTabs/CitizenProfile
+      - generic:
+        - generic [ref=e260]: 
+        - generic [ref=e262]: 
+      - generic [ref=e264]: Profile

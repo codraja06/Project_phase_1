@@ -1,0 +1,117 @@
+- generic [ref=f10e10]:
+  - generic [ref=f10e42]:
+    - generic [ref=f10e43]:
+      - generic [ref=f10e45]:
+        - generic [ref=f10e47]:
+          - generic [ref=f10e48]: 
+          - generic [ref=f10e49]: 
+        - generic [ref=f10e50]: CivicTrack
+      - generic [ref=f10e52]: MUNICIPAL OPERATIONS
+    - generic [ref=f10e55]:
+      - generic [ref=f10e56]: OPERATIONS
+      - button "Command Center" [ref=f10e57] [cursor=pointer]:
+        - generic [ref=f10e58]: 
+      - button "All Complaints" [ref=f10e61] [cursor=pointer]:
+        - generic [ref=f10e62]: 
+      - button "Incident Map" [ref=f10e64] [cursor=pointer]:
+        - generic [ref=f10e65]: 
+      - button "Operations Analytics" [ref=f10e67] [cursor=pointer]:
+        - generic [ref=f10e68]: 
+      - button "Alerts & Feed" [ref=f10e70] [cursor=pointer]:
+        - generic [ref=f10e71]: 
+      - generic [ref=f10e74]: SETTINGS
+      - button "Profile & Settings" [ref=f10e75] [cursor=pointer]:
+        - generic [ref=f10e76]: 
+    - generic [ref=f10e79]:
+      - generic [ref=f10e80]: JD
+      - generic [ref=f10e82]:
+        - generic [ref=f10e83]: John Doe
+        - generic [ref=f10e84]:
+          - generic [ref=f10e85]: 
+          - generic [ref=f10e86]: Authorized Officer
+  - generic [ref=f10e12]:
+    - generic [ref=f10e90]:
+      - generic [ref=f10e91]:
+        - generic "Open Menu" [active] [ref=f10e92] [cursor=pointer]: 
+        - generic [ref=f10e94]:
+          - generic [ref=f10e95]: Command Center
+          - generic [ref=f10e96]: Triage & dispatch hub
+        - generic "Notifications" [ref=f10e97] [cursor=pointer]: 
+        - generic [ref=f10e100] [cursor=pointer]: 
+      - generic [ref=f10e102]: OPERATIONAL KPIs
+      - generic [ref=f10e103]:
+        - generic [ref=f10e105] [cursor=pointer]:
+          - generic [ref=f10e106]: 
+          - generic [ref=f10e108]: "0"
+          - generic [ref=f10e109]: Total Incidents
+        - generic [ref=f10e111] [cursor=pointer]:
+          - generic [ref=f10e112]: 
+          - generic [ref=f10e114]: "0"
+          - generic [ref=f10e115]: Pending Triage
+        - generic [ref=f10e117] [cursor=pointer]:
+          - generic [ref=f10e118]: 
+          - generic [ref=f10e120]: "0"
+          - generic [ref=f10e121]: Under Repair
+        - generic [ref=f10e123] [cursor=pointer]:
+          - generic [ref=f10e124]: 
+          - generic [ref=f10e126]: "0"
+          - generic [ref=f10e127]: Resolved
+        - generic [ref=f10e129] [cursor=pointer]:
+          - generic [ref=f10e130]: 
+          - generic [ref=f10e132]: "0"
+          - generic [ref=f10e133]: High Priority
+        - generic [ref=f10e135] [cursor=pointer]:
+          - generic [ref=f10e136]: 
+          - generic [ref=f10e138]: "0"
+          - generic [ref=f10e139]: Today's Intake
+      - generic [ref=f10e141]:
+        - generic [ref=f10e142]:
+          - generic [ref=f10e143]: SLA & Performance
+          - generic [ref=f10e144]: 87% On-Time SLA
+        - generic [ref=f10e145]:
+          - generic [ref=f10e146]:
+            - generic [ref=f10e147]: ~24.5h
+            - generic [ref=f10e148]: Avg Resolution
+          - generic [ref=f10e150]:
+            - generic [ref=f10e151]: < 48h
+            - generic [ref=f10e152]: City Target
+          - generic [ref=f10e154]:
+            - generic [ref=f10e155]: 94%
+            - generic [ref=f10e156]: Triage Rate
+        - generic [ref=f10e157]: INCIDENT DISTRIBUTION
+        - generic [ref=f10e158]: "Potholes: 0"
+        - generic [ref=f10e161]: "Garbage: 0"
+        - generic [ref=f10e164]: "Streetlight: 0"
+      - generic [ref=f10e167]:
+        - generic [ref=f10e168]: Cleaner Neighborhoods • Stronger Communities
+        - generic [ref=f10e169]: REPORT • TRACK • RESOLVE
+      - generic [ref=f10e170]:
+        - generic [ref=f10e171]:
+          - generic [ref=f10e172]:
+            - generic [ref=f10e173]: Incident Queue
+            - generic [ref=f10e174]: Live reports from citizens.
+          - button "View All →" [ref=f10e176] [cursor=pointer]
+        - generic [ref=f10e179]:
+          - generic [ref=f10e180] [cursor=pointer]: All Activity (0)
+          - generic [ref=f10e182] [cursor=pointer]: Urgent / High
+          - generic [ref=f10e184] [cursor=pointer]: Potholes
+          - generic [ref=f10e186] [cursor=pointer]: Garbage
+          - generic [ref=f10e188] [cursor=pointer]: Water / Drain
+          - generic [ref=f10e190] [cursor=pointer]: Streetlights
+        - generic [ref=f10e192]:
+          - generic [ref=f10e193]: 
+          - generic [ref=f10e194]: No matching incidents
+          - generic [ref=f10e195]: Queue is clear for this category.
+    - generic [ref=f10e20]:
+      - button "Dashboard" [ref=f10e21] [cursor=pointer]:
+        - generic [ref=f10e22]: 
+      - button "Complaints" [ref=f10e24] [cursor=pointer]:
+        - generic [ref=f10e25]: 
+      - button "Map" [ref=f10e27] [cursor=pointer]:
+        - generic [ref=f10e28]: 
+      - button "Analytics" [ref=f10e30] [cursor=pointer]:
+        - generic [ref=f10e31]: 
+      - button "Feed" [ref=f10e33] [cursor=pointer]:
+        - generic [ref=f10e34]: 
+      - button "Profile" [ref=f10e36] [cursor=pointer]:
+        - generic [ref=f10e37]: 

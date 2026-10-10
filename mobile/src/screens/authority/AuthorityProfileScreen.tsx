@@ -26,8 +26,11 @@ import { SHADOWS } from '../../theme/index';
 import { SPACING } from '../../theme/spacing';
 import { TYPOGRAPHY } from '../../theme/typography';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
+import { useMobileMenu } from '../../contexts/MobileMenuContext';
+import { AuthorityMobileHeader } from '../../components/AuthorityMobileHeader';
 
 export const AuthorityProfileScreen = ({ navigation }: any) => {
+  const { toggleMenu } = useMobileMenu();
   const { isDesktop } = useBreakpoint();
   const { user, logout, updateUser } = useAuth();
 
@@ -149,29 +152,32 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
   ];
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
+    <View style={isDesktop ? styles.safeArea : styles.safeAreaMobile}>
+      <StatusBar barStyle="light-content" backgroundColor="#0F172A" translucent={false} />
+
+      {!isDesktop && (
+        <AuthorityMobileHeader title="Officer Dossier" />
+      )}
 
       <ScrollView
         style={styles.container}
         contentContainerStyle={isDesktop ? styles.desktopContent : styles.mobileContent}
         showsVerticalScrollIndicator={false}
       >
-        <Animated.View entering={FadeInDown.duration(400)} style={isDesktop ? styles.desktopHeader : styles.mobileHeader}>
-          <TouchableOpacity
-            style={styles.backBtn}
-            onPress={() => navigation.navigate('AuthorityDashboard')}
-          >
-            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Officer Dossier</Text>
-        </Animated.View>
+        {isDesktop && (
+          <Animated.View entering={FadeInDown.duration(400)} style={styles.desktopHeader}>
+            <TouchableOpacity style={styles.backBtn} onPress={toggleMenu}>
+              <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Officer Dossier</Text>
+          </Animated.View>
+        )}
 
         {/* ── Compact Profile Header ──────────────────────────────────────────── */}
         <Animated.View entering={FadeInUp.delay(100)}>
           <Card style={styles.profileHeaderCard}>
             <CardContent style={isDesktop ? styles.profileHeaderDesktop : styles.profileHeaderMobile}>
-              <View style={styles.profileHeaderLeft}>
+              <View style={[styles.profileHeaderLeft, !isDesktop && { marginBottom: SPACING.lg }]}>
                 <View style={styles.avatarContainer}>
                   <Text style={styles.avatarText}>{userInitials}</Text>
                 </View>
@@ -354,26 +360,26 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
         }}
         onCancel={() => setLogoutModalVisible(false)}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#0F172A' },
+  safeAreaMobile: { flex: 1, backgroundColor: COLORS.backgroundNeutral },
   container: { flex: 1, backgroundColor: COLORS.backgroundNeutral },
   desktopContent: { padding: SPACING['5xl'], maxWidth: 900, alignSelf: 'center', width: '100%' },
   mobileContent: { padding: SPACING.lg, paddingBottom: SPACING['5xl'] },
   desktopHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING['4xl'], backgroundColor: '#0F172A', padding: SPACING.xl, borderRadius: BORDER_RADIUS.lg, ...SHADOWS.card },
-  mobileHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.xl, backgroundColor: '#0F172A', padding: SPACING.xl, borderRadius: BORDER_RADIUS.md, ...SHADOWS.card },
   backBtn: { width: 38, height: 38, borderRadius: BORDER_RADIUS.full, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.1)', marginRight: SPACING.md },
   headerTitle: { ...TYPOGRAPHY.h3, color: '#FFFFFF' },
   profileHeaderCard: { marginBottom: SPACING.xl },
   profileHeaderDesktop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: SPACING.xl },
   profileHeaderMobile: { flexDirection: 'column', padding: SPACING.lg },
-  profileHeaderLeft: { flexDirection: 'row', alignItems: 'center', marginBottom: Platform.OS === 'web' ? 0 : SPACING.lg },
+  profileHeaderLeft: { flexDirection: 'row', alignItems: 'center' },
   avatarContainer: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#0F172A', alignItems: 'center', justifyContent: 'center', marginRight: SPACING.lg },
   avatarText: { ...TYPOGRAPHY.h3, color: '#FFFFFF' },
-  profileInfo: { flex: 1 },
+  profileInfo: { flex: 1, minWidth: 0 },
   profileName: { ...TYPOGRAPHY.h4, color: COLORS.textPrimary, marginBottom: 4 },
   badgeRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: 4, flexWrap: 'wrap' },
   profileEmail: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, fontWeight: '500' },
@@ -383,7 +389,7 @@ const styles = StyleSheet.create({
     flexBasis: Platform.OS === 'web' ? ('calc(50% - 6px)' as any) : '47%',
     flexGrow: 1,
     flexShrink: 0,
-    minWidth: 120,
+    minWidth: 100,
     padding: 0,
   },
   statCardDesktop: {

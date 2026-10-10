@@ -1,0 +1,459 @@
+- generic [ref=e146]:
+  - generic [ref=e695]:
+    - generic [ref=e696]:
+      - generic [ref=e698]:
+        - generic [ref=e700]:
+          - generic [ref=e701]: 
+          - generic [ref=e702]: 
+        - generic [ref=e703]: CivicTrack
+      - generic [ref=e705]: MUNICIPAL OPERATIONS
+    - generic [ref=e708]:
+      - generic [ref=e709]: OPERATIONS
+      - button "Command Center" [ref=e710] [cursor=pointer]:
+        - generic [ref=e711]: 
+      - button "All Complaints" [active] [ref=e714] [cursor=pointer]:
+        - generic [ref=e715]: 
+      - button "Incident Map" [ref=e717] [cursor=pointer]:
+        - generic [ref=e718]: 
+      - button "Operations Analytics" [ref=e720] [cursor=pointer]:
+        - generic [ref=e721]: 
+      - button "Alerts & Feed" [ref=e723] [cursor=pointer]:
+        - generic [ref=e724]: 
+      - generic [ref=e727]: SETTINGS
+      - button "Profile & Settings" [ref=e728] [cursor=pointer]:
+        - generic [ref=e729]: 
+    - generic [ref=e732]:
+      - generic [ref=e733]: JD
+      - generic [ref=e735]:
+        - generic [ref=e736]: John Doe
+        - generic [ref=e737]:
+          - generic [ref=e738]: 
+          - generic [ref=e739]: Authorized Officer
+  - generic [ref=e1279]:
+    - generic [ref=e1280]:
+      - generic [ref=e1281]:
+        - generic [ref=e1282]: Incident Registry
+        - generic [ref=e1283]: Showing 16 of 16 civic issues
+      - generic [ref=e1285]:
+        - generic [ref=e1286]: 
+        - textbox "Search by ID, title, citizen..." [ref=e1287]
+    - generic [ref=e1290]:
+      - button "All Incidents 16" [ref=e1291] [cursor=pointer]:
+        - generic [ref=e1292]: All Incidents
+        - generic [ref=e1293]: "16"
+      - button "Pending 13" [ref=e1295] [cursor=pointer]:
+        - generic [ref=e1296]: Pending
+        - generic [ref=e1297]: "13"
+      - button "In Progress 0" [ref=e1299] [cursor=pointer]:
+        - generic [ref=e1300]: In Progress
+        - generic [ref=e1301]: "0"
+      - button "Resolved 3" [ref=e1303] [cursor=pointer]:
+        - generic [ref=e1304]: Resolved
+        - generic [ref=e1305]: "3"
+      - button "🔥 High Priority 0" [ref=e1307] [cursor=pointer]:
+        - generic [ref=e1308]: 🔥 High Priority
+        - generic [ref=e1309]: "0"
+    - generic [ref=e1312] [cursor=pointer]:
+      - generic [ref=e1313]: 
+      - generic [ref=e1314]: Select All
+    - generic [ref=e1315]:
+      - generic [ref=e1316]: 
+      - generic [ref=e1319]: IMAGE
+      - generic [ref=e1321]: DOSSIER & CODE
+      - generic [ref=e1323]: AI / USER CATEGORY
+      - generic [ref=e1325]: CITIZEN CONTACT
+      - generic [ref=e1327]: DATE
+      - generic [ref=e1329]: STATUS
+      - generic [ref=e1331]: ACTIONS
+    - generic [ref=e1335]:
+      - generic [ref=e1338]:
+        - generic [ref=e1339] [cursor=pointer]: 
+        - generic [ref=e1341] [cursor=pointer]
+        - generic [ref=e1345] [cursor=pointer]:
+          - generic [ref=e1346]:
+            - generic [ref=e1347]: CIV-540066
+            - generic [ref=e1348]:
+              - generic [ref=e1349]: 
+              - generic [ref=e1351]: VERIFIED
+          - generic [ref=e1352]: Pothole Issue
+        - generic [ref=e1353]:
+          - generic [ref=e1354]:
+            - generic [ref=e1355]: AI
+            - generic [ref=e1356]: Pothole
+          - generic [ref=e1357]:
+            - generic [ref=e1358]: USER
+            - generic [ref=e1359]: Pothole
+        - generic [ref=e1360]:
+          - generic [ref=e1361]: Test Citizen
+          - generic [ref=e1362]: "9876543210"
+        - generic [ref=e1363]: 27 Sept
+        - 'generic "Status: Resolved" [ref=e1366]':
+          - generic [ref=e1367]: 
+          - generic [ref=e1368]: Resolved
+        - generic [ref=e1369]:
+          - button "" [ref=e1371] [cursor=pointer]
+          - button "" [ref=e1374] [cursor=pointer]
+      - generic [ref=e1378]:
+        - generic [ref=e1379] [cursor=pointer]: 
+        - generic [ref=e1381] [cursor=pointer]: 
+        - generic [ref=e1385] [cursor=pointer]:
+          - generic [ref=e1386]:
+            - generic [ref=e1387]: CIV-150247
+            - generic [ref=e1388]:
+              - generic [ref=e1389]: 
+              - generic [ref=e1391]: VERIFIED
+          - generic [ref=e1392]: Road Damage
+        - generic [ref=e1393]:
+          - generic [ref=e1394]:
+            - generic [ref=e1395]: AI
+            - generic [ref=e1396]: None
+          - generic [ref=e1397]:
+            - generic [ref=e1398]: USER
+            - generic [ref=e1399]: Road Damage
+        - generic [ref=e1400]:
+          - generic [ref=e1401]: Test Citizen
+          - generic [ref=e1402]: "9876543210"
+        - generic [ref=e1403]: 21 Sept
+        - 'generic "Status: Pending" [ref=e1406]':
+          - generic [ref=e1407]: 
+          - generic [ref=e1408]: Pending
+        - generic [ref=e1409]:
+          - button "" [ref=e1411] [cursor=pointer]
+          - button "" [ref=e1414] [cursor=pointer]
+      - generic [ref=e1418]:
+        - generic [ref=e1419] [cursor=pointer]: 
+        - generic [ref=e1421] [cursor=pointer]
+        - generic [ref=e1425] [cursor=pointer]:
+          - generic [ref=e1426]:
+            - generic [ref=e1427]: "#CIV3CAEF"
+            - generic [ref=e1428]: UNVERIFIED
+          - generic [ref=e1430]: Civic Hazard Reported
+        - generic [ref=e1431]:
+          - generic [ref=e1432]:
+            - generic [ref=e1433]: AI
+            - generic [ref=e1434]: None
+          - generic [ref=e1435]:
+            - generic [ref=e1436]: USER
+            - generic [ref=e1437]: Broken Streetlight
+        - generic [ref=e1438]: Citizen
+        - generic [ref=e1440]: 13 Sept
+        - 'generic "Status: Pending" [ref=e1443]':
+          - generic [ref=e1444]: 
+          - generic [ref=e1445]: Pending
+        - generic [ref=e1446]:
+          - button "Verify" [ref=e1448] [cursor=pointer]
+          - button "" [ref=e1451] [cursor=pointer]
+          - button "" [ref=e1454] [cursor=pointer]
+      - generic [ref=e1458]:
+        - generic [ref=e1459] [cursor=pointer]: 
+        - generic [ref=e1461] [cursor=pointer]
+        - generic [ref=e1465] [cursor=pointer]:
+          - generic [ref=e1466]:
+            - generic [ref=e1467]: "#CIVB6B7F"
+            - generic [ref=e1468]: UNVERIFIED
+          - generic [ref=e1470]: Civic Hazard Reported
+        - generic [ref=e1471]:
+          - generic [ref=e1472]:
+            - generic [ref=e1473]: AI
+            - generic [ref=e1474]: None
+          - generic [ref=e1475]:
+            - generic [ref=e1476]: USER
+            - generic [ref=e1477]: Pothole
+        - generic [ref=e1478]: Citizen
+        - generic [ref=e1480]: 12 Sept
+        - 'generic "Status: Resolved" [ref=e1483]':
+          - generic [ref=e1484]: 
+          - generic [ref=e1485]: Resolved
+        - generic [ref=e1486]:
+          - button "Verify" [ref=e1488] [cursor=pointer]
+          - button "" [ref=e1491] [cursor=pointer]
+          - button "" [ref=e1494] [cursor=pointer]
+      - generic [ref=e1498]:
+        - generic [ref=e1499] [cursor=pointer]: 
+        - generic [ref=e1501] [cursor=pointer]
+        - generic [ref=e1505] [cursor=pointer]:
+          - generic [ref=e1506]:
+            - generic [ref=e1507]: "#CIVB6B7C"
+            - generic [ref=e1508]: UNVERIFIED
+          - generic [ref=e1510]: Civic Hazard Reported
+        - generic [ref=e1511]:
+          - generic [ref=e1512]:
+            - generic [ref=e1513]: AI
+            - generic [ref=e1514]: None
+          - generic [ref=e1515]:
+            - generic [ref=e1516]: USER
+            - generic [ref=e1517]: Pothole
+        - generic [ref=e1518]: Citizen
+        - generic [ref=e1520]: 12 Sept
+        - 'generic "Status: Pending" [ref=e1523]':
+          - generic [ref=e1524]: 
+          - generic [ref=e1525]: Pending
+        - generic [ref=e1526]:
+          - button "Verify" [ref=e1528] [cursor=pointer]
+          - button "" [ref=e1531] [cursor=pointer]
+          - button "" [ref=e1534] [cursor=pointer]
+      - generic [ref=e1538]:
+        - generic [ref=e1539] [cursor=pointer]: 
+        - generic [ref=e1541] [cursor=pointer]
+        - generic [ref=e1545] [cursor=pointer]:
+          - generic [ref=e1546]:
+            - generic [ref=e1547]: "#CIVB6B79"
+            - generic [ref=e1548]: UNVERIFIED
+          - generic [ref=e1550]: Civic Hazard Reported
+        - generic [ref=e1551]:
+          - generic [ref=e1552]:
+            - generic [ref=e1553]: AI
+            - generic [ref=e1554]: None
+          - generic [ref=e1555]:
+            - generic [ref=e1556]: USER
+            - generic [ref=e1557]: Pothole
+        - generic [ref=e1558]: Citizen
+        - generic [ref=e1560]: 12 Sept
+        - 'generic "Status: Pending" [ref=e1563]':
+          - generic [ref=e1564]: 
+          - generic [ref=e1565]: Pending
+        - generic [ref=e1566]:
+          - button "Verify" [ref=e1568] [cursor=pointer]
+          - button "" [ref=e1571] [cursor=pointer]
+          - button "" [ref=e1574] [cursor=pointer]
+      - generic [ref=e1578]:
+        - generic [ref=e1579] [cursor=pointer]: 
+        - generic [ref=e1581] [cursor=pointer]
+        - generic [ref=e1585] [cursor=pointer]:
+          - generic [ref=e1586]:
+            - generic [ref=e1587]: "#CIVB6B76"
+            - generic [ref=e1588]: UNVERIFIED
+          - generic [ref=e1590]: Civic Hazard Reported
+        - generic [ref=e1591]:
+          - generic [ref=e1592]:
+            - generic [ref=e1593]: AI
+            - generic [ref=e1594]: None
+          - generic [ref=e1595]:
+            - generic [ref=e1596]: USER
+            - generic [ref=e1597]: Pothole
+        - generic [ref=e1598]: Citizen
+        - generic [ref=e1600]: 12 Sept
+        - 'generic "Status: Pending" [ref=e1603]':
+          - generic [ref=e1604]: 
+          - generic [ref=e1605]: Pending
+        - generic [ref=e1606]:
+          - button "Verify" [ref=e1608] [cursor=pointer]
+          - button "" [ref=e1611] [cursor=pointer]
+          - button "" [ref=e1614] [cursor=pointer]
+      - generic [ref=e1618]:
+        - generic [ref=e1619] [cursor=pointer]: 
+        - generic [ref=e1621] [cursor=pointer]
+        - generic [ref=e1625] [cursor=pointer]:
+          - generic [ref=e1626]:
+            - generic [ref=e1627]: CIV-637594
+            - generic [ref=e1628]:
+              - generic [ref=e1629]: 
+              - generic [ref=e1631]: VERIFIED
+          - generic [ref=e1632]: Civic Hazard Reported
+        - generic [ref=e1633]:
+          - generic [ref=e1634]:
+            - generic [ref=e1635]: AI
+            - generic [ref=e1636]: None
+          - generic [ref=e1637]:
+            - generic [ref=e1638]: USER
+            - generic [ref=e1639]: Pothole
+        - generic [ref=e1640]: Citizen
+        - generic [ref=e1642]: 12 Sept
+        - 'generic "Status: Resolved" [ref=e1645]':
+          - generic [ref=e1646]: 
+          - generic [ref=e1647]: Resolved
+        - generic [ref=e1648]:
+          - button "" [ref=e1650] [cursor=pointer]
+          - button "" [ref=e1653] [cursor=pointer]
+      - generic [ref=e1657]:
+        - generic [ref=e1658] [cursor=pointer]: 
+        - generic [ref=e1660] [cursor=pointer]
+        - generic [ref=e1664] [cursor=pointer]:
+          - generic [ref=e1665]:
+            - generic [ref=e1666]: "#CIVB6B70"
+            - generic [ref=e1667]: UNVERIFIED
+          - generic [ref=e1669]: Civic Hazard Reported
+        - generic [ref=e1670]:
+          - generic [ref=e1671]:
+            - generic [ref=e1672]: AI
+            - generic [ref=e1673]: None
+          - generic [ref=e1674]:
+            - generic [ref=e1675]: USER
+            - generic [ref=e1676]: Pothole
+        - generic [ref=e1677]: Citizen
+        - generic [ref=e1679]: 12 Sept
+        - 'generic "Status: Pending" [ref=e1682]':
+          - generic [ref=e1683]: 
+          - generic [ref=e1684]: Pending
+        - generic [ref=e1685]:
+          - button "Verify" [ref=e1687] [cursor=pointer]
+          - button "" [ref=e1690] [cursor=pointer]
+          - button "" [ref=e1693] [cursor=pointer]
+      - generic [ref=e1697]:
+        - generic [ref=e1698] [cursor=pointer]: 
+        - generic [ref=e1700] [cursor=pointer]
+        - generic [ref=e1704] [cursor=pointer]:
+          - generic [ref=e1705]:
+            - generic [ref=e1706]: "#CIVB6B6D"
+            - generic [ref=e1707]: UNVERIFIED
+          - generic [ref=e1709]: Civic Hazard Reported
+        - generic [ref=e1710]:
+          - generic [ref=e1711]:
+            - generic [ref=e1712]: AI
+            - generic [ref=e1713]: None
+          - generic [ref=e1714]:
+            - generic [ref=e1715]: USER
+            - generic [ref=e1716]: Pothole
+        - generic [ref=e1717]: Citizen
+        - generic [ref=e1719]: 12 Sept
+        - 'generic "Status: Pending" [ref=e1722]':
+          - generic [ref=e1723]: 
+          - generic [ref=e1724]: Pending
+        - generic [ref=e1725]:
+          - button "Verify" [ref=e1727] [cursor=pointer]
+          - button "" [ref=e1730] [cursor=pointer]
+          - button "" [ref=e1733] [cursor=pointer]
+      - generic [ref=e1737]:
+        - generic [ref=e1738] [cursor=pointer]: 
+        - generic [ref=e1740] [cursor=pointer]
+        - generic [ref=e1744] [cursor=pointer]:
+          - generic [ref=e1745]:
+            - generic [ref=e1746]: "#CIVB6B6A"
+            - generic [ref=e1747]: UNVERIFIED
+          - generic [ref=e1749]: Civic Hazard Reported
+        - generic [ref=e1750]:
+          - generic [ref=e1751]:
+            - generic [ref=e1752]: AI
+            - generic [ref=e1753]: None
+          - generic [ref=e1754]:
+            - generic [ref=e1755]: USER
+            - generic [ref=e1756]: Pothole
+        - generic [ref=e1757]: Citizen
+        - generic [ref=e1759]: 12 Sept
+        - 'generic "Status: Pending" [ref=e1762]':
+          - generic [ref=e1763]: 
+          - generic [ref=e1764]: Pending
+        - generic [ref=e1765]:
+          - button "Verify" [ref=e1767] [cursor=pointer]
+          - button "" [ref=e1770] [cursor=pointer]
+          - button "" [ref=e1773] [cursor=pointer]
+      - generic [ref=e1777]:
+        - generic [ref=e1778] [cursor=pointer]: 
+        - generic [ref=e1780] [cursor=pointer]
+        - generic [ref=e1784] [cursor=pointer]:
+          - generic [ref=e1785]:
+            - generic [ref=e1786]: "#CIVB6B67"
+            - generic [ref=e1787]: UNVERIFIED
+          - generic [ref=e1789]: Civic Hazard Reported
+        - generic [ref=e1790]:
+          - generic [ref=e1791]:
+            - generic [ref=e1792]: AI
+            - generic [ref=e1793]: None
+          - generic [ref=e1794]:
+            - generic [ref=e1795]: USER
+            - generic [ref=e1796]: Pothole
+        - generic [ref=e1797]: Citizen
+        - generic [ref=e1799]: 12 Sept
+        - 'generic "Status: Pending" [ref=e1802]':
+          - generic [ref=e1803]: 
+          - generic [ref=e1804]: Pending
+        - generic [ref=e1805]:
+          - button "Verify" [ref=e1807] [cursor=pointer]
+          - button "" [ref=e1810] [cursor=pointer]
+          - button "" [ref=e1813] [cursor=pointer]
+      - generic [ref=e1817]:
+        - generic [ref=e1818] [cursor=pointer]: 
+        - generic [ref=e1820] [cursor=pointer]
+        - generic [ref=e1824] [cursor=pointer]:
+          - generic [ref=e1825]:
+            - generic [ref=e1826]: "#CIVB6B64"
+            - generic [ref=e1827]: UNVERIFIED
+          - generic [ref=e1829]: Civic Hazard Reported
+        - generic [ref=e1830]:
+          - generic [ref=e1831]:
+            - generic [ref=e1832]: AI
+            - generic [ref=e1833]: None
+          - generic [ref=e1834]:
+            - generic [ref=e1835]: USER
+            - generic [ref=e1836]: Pothole
+        - generic [ref=e1837]: Citizen
+        - generic [ref=e1839]: 12 Sept
+        - 'generic "Status: Pending" [ref=e1842]':
+          - generic [ref=e1843]: 
+          - generic [ref=e1844]: Pending
+        - generic [ref=e1845]:
+          - button "Verify" [ref=e1847] [cursor=pointer]
+          - button "" [ref=e1850] [cursor=pointer]
+          - button "" [ref=e1853] [cursor=pointer]
+      - generic [ref=e1857]:
+        - generic [ref=e1858] [cursor=pointer]: 
+        - generic [ref=e1860] [cursor=pointer]
+        - generic [ref=e1864] [cursor=pointer]:
+          - generic [ref=e1865]:
+            - generic [ref=e1866]: "#CIVB6B61"
+            - generic [ref=e1867]: UNVERIFIED
+          - generic [ref=e1869]: Civic Hazard Reported
+        - generic [ref=e1870]:
+          - generic [ref=e1871]:
+            - generic [ref=e1872]: AI
+            - generic [ref=e1873]: None
+          - generic [ref=e1874]:
+            - generic [ref=e1875]: USER
+            - generic [ref=e1876]: Pothole
+        - generic [ref=e1877]: Citizen
+        - generic [ref=e1879]: 12 Sept
+        - 'generic "Status: Pending" [ref=e1882]':
+          - generic [ref=e1883]: 
+          - generic [ref=e1884]: Pending
+        - generic [ref=e1885]:
+          - button "Verify" [ref=e1887] [cursor=pointer]
+          - button "" [ref=e1890] [cursor=pointer]
+          - button "" [ref=e1893] [cursor=pointer]
+      - generic [ref=e1897]:
+        - generic [ref=e1898] [cursor=pointer]: 
+        - generic [ref=e1900] [cursor=pointer]
+        - generic [ref=e1904] [cursor=pointer]:
+          - generic [ref=e1905]:
+            - generic [ref=e1906]: "#CIVB6B5E"
+            - generic [ref=e1907]: UNVERIFIED
+          - generic [ref=e1909]: Civic Hazard Reported
+        - generic [ref=e1910]:
+          - generic [ref=e1911]:
+            - generic [ref=e1912]: AI
+            - generic [ref=e1913]: None
+          - generic [ref=e1914]:
+            - generic [ref=e1915]: USER
+            - generic [ref=e1916]: Pothole
+        - generic [ref=e1917]: Citizen
+        - generic [ref=e1919]: 12 Sept
+        - 'generic "Status: Pending" [ref=e1922]':
+          - generic [ref=e1923]: 
+          - generic [ref=e1924]: Pending
+        - generic [ref=e1925]:
+          - button "Verify" [ref=e1927] [cursor=pointer]
+          - button "" [ref=e1930] [cursor=pointer]
+          - button "" [ref=e1933] [cursor=pointer]
+      - generic [ref=e1937]:
+        - generic [ref=e1938] [cursor=pointer]: 
+        - generic [ref=e1940] [cursor=pointer]
+        - generic [ref=e1944] [cursor=pointer]:
+          - generic [ref=e1945]:
+            - generic [ref=e1946]: "#CIVB6B5B"
+            - generic [ref=e1947]: UNVERIFIED
+          - generic [ref=e1949]: Civic Hazard Reported
+        - generic [ref=e1950]:
+          - generic [ref=e1951]:
+            - generic [ref=e1952]: AI
+            - generic [ref=e1953]: None
+          - generic [ref=e1954]:
+            - generic [ref=e1955]: USER
+            - generic [ref=e1956]: Pothole
+        - generic [ref=e1957]: Citizen
+        - generic [ref=e1959]: 12 Sept
+        - 'generic "Status: Pending" [ref=e1962]':
+          - generic [ref=e1963]: 
+          - generic [ref=e1964]: Pending
+        - generic [ref=e1965]:
+          - button "Verify" [ref=e1967] [cursor=pointer]
+          - button "" [ref=e1970] [cursor=pointer]
+          - button "" [ref=e1973] [cursor=pointer]

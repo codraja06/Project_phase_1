@@ -10,7 +10,7 @@ export type AuthStackParamList = {
 export type CitizenTabParamList = {
   CitizenDashboard: undefined;
   ReportIssue: { initialCategory?: string } | undefined;
-  ComplaintHistory: { filter?: string } | undefined;
+  ComplaintHistory: { filter?: string; search?: string; days?: number } | undefined;
   Notifications: undefined;
   CitizenProfile: undefined;
 };

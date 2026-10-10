@@ -1,5 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { View, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { BottomTabBar, BottomTabBarProps } from '@react-navigation/bottom-tabs';
@@ -21,6 +23,8 @@ const Stack = createNativeStackNavigator<CitizenStackParamList>();
 
 // ─── Citizen Tabs with Responsive Shell ──────────────────────────────────────
 const CitizenTabs = (_props: any) => {
+  const insets = useSafeAreaInsets();
+
   const { isDesktop } = useBreakpoint();
   const [activeRoute, setActiveRoute] = useState<string>('CitizenDashboard');
 
@@ -48,12 +52,12 @@ const CitizenTabs = (_props: any) => {
       return (
         <BottomTabBar
           {...props}
-          insets={{ top: 0, right: 0, bottom: 0, left: 0 }}
+          insets={insets}
         />
       );
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isDesktop]
+    [isDesktop, activeRoute, insets.bottom]
   );
 
   // Navigates between tabs from the sidebar
@@ -72,7 +76,7 @@ const CitizenTabs = (_props: any) => {
       )}
 
       {/* Tab Content — takes remaining space */}
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, minWidth: 0 }}>
         <Tab.Navigator
           tabBar={CustomTabBar}
           screenOptions={({ route }: { route: { name: string } }) => ({
@@ -94,9 +98,9 @@ const CitizenTabs = (_props: any) => {
               backgroundColor: '#FFFFFF',
               borderTopColor: COLORS.border,
               borderTopWidth: 1,
-              paddingBottom: Platform.OS === 'ios' ? 20 : 8,
+              paddingBottom: Math.max(insets.bottom, 8),
               paddingTop: 8,
-              height: Platform.OS === 'ios' ? 76 : 62,
+              height: 56 + Math.max(insets.bottom, 8),
             },
             tabBarLabelStyle: {
               fontSize: 11,

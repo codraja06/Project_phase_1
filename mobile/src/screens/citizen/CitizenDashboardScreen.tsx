@@ -1,754 +1,164 @@
-import React, { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  RefreshControl,
-  SafeAreaView,
-  StatusBar,
-  Platform,
-} from 'react-native';
+import React, { useState, useCallback, useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, StatusBar, Image } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import Animated, { FadeInDown, FadeIn, ZoomIn, FadeInUp } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
-import { complaintApi } from '../../api/complaintApi';
-import { Complaint, ComplaintStats } from '../../types/complaint';
-import { COLORS } from '../../theme/colors';
-import { BORDER_RADIUS } from '../../theme/radius';
-import { SHADOWS } from '../../theme/index';
-import { SPACING } from '../../theme/spacing';
-import { TYPOGRAPHY } from '../../theme/typography';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
+import { complaintApi } from '../../api/complaintApi';
+import { Complaint } from '../../types/complaint';
 import { Button } from '../../components/ui/Button';
-import { Card, CardContent } from '../../components/ui/Card';
-import { Badge } from '../../components/ui/Badge';
-import { ComplaintCard } from '../../components/ComplaintCard';
+import { SearchBar } from '../../components/SearchBar';
+import { StatusBadge } from '../../components/StatusBadge';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { formatDate } from '../../utils/date';
+
+const RED = '#B71C1C';
+const INK = '#17243A';
+const MUTED = '#536176';
+const CATEGORIES = [
+  { id: 'pothole', label: 'Pothole', icon: 'car-outline' },
+  { id: 'road_damage', label: 'Road Damage', icon: 'warning-outline' },
+  { id: 'garbage', label: 'Garbage', icon: 'trash-outline' },
+  { id: 'garbage_overflow', label: 'Garbage Overflow', icon: 'trash-bin-outline' },
+] as const;
+const RANGES = [{ value: 7, label: '7 days' }, { value: 30, label: '30 days' }, { value: 0, label: 'All time' }];
+
+// Equal columns on native and web without percentage widths plus gaps overflowing.
+const Grid = ({ children, columns }: { children: React.ReactNode[]; columns: number }) => (
+  <View style={s.grid}>
+    {Array.from({ length: Math.ceil(children.length / columns) }, (_, row) => (
+      <View key={row} style={s.gridRow}>
+        {children.slice(row * columns, (row + 1) * columns).map((child, i) => <View key={i} style={s.gridCell}>{child}</View>)}
+      </View>
+    ))}
+  </View>
+);
+
+const IncidentSummary = ({ complaint: c, onPress }: { complaint: Complaint; onPress: () => void }) => {
+  const [imageFailed, setImageFailed] = useState(false);
+  return (
+    <TouchableOpacity accessibilityRole="button" accessibilityLabel={`View incident ${c.complaintId || c.title}`} onPress={onPress} style={s.incident} activeOpacity={0.8}>
+      <View style={s.incidentTop}>
+        <Text style={s.incidentCode}>{c.complaintId || c._id.slice(-8).toUpperCase()}</Text>
+        <StatusBadge status={c.status} size="sm" />
+      </View>
+      <View style={s.incidentBody}>
+        {c.imageUrl && !imageFailed ? <Image source={{ uri: c.imageUrl }} style={s.thumbnail} resizeMode="cover" onError={() => setImageFailed(true)} accessibilityLabel="Reported issue" /> : <View style={[s.thumbnail, s.placeholder]}><Ionicons name="image-outline" size={22} color={MUTED} /></View>}
+        <View style={s.flex}>
+          <Text style={s.incidentTitle} numberOfLines={2}>{c.customCategory || c.category.replace(/_/g, ' ')}</Text>
+          <Text style={s.incidentDescription} numberOfLines={2}>{c.description || c.title}</Text>
+        </View>
+      </View>
+      <View style={s.incidentLocation}><Ionicons name="location-outline" size={14} color={MUTED} /><Text style={s.locationText} numberOfLines={2}>{c.address}</Text></View>
+      <View style={s.incidentBottom}><Text style={s.caption}>{formatDate(c.createdAt)}</Text><Text style={s.detailLink}>View details →</Text></View>
+    </TouchableOpacity>
+  );
+};
 
 export const CitizenDashboardScreen = ({ navigation }: any) => {
   const { user } = useAuth();
-  const { isDesktop, width } = useBreakpoint();
+  const { width, isDesktop } = useBreakpoint();
+  const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [recentComplaints, setRecentComplaints] = useState<Complaint[]>([]);
-  const [stats, setStats] = useState<ComplaintStats>({
-    total: 0,
-    pending: 0,
-    inProgress: 0,
-    resolved: 0,
-  });
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning,';
-    if (hour < 18) return 'Good afternoon,';
-    return 'Good evening,';
-  };
-
-  const fetchDashboardData = async () => {
+  const [error, setError] = useState('');
+  const [query, setQuery] = useState('');
+  const [range, setRange] = useState(30);
+  const twoColumns = width >= 1280;
+  const fourColumns = (twoColumns ? (Math.min(width - 260, 1800) - 80) * 0.60 : width - (isDesktop ? 260 : 0) - 48) >= 600;
+  const fetchData = useCallback(async () => {
+    setError('');
     try {
-      setLoading(true);
-      const res = await complaintApi.getMyComplaints();
-      setRecentComplaints(res.complaints.slice(0, 5));
-      setStats(res.stats);
-    } catch (error) {
-      console.error('Failed to fetch citizen dashboard complaints:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchDashboardData();
-    }, [])
-  );
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchDashboardData();
-  };
-
-  if (loading && !refreshing) {
-    return <LoadingSpinner message="Loading Citizen Dashboard..." />;
-  }
-
-  const firstName = user?.name ? user.name.split(' ')[0] : 'Citizen';
-
-  // Desktop vs Mobile responsive styles applied below
-  const contentStyle = isDesktop ? styles.desktopContent : styles.mobileContent;
-
-  const statCardResponsiveStyle = isDesktop
-    ? styles.statCardDesktop
-    : width < 300
-      ? styles.statCardMobileFull
-      : styles.statCardGrid2;
-
-  const renderRightColContent = () => (
-    <>
-      <View style={styles.sectionHeaderRow}>
-        <Text style={styles.sectionTitle}>Recent Incidents</Text>
-        <Button variant="link" title="See All →" onPress={() => navigation.navigate('ComplaintHistory', { filter: 'all' })} />
-      </View>
-
-      {recentComplaints.length > 0 ? (
-        recentComplaints.map((item, index) => (
-          <Animated.View key={item._id} entering={FadeInUp.delay(900 + (index * 100))}>
-            <ComplaintCard
-              complaint={item}
-              onPress={() => (navigation as any).navigate('ComplaintDetail', { complaintId: item._id })}
-            />
-          </Animated.View>
-        ))
-      ) : (
-        <Card style={styles.emptyCard}>
-          <CardContent style={styles.emptyContent}>
-            <Ionicons name="document-text-outline" size={40} color={COLORS.textMuted} />
-            <Text style={styles.emptyTitle}>No complaints reported yet</Text>
-            <Text style={styles.emptySub}>
-              Spot a pothole, garbage, or road damage? Tap above to submit your first report.
-            </Text>
-          </CardContent>
-        </Card>
-      )}
-    </>
-  );
-
-  const dashboardContent = (
-    <Animated.View entering={FadeIn.duration(400)} style={{ flex: 1 }}>
-      {/* Top Bar / Header */}
-      <View style={isDesktop ? styles.desktopHeader : styles.mobileHeader}>
-        <View>
-          <Animated.View entering={FadeInDown.delay(100)} style={styles.badgeRow}>
-            <Text style={styles.greetingSub}>{getGreeting()}</Text>
-            <Badge label="Verified Citizen" variant="outline" />
-          </Animated.View>
-          <Animated.Text entering={FadeInDown.delay(200)} style={styles.greetingName}>{firstName} 👋</Animated.Text>
-          <Animated.Text entering={FadeInDown.delay(300)} style={styles.greetingTagline}>
-            Help keep your neighborhood clean, safe, and well-maintained.
-          </Animated.Text>
-        </View>
-        <Animated.View entering={FadeInDown.delay(400)} style={styles.topControls}>
-          {isDesktop && (
-            <View style={styles.headerSearch}>
-              <Ionicons name="search" size={16} color={COLORS.textMuted} />
-              <Text style={styles.headerSearchText}>Search complaints, locations...</Text>
-            </View>
-          )}
-          {!isDesktop && (
-            <TouchableOpacity
-              style={styles.avatarBtn}
-              onPress={() => navigation.navigate('CitizenProfile')}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="person" size={20} color={COLORS.primaryDark} />
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity
-            style={styles.bellBtn}
-            onPress={() => navigation.navigate('Notifications')}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="Notifications"
-          >
-            <Ionicons name="notifications-outline" size={22} color={COLORS.textPrimary} />
-            {stats.pending > 0 && <View style={styles.notificationDot} />}
-          </TouchableOpacity>
-          {isDesktop && (
-            <TouchableOpacity
-              style={styles.avatarBtn}
-              onPress={() => navigation.navigate('CitizenProfile')}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="person" size={20} color={COLORS.primaryDark} />
-            </TouchableOpacity>
-          )}
-        </Animated.View>
-      </View>
-
-      {/* Main Content Layout */}
-      <View style={isDesktop ? styles.desktopBody : styles.mobileBody}>
-        {/* Left Column / Top Stack */}
-        <View style={isDesktop ? styles.desktopLeftCol : styles.mobileLeftCol}>
-          {/* Compact Hero: Report CTA */}
-          <Animated.View entering={ZoomIn.duration(600).springify().damping(15)}>
-            <Card interactive onPress={() => navigation.navigate('ReportIssue')} style={styles.compactHeroCard}>
-              <CardContent style={styles.compactHeroContent}>
-                <View style={styles.compactHeroIconCircle}>
-                  <Ionicons name="camera" size={28} color={COLORS.primary} />
-                </View>
-                <View style={styles.compactHeroTextContainer}>
-                  <Text style={styles.compactHeroTitle}>Report an Issue</Text>
-                  <Text style={styles.compactHeroSubtitle}>Take a photo, let AI detect the issue, add location and submit.</Text>
-                </View>
-                <Button
-                  title="Report an Issue"
-                  onPress={() => navigation.navigate('ReportIssue')}
-                  variant="default"
-                  icon={<Ionicons name="add-circle" size={18} color="#FFFFFF" />}
-                  style={styles.compactHeroBtn}
-                />
-              </CardContent>
-            </Card>
-          </Animated.View>
-
-          {/* Secondary Bentos: Action Row */}
-          <Animated.View entering={FadeInUp.delay(500)} style={styles.bentoActionRow}>
-            <Card interactive onPress={() => navigation.navigate('ComplaintHistory', { filter: 'all' })} style={styles.bentoCard}>
-              <CardContent style={styles.bentoContent}>
-                <View style={[styles.bentoIcon, { backgroundColor: COLORS.primaryLight }]}>
-                  <Ionicons name="document-text" size={20} color={COLORS.primary} />
-                </View>
-                <Text style={styles.bentoTitle}>My Reports</Text>
-                <Text style={styles.bentoSub}>{stats.total} Total</Text>
-              </CardContent>
-            </Card>
-
-            <Card interactive onPress={() => navigation.navigate('ComplaintHistory', { filter: 'pending' })} style={styles.bentoCard}>
-              <CardContent style={styles.bentoContent}>
-                <View style={[styles.bentoIcon, { backgroundColor: COLORS.pendingLight }]}>
-                  <Ionicons name="location" size={20} color={COLORS.pending} />
-                </View>
-                <Text style={styles.bentoTitle}>Nearby Issues</Text>
-                <Text style={styles.bentoSub}>{stats.pending} Active</Text>
-              </CardContent>
-            </Card>
-
-            <Card interactive onPress={() => navigation.navigate('Notifications')} style={styles.bentoCard}>
-              <CardContent style={styles.bentoContent}>
-                <View style={[styles.bentoIcon, { backgroundColor: COLORS.inProgressLight }]}>
-                  <Ionicons name="notifications" size={20} color={COLORS.inProgress} />
-                </View>
-                <Text style={styles.bentoTitle}>Notifications</Text>
-                <Text style={styles.bentoSub}>{stats.inProgress > 0 ? `${stats.inProgress} Live` : 'Alerts'}</Text>
-              </CardContent>
-            </Card>
-          </Animated.View>
-
-          {/* Quick Issue Categories */}
-          <Animated.View entering={FadeInUp.delay(600)} style={styles.quickCategorySection}>
-            <Text style={styles.sectionTitle}>QUICK ISSUE CATEGORIES</Text>
-            <View style={styles.quickCategoryGrid}>
-              {[
-                { id: 'pothole', label: 'Pothole', icon: 'car-outline', color: '#10B981', bg: 'rgba(16, 185, 129, 0.1)' },
-                { id: 'road_damage', label: 'Road Damage', icon: 'warning-outline', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.1)' },
-                { id: 'garbage', label: 'Garbage', icon: 'trash-outline', color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.1)' },
-                { id: 'garbage_overflow', label: 'Garbage Overflow', icon: 'water-outline', color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.1)' },
-              ].map((cat) => (
-                <TouchableOpacity
-                  key={cat.id}
-                  style={styles.quickCategoryCard}
-                  onPress={() => navigation.navigate('ReportIssue', { initialCategory: cat.id })}
-                  activeOpacity={0.7}
-                >
-                  <View style={[styles.quickCategoryIconBox, { backgroundColor: cat.bg }]}>
-                    <Ionicons name={cat.icon as any} size={24} color={cat.color} />
-                  </View>
-                  <Text style={styles.quickCategoryText}>{cat.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </Animated.View>
-
-          {/* Stats Grid */}
-          <Animated.View entering={FadeInUp.delay(700)}>
-            <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>Activity Overview</Text>
-              <TouchableOpacity style={styles.filterDropdown}>
-                <Text style={styles.filterDropdownText}>Last 30 Days</Text>
-                <Ionicons name="chevron-down" size={12} color={COLORS.textSecondary} style={{ marginLeft: 4 }} />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.statsGrid}>
-              {[
-                { label: 'Total Complaints', count: stats.total, color: COLORS.primary, bg: COLORS.primaryLight, icon: 'document-text-outline', filter: 'all' },
-                { label: 'Pending', count: stats.pending, color: COLORS.pending, bg: COLORS.pendingLight, icon: 'time-outline', filter: 'pending' },
-                { label: 'In Progress', count: stats.inProgress, color: COLORS.inProgress, bg: COLORS.inProgressLight, icon: 'construct-outline', filter: 'in_progress' },
-                { label: 'Resolved', count: stats.resolved, color: COLORS.resolved, bg: COLORS.resolvedLight, icon: 'checkmark-circle-outline', filter: 'resolved' },
-              ].map((stat, i) => (
-                <Card key={i} interactive onPress={() => navigation.navigate('ComplaintHistory', { filter: stat.filter })} style={statCardResponsiveStyle}>
-                  <CardContent style={styles.statContent}>
-                    <View style={styles.statHeader}>
-                      <View style={[styles.statIconWrapper, { backgroundColor: stat.bg }]}>
-                        <Ionicons name={stat.icon as any} size={18} color={stat.color} />
-                      </View>
-                    </View>
-                    <Text numberOfLines={1} style={[styles.statCount, { color: stat.color }]}>{stat.count}</Text>
-                    <Text numberOfLines={1} style={styles.statLabel}>{stat.label}</Text>
-                  </CardContent>
-                </Card>
-              ))}
-            </View>
-          </Animated.View>
-
-          {/* Bottom Community Banner */}
-          <Animated.View entering={FadeInUp.delay(800)} style={styles.communityBanner}>
-            <View style={styles.communityBannerContent}>
-              <View style={styles.communityBannerTextCol}>
-                <Text style={styles.communityBannerTitle}>Cleaner Neighborhoods{'\n'}Stronger Communities</Text>
-                <Text style={styles.communityBannerSub}>Report • Track • Create Change</Text>
-              </View>
-              <Ionicons name="leaf" size={48} color="rgba(16, 185, 129, 0.2)" style={styles.communityBannerIcon} />
-            </View>
-          </Animated.View>
-        </View>
-
-        {/* Right Column / Bottom Stack */}
-        {isDesktop ? (
-          <Animated.View entering={FadeInUp.delay(800)} style={styles.desktopRightColWrapper}>
-            <ScrollView
-              style={styles.desktopRightColScroll}
-              showsVerticalScrollIndicator={true}
-              contentContainerStyle={styles.desktopRightColScrollContent}
-            >
-              {renderRightColContent()}
-            </ScrollView>
-          </Animated.View>
-        ) : (
-          <Animated.View entering={FadeInUp.delay(800)} style={styles.mobileRightCol}>
-            {renderRightColContent()}
-          </Animated.View>
-        )}
-      </View>
-    </Animated.View>
-  );
-
-  if (isDesktop) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="dark-content" backgroundColor={COLORS.backgroundNeutral} />
-        <View style={[styles.container, styles.desktopFixedContainer]}>
-          {dashboardContent}
-        </View>
-      </SafeAreaView>
-    );
-  }
+      const result = await complaintApi.getMyComplaints();
+      setComplaints([...result.complaints].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)));
+    } catch (e: any) { setError(e.message || 'Your reports could not be loaded. Please try again.'); }
+    finally { setLoading(false); setRefreshing(false); }
+  }, []);
+  useFocusEffect(useCallback(() => { void fetchData(); }, [fetchData]));
+  const periodComplaints = useMemo(() => complaints.filter(c => !range || Date.parse(c.createdAt) >= Date.now() - range * 86400000), [complaints, range]);
+  const stats = { total: periodComplaints.length, pending: periodComplaints.filter(c => c.status === 'Pending').length, inProgress: periodComplaints.filter(c => c.status === 'In Progress').length, resolved: periodComplaints.filter(c => c.status === 'Resolved').length };
+  const matches = useMemo(() => complaints.filter(c => [c.complaintId, c.title, c.description, c.category.replace(/_/g, ' '), c.address].some(v => v?.toLowerCase().includes(query.trim().toLowerCase()))), [complaints, query]);
+  const firstName = user?.name?.split(' ')[0] || 'Citizen';
+  const greeting = new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening';
+  const openHistory = (filter = 'all') => navigation.navigate('ComplaintHistory', { filter, days: range });
+  if (loading) return <LoadingSpinner message="Loading your dashboard..." />;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.backgroundNeutral} />
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.mobileContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        {dashboardContent}
+    <SafeAreaView style={s.screen} edges={['top', 'left', 'right']}>
+      <StatusBar barStyle="dark-content" />
+      <ScrollView testID="citizen-dashboard-scroll" contentContainerStyle={[s.page, { padding: width < 600 ? 16 : 28 }]} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); void fetchData(); }} colors={[RED]} />}>
+        <View style={s.header}>
+          <View style={s.welcome}>
+            <Text style={s.eyebrow}>YOUR NEIGHBORHOOD. YOUR VOICE.</Text>
+            <Text accessibilityRole="header" style={[s.greeting, width < 600 && { fontSize: 26, lineHeight: 34 }]}>{greeting}, {firstName}.</Text>
+            <View style={s.welcomeMeta}><View style={s.citizenBadge}><Ionicons name="shield-checkmark-outline" size={13} color={RED} /><Text style={s.citizenBadgeText}>Citizen account</Text></View><Text style={s.subtitle}>A better city starts with you.</Text></View>
+          </View>
+          <View style={s.headerActions}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open notifications" style={s.iconButton} onPress={() => navigation.navigate('Notifications')}><Ionicons name="notifications-outline" size={21} color={INK} /></TouchableOpacity>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open profile" style={[s.iconButton, s.avatar]} onPress={() => navigation.navigate('CitizenProfile')}><Text style={s.avatarText}>{user?.name?.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() || 'C'}</Text></TouchableOpacity>
+          </View>
+        </View>
+        <SearchBar value={query} onChangeText={setQuery} placeholder="Search your reports by issue, ID or location" style={s.search} />
+        {!!error && <View accessibilityRole="alert" style={s.error}><Text style={s.errorText}>{error}</Text><Button title="Retry" variant="outline" onPress={fetchData} /></View>}
+        <View style={[s.body, twoColumns && s.bodyWide]}>
+          <View style={[s.main, twoColumns && { flex: 1.5 }]}>
+            <View style={s.reportCard}>
+              <View style={s.reportIcon}><Ionicons name="camera-outline" size={28} color={RED} /></View>
+              <Text style={s.reportEyebrow}>SPOT IT. REPORT IT. TRACK IT.</Text>
+              <Text accessibilityRole="header" style={s.reportTitle}>Small reports.{'\n'}Meaningful change.</Text>
+              <Text style={s.reportDescription}>Take a photo of a civic issue. Let AI help identify it, confirm the location, and send your report.</Text>
+              <Button title="Report an Issue" onPress={() => navigation.navigate('ReportIssue')} icon={<Ionicons name="add" size={20} color="#FFFFFF" />} style={{ alignSelf: width < 480 ? 'stretch' : 'flex-start' }} />
+              <Text style={s.reportFootnote}>Photo  •  AI assistance  •  Location  •  Submit</Text>
+            </View>
+            <View style={s.section}>
+              <View style={s.sectionHeading}><Text accessibilityRole="header" style={s.sectionTitle}>Quick Issue Categories</Text><Text style={s.caption}>Start with an issue type</Text></View>
+              <Grid columns={fourColumns ? 4 : 2}>{CATEGORIES.map(cat => <TouchableOpacity key={cat.id} accessibilityRole="button" accessibilityLabel={`Report ${cat.label}`} style={s.category} onPress={() => navigation.navigate('ReportIssue', { initialCategory: cat.id })}><View style={s.categoryIcon}><Ionicons name={cat.icon} size={23} color={RED} /></View><Text style={s.categoryLabel}>{cat.label}</Text><Ionicons name="arrow-forward" size={16} color={MUTED} /></TouchableOpacity>)}</Grid>
+            </View>
+            <View style={s.section}>
+              <View style={s.sectionHeading}><Text accessibilityRole="header" style={s.sectionTitle}>Activity Overview</Text><View accessibilityRole="radiogroup" accessibilityLabel="Activity date range" style={s.rangeGroup}>{RANGES.map(r => <TouchableOpacity key={r.value} accessibilityRole="radio" accessibilityState={{ checked: range === r.value }} accessibilityLabel={r.label} onPress={() => setRange(r.value)} style={[s.rangeButton, range === r.value && s.rangeActive]}><Text style={[s.rangeLabel, range === r.value && s.rangeLabelActive]}>{r.label}</Text></TouchableOpacity>)}</View></View>
+              <Grid columns={fourColumns ? 4 : 2}>{[
+                { label: 'Total Reports', count: stats.total, icon: 'documents-outline', color: INK, filter: 'all' },
+                { label: 'Pending', count: stats.pending, icon: 'time-outline', color: '#946000', filter: 'pending' },
+                { label: 'In Progress', count: stats.inProgress, icon: 'construct-outline', color: '#235DA8', filter: 'in_progress' },
+                { label: 'Resolved', count: stats.resolved, icon: 'checkmark-circle-outline', color: '#187047', filter: 'resolved' },
+              ].map(stat => <TouchableOpacity key={stat.filter} accessibilityRole="button" accessibilityLabel={`${stat.label}: ${stat.count}`} onPress={() => openHistory(stat.filter)} style={s.metric}><Ionicons name={stat.icon as any} size={20} color={stat.color} /><Text style={[s.metricValue, { color: stat.color }]}>{error ? '—' : stat.count}</Text><Text style={s.metricLabel}>{stat.label}</Text></TouchableOpacity>)}</Grid>
+              <View style={s.shortcuts}><Button title="My Reports" variant="link" onPress={() => navigation.navigate('ComplaintHistory', { filter: 'all', days: 0 })} /><Button title="Notifications" variant="link" onPress={() => navigation.navigate('Notifications')} /></View>
+            </View>
+            <View style={s.community}><Ionicons name="leaf-outline" size={28} color="#CBD5E1" /><View style={s.flex}><Text style={s.communityTitle}>Cleaner Neighborhoods. Stronger Communities.</Text><Text style={s.communitySub}>Report • Track • Create Change</Text></View></View>
+          </View>
+          <View testID="recent-incidents" style={[s.recent, twoColumns && { flex: 1 }]}>
+            <View style={s.sectionHeading}><Text accessibilityRole="header" style={s.sectionTitle}>{query.trim() ? 'Search Results' : 'Recent Incidents'}</Text><Button title="See all" variant="link" onPress={() => navigation.navigate('ComplaintHistory', { filter: 'all', days: 0, search: query })} /></View>
+            <Text style={s.recentIntro}>{query.trim() ? `${matches.length} matching reports` : 'Stay up to date with your latest reports.'}</Text>
+            {matches.length ? matches.slice(0, 5).map(c => <IncidentSummary key={c._id} complaint={c} onPress={() => navigation.navigate('ComplaintDetail', { complaintId: c._id })} />) : <View style={s.empty}><View style={s.emptyIcon}><Ionicons name="document-text-outline" size={30} color={RED} /></View><Text style={s.emptyTitle}>{error ? 'Reports unavailable' : query.trim() ? 'No matching reports' : 'Your first report starts here'}</Text><Text style={s.emptyText}>{error ? 'Retry loading your reports to see their latest status.' : query.trim() ? 'Try an issue type, a report ID, or a different location.' : 'Spotted an issue nearby? Report it and follow its progress right here.'}</Text><Button title={error ? 'Retry loading reports' : query.trim() ? 'Clear search' : 'Report your first issue'} variant="outline" onPress={error ? fetchData : query.trim() ? () => setQuery('') : () => navigation.navigate('ReportIssue')} /></View>}
+          </View>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: COLORS.backgroundNeutral,
-  },
-  container: {
-    flex: 1,
-  },
-  desktopFixedContainer: {
-    height: Platform.OS === 'web' ? ('100vh' as any) : '100%',
-    overflow: 'hidden',
-    padding: SPACING['3xl'],
-    paddingTop: SPACING['3xl'],
-    maxWidth: 1200,
-    alignSelf: 'center',
-    width: '100%',
-  },
-  desktopContent: {
-    padding: SPACING['7xl'],
-    maxWidth: 1200,
-    alignSelf: 'center',
-    width: '100%',
-  },
-  mobileContent: {
-    padding: SPACING.xl,
-    paddingTop: SPACING.md,
-    paddingBottom: SPACING['7xl'],
-  },
-  desktopHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: SPACING['3xl'],
-  },
-  mobileHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: SPACING['3xl'],
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
-  greetingSub: {
-    ...TYPOGRAPHY.bodyBold,
-    color: COLORS.textSecondary,
-    marginRight: SPACING.lg,
-  },
-  greetingName: {
-    ...TYPOGRAPHY.h1,
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.xs,
-  },
-  greetingTagline: {
-    ...TYPOGRAPHY.body,
-    color: COLORS.textSecondary,
-  },
-  topControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.lg,
-  },
-  avatarBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: BORDER_RADIUS.full,
-    backgroundColor: COLORS.primaryLight,
-    borderWidth: 1,
-    borderColor: COLORS.primarySurface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bellBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: BORDER_RADIUS.full,
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.borderLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...SHADOWS.sm,
-  },
-  notificationDot: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 8,
-    height: 8,
-    borderRadius: BORDER_RADIUS.full,
-    backgroundColor: COLORS.secondary,
-  },
-  desktopBody: {
-    flexDirection: 'row',
-    gap: SPACING['5xl'],
-    flex: 1,
-    overflow: 'hidden',
-  },
-  mobileBody: {
-    flexDirection: 'column',
-    gap: SPACING['3xl'],
-  },
-  desktopLeftCol: {
-    flex: 1,
-    maxWidth: 600,
-  },
-  mobileLeftCol: {
-    width: '100%',
-  },
-  desktopRightColWrapper: {
-    flex: 1,
-    height: '100%',
-  },
-  desktopRightColScroll: {
-    flex: 1,
-    paddingRight: SPACING.md,
-  },
-  desktopRightColScrollContent: {
-    paddingBottom: SPACING['7xl'],
-  },
-  mobileRightCol: {
-    width: '100%',
-  },
-  compactHeroCard: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: COLORS.primaryLight,
-    marginBottom: SPACING['2xl'],
-    ...SHADOWS.sm,
-  },
-  compactHeroContent: {
-    padding: SPACING.xl,
-    flexDirection: Platform.OS === 'web' ? 'row' : 'column',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: SPACING.lg,
-  },
-  compactHeroIconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: BORDER_RADIUS.full,
-    backgroundColor: COLORS.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  compactHeroTextContainer: {
-    flex: 1,
-    alignItems: Platform.OS === 'web' ? 'flex-start' : 'center',
-  },
-  compactHeroTitle: {
-    ...TYPOGRAPHY.h3,
-    color: COLORS.textPrimary,
-    marginBottom: 4,
-  },
-  compactHeroSubtitle: {
-    ...TYPOGRAPHY.bodySmall,
-    color: COLORS.textSecondary,
-    textAlign: Platform.OS === 'web' ? 'left' : 'center',
-  },
-  compactHeroBtn: {
-    width: Platform.OS === 'web' ? 'auto' : '100%',
-    minWidth: 180,
-  },
-  bentoActionRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.lg,
-    marginBottom: SPACING['3xl'],
-  },
-  bentoCard: {
-    flexBasis: Platform.OS === 'web' ? ('calc(33.33% - 16px)' as any) : '30%',
-    flexGrow: 1,
-    flexShrink: 0,
-    minWidth: 100,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)', // Glass effect
-  },
-  bentoContent: {
-    padding: SPACING.xl,
-    alignItems: 'center',
-  },
-  bentoIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: BORDER_RADIUS.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: SPACING.sm,
-  },
-  bentoTitle: {
-    ...TYPOGRAPHY.bodyBold,
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.xs,
-  },
-  bentoSub: {
-    ...TYPOGRAPHY.caption,
-    color: COLORS.textSecondary,
-  },
-  quickCategorySection: {
-    marginBottom: SPACING['3xl'],
-  },
-  sectionTitle: {
-    ...TYPOGRAPHY.overline,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.lg,
-  },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.lg,
-  },
-  quickCategoryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.lg,
-  },
-  quickCategoryCard: {
-    flexBasis: Platform.OS === 'web' ? ('calc(25% - 12px)' as any) : '47%',
-    flexGrow: 1,
-    flexShrink: 0,
-    minWidth: 130,
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.borderLight,
-    padding: SPACING.lg,
-    alignItems: 'center',
-    ...SHADOWS.sm,
-  },
-  quickCategoryIconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: BORDER_RADIUS.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: SPACING.sm,
-  },
-  quickCategoryText: {
-    ...TYPOGRAPHY.bodySmall,
-    fontWeight: '700',
-    color: COLORS.textPrimary,
-    textAlign: 'center',
-  },
-  filterDropdown: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: 6,
-    borderRadius: BORDER_RADIUS.sm,
-    borderWidth: 1,
-    borderColor: COLORS.borderLight,
-  },
-  filterDropdownText: {
-    ...TYPOGRAPHY.caption,
-    color: COLORS.textSecondary,
-    fontWeight: '600',
-  },
-  headerSearch: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: 10,
-    borderRadius: BORDER_RADIUS.full,
-    borderWidth: 1,
-    borderColor: COLORS.borderLight,
-    minWidth: 260,
-  },
-  headerSearchText: {
-    ...TYPOGRAPHY.bodySmall,
-    color: COLORS.textMuted,
-    marginLeft: SPACING.sm,
-  },
-  communityBanner: {
-    marginTop: SPACING.xl,
-    backgroundColor: '#ECFDF5',
-    borderRadius: BORDER_RADIUS.xl,
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
-    overflow: 'hidden',
-  },
-  communityBannerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: SPACING['3xl'],
-  },
-  communityBannerTextCol: {
-    flex: 1,
-    zIndex: 1,
-  },
-  communityBannerTitle: {
-    ...TYPOGRAPHY.h4,
-    color: '#064E3B',
-    marginBottom: SPACING.xs,
-    lineHeight: 26,
-  },
-  communityBannerSub: {
-    ...TYPOGRAPHY.caption,
-    fontWeight: '700',
-    color: '#047857',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  communityBannerIcon: {
-    position: 'absolute',
-    right: -10,
-    bottom: -15,
-    transform: [{ rotate: '-15deg' }, { scale: 2.5 }],
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.lg,
-    marginBottom: SPACING['3xl'],
-    width: '100%',
-  },
-  statCardDesktop: {
-    flexBasis: Platform.OS === 'web' ? ('calc(25% - 9px)' as any) : '22%',
-    flexGrow: 1,
-    flexShrink: 0,
-    minWidth: 120,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: BORDER_RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.borderLight,
-    ...SHADOWS.sm,
-  },
-  statCardGrid2: {
-    flexBasis: Platform.OS === 'web' ? ('calc(50% - 6px)' as any) : '47%',
-    flexGrow: 1,
-    flexShrink: 0,
-    minWidth: 130,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: BORDER_RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.borderLight,
-    ...SHADOWS.sm,
-  },
-  statCardMobileFull: {
-    width: '100%',
-    flexBasis: '100%',
-    flexGrow: 1,
-    flexShrink: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: BORDER_RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.borderLight,
-    ...SHADOWS.sm,
-  },
-  statContent: {
-    paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.lg,
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    minHeight: 110,
-  },
-  statHeader: {
-    marginBottom: SPACING.sm,
-  },
-  statIconWrapper: {
-    width: 32,
-    height: 32,
-    borderRadius: BORDER_RADIUS.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  statCount: {
-    ...TYPOGRAPHY.h2,
-    marginBottom: 2,
-    textAlign: 'left',
-  },
-  statLabel: {
-    ...TYPOGRAPHY.caption,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    textAlign: 'left',
-    ...(Platform.OS === 'web' ? ({
-      wordBreak: 'normal',
-      overflowWrap: 'normal',
-      whiteSpace: 'nowrap',
-    } as any) : {}),
-  },
-  emptyCard: {
-    backgroundColor: COLORS.surface,
-    borderStyle: 'dashed',
-    borderWidth: 2,
-    borderColor: COLORS.borderStrong,
-  },
-  emptyContent: {
-    padding: SPACING['4xl'],
-    alignItems: 'center',
-  },
-  emptyTitle: {
-    ...TYPOGRAPHY.h4,
-    color: COLORS.textPrimary,
-    marginTop: SPACING.xl,
-    marginBottom: SPACING.sm,
-  },
-  emptySub: {
-    ...TYPOGRAPHY.bodySmall,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-  },
+const s = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: '#F5F7FA', minWidth: 0 },
+  page: { width: '100%', maxWidth: 1800, alignSelf: 'center', gap: 24, paddingBottom: 36 },
+  flex: { flex: 1, minWidth: 0 }, header: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 },
+  welcome: { flex: 1, minWidth: 200 }, eyebrow: { fontSize: 10, letterSpacing: 1.6, color: MUTED, fontWeight: '700', marginBottom: 9 },
+  greeting: { fontSize: 32, lineHeight: 41, fontWeight: '700', color: INK, letterSpacing: -0.8 },
+  welcomeMeta: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, marginTop: 10 },
+  citizenBadge: { flexDirection: 'row', gap: 5, alignItems: 'center', paddingVertical: 5, paddingHorizontal: 8, borderRadius: 6, backgroundColor: '#FCEEEE' }, citizenBadgeText: { color: RED, fontSize: 11, fontWeight: '600' },
+  subtitle: { fontSize: 13, color: MUTED }, headerActions: { flexDirection: 'row', gap: 10 }, iconButton: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#DFE4EB', alignItems: 'center', justifyContent: 'center' },
+  avatar: { backgroundColor: '#FCEEEE', borderColor: '#F1D8D8' }, avatarText: { fontSize: 14, fontWeight: '700', color: RED }, search: { marginBottom: 0 },
+  body: { gap: 24 }, bodyWide: { flexDirection: 'row', alignItems: 'flex-start' }, main: { minWidth: 0, gap: 24 },
+  reportCard: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E6DCDC', borderRadius: 16, padding: 24, borderTopWidth: 4, borderTopColor: RED },
+  reportIcon: { width: 52, height: 52, borderRadius: 14, backgroundColor: '#FCF0F0', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }, reportEyebrow: { fontSize: 10, fontWeight: '700', letterSpacing: 1.3, color: RED, marginBottom: 10 }, reportTitle: { fontSize: 29, lineHeight: 36, letterSpacing: -0.6, color: INK, fontWeight: '700' }, reportDescription: { color: MUTED, fontSize: 14, lineHeight: 22, marginTop: 12, marginBottom: 22, maxWidth: 520 }, reportFootnote: { fontSize: 11, color: MUTED, lineHeight: 18, marginTop: 14 },
+  section: { gap: 14 }, sectionHeading: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10 }, sectionTitle: { fontSize: 17, fontWeight: '700', color: INK, flexShrink: 1 }, caption: { fontSize: 11, lineHeight: 17, color: MUTED },
+  grid: { gap: 12 }, gridRow: { flexDirection: 'row', gap: 12 }, gridCell: { flex: 1, minWidth: 0 },
+  category: { flex: 1, minHeight: 130, borderRadius: 12, borderWidth: 1, borderColor: '#E1E5EB', backgroundColor: '#FFFFFF', padding: 14, alignItems: 'flex-start', gap: 10 }, categoryIcon: { width: 38, height: 38, borderRadius: 10, backgroundColor: '#FCF0F0', alignItems: 'center', justifyContent: 'center' }, categoryLabel: { flex: 1, color: INK, fontSize: 13, fontWeight: '600', lineHeight: 19 },
+  rangeGroup: { flexDirection: 'row', backgroundColor: '#E9EDF2', borderRadius: 8, padding: 3 }, rangeButton: { minHeight: 40, paddingHorizontal: 11, alignItems: 'center', justifyContent: 'center', borderRadius: 6 }, rangeActive: { backgroundColor: '#FFFFFF' }, rangeLabel: { fontSize: 12, color: MUTED }, rangeLabelActive: { color: RED, fontWeight: '700' },
+  metric: { minHeight: 128, borderWidth: 1, borderColor: '#E1E5EB', borderRadius: 12, backgroundColor: '#FFFFFF', padding: 16, gap: 8 }, metricValue: { fontSize: 29, fontWeight: '700', lineHeight: 34 }, metricLabel: { fontSize: 12, color: MUTED, lineHeight: 18 }, shortcuts: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  community: { flexDirection: 'row', alignItems: 'center', gap: 16, borderRadius: 12, padding: 22, backgroundColor: '#17243A' }, communityTitle: { fontSize: 15, lineHeight: 22, fontWeight: '600', color: '#FFFFFF' }, communitySub: { fontSize: 11, lineHeight: 18, color: '#CBD5E1', marginTop: 7 },
+  recent: { minWidth: 0, padding: 20, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E1E5EB', borderRadius: 16 }, recentIntro: { color: MUTED, fontSize: 12, lineHeight: 19, marginTop: 4, marginBottom: 18 },
+  incident: { paddingVertical: 18, borderTopWidth: 1, borderTopColor: '#E8ECF1', gap: 12 }, incidentTop: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 8 }, incidentCode: { fontSize: 11, fontWeight: '700', color: RED }, incidentBody: { flexDirection: 'row', gap: 12 }, thumbnail: { width: 64, height: 64, borderRadius: 8, backgroundColor: '#F1F4F8' }, placeholder: { justifyContent: 'center', alignItems: 'center' }, incidentTitle: { textTransform: 'capitalize', color: INK, fontWeight: '700', fontSize: 14, lineHeight: 20 }, incidentDescription: { fontSize: 12, lineHeight: 18, color: MUTED, marginTop: 4 }, incidentLocation: { flexDirection: 'row', gap: 5, alignItems: 'flex-start' }, locationText: { flex: 1, minWidth: 0, fontSize: 11, lineHeight: 17, color: MUTED }, incidentBottom: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8 }, detailLink: { color: RED, fontSize: 12, fontWeight: '600' },
+  empty: { alignItems: 'center', paddingVertical: 20, gap: 14 }, emptyIcon: { width: 64, height: 64, borderRadius: 32, backgroundColor: '#FCF0F0', alignItems: 'center', justifyContent: 'center' }, emptyTitle: { color: INK, fontWeight: '700', fontSize: 16, lineHeight: 23, textAlign: 'center' }, emptyText: { color: MUTED, fontSize: 13, lineHeight: 21, textAlign: 'center', maxWidth: 320 },
+  error: { gap: 12, padding: 16, borderWidth: 1, borderColor: '#F1C6C6', backgroundColor: '#FFF4F4', borderRadius: 10 }, errorText: { color: RED, lineHeight: 21, fontSize: 14 },
 });

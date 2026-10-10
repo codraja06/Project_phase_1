@@ -18,9 +18,13 @@ import { SHADOWS } from '../../theme/index';
 import { SPACING } from '../../theme/spacing';
 import { TYPOGRAPHY } from '../../theme/typography';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
+import { useMobileMenu } from '../../contexts/MobileMenuContext';
+
+import { AuthorityMobileHeader } from '../../components/AuthorityMobileHeader';
 
 export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
-  const { isWide } = useBreakpoint();
+  const { toggleMenu } = useMobileMenu();
+  const { isDesktop, isWide } = useBreakpoint();
   const [refreshing, setRefreshing] = useState(false);
   const [timeframe, setTimeframe] = useState<'7d' | '30d' | 'all'>('7d');
   const [stats, setStats] = useState({
@@ -52,39 +56,45 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
     setTimeout(() => setRefreshing(false), 600);
   };
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
-
-      {/* Screen Header */}
-      <Animated.View entering={FadeInDown.duration(400)} style={styles.headerBar}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.md }}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={24} color={COLORS.textPrimary} />
-          </TouchableOpacity>
+  const renderHeader = () => {
+    if (isDesktop) {
+      return (
+        <Animated.View entering={FadeInDown.duration(400)} style={styles.desktopHeaderBar}>
           <View>
-            <View style={styles.headerTag}>
-              <Text style={styles.headerTagText}>OPERATIONS INTELLIGENCE</Text>
+            <View style={styles.desktopHeaderTag}>
+              <Text style={styles.desktopHeaderTagText}>OPERATIONS INTELLIGENCE</Text>
             </View>
-            <Text style={styles.headerTitle}>Municipal Analytics</Text>
+            <Text style={styles.desktopHeaderTitle}>Municipal Analytics</Text>
           </View>
-        </View>
+          <View style={styles.timeframeRow}>
+            {(['7d', '30d', 'all'] as const).map((tf) => (
+              <TouchableOpacity
+                key={tf}
+                style={[styles.tfBtn, timeframe === tf && styles.tfBtnActive]}
+                onPress={() => setTimeframe(tf)}
+              >
+                <Text style={[styles.tfBtnText, timeframe === tf && styles.tfBtnTextActive]}>
+                  {tf === '7d' ? '7 Days' : tf === '30d' ? '30 Days' : 'All Time'}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </Animated.View>
+      );
+    }
 
-        {/* Timeframe selector */}
-        <View style={styles.timeframeRow}>
-          {(['7d', '30d', 'all'] as const).map((tf) => (
-            <TouchableOpacity
-              key={tf}
-              style={[styles.tfBtn, timeframe === tf && styles.tfBtnActive]}
-              onPress={() => setTimeframe(tf)}
-            >
-              <Text style={[styles.tfBtnText, timeframe === tf && styles.tfBtnTextActive]}>
-                {tf === '7d' ? '7 Days' : tf === '30d' ? '30 Days' : 'All Time'}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </Animated.View>
+    return (
+      <View>
+        <AuthorityMobileHeader title="Municipal Analytics" />
+      </View>
+    );
+  };
+
+  return (
+    <View style={styles.safeArea}>
+      <StatusBar barStyle={isDesktop ? "dark-content" : "light-content"} backgroundColor={isDesktop ? COLORS.background : "#0F172A"} translucent={false} />
+
+      {renderHeader()}
 
       <ScrollView
         style={styles.container}
@@ -97,6 +107,21 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
         }
         showsVerticalScrollIndicator={false}
       >
+        {!isDesktop && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.mobileTimeframeRow, { paddingHorizontal: 0, paddingBottom: SPACING.lg }]}>
+            {(['7d', '30d', 'all'] as const).map((tf) => (
+              <TouchableOpacity
+                key={tf}
+                style={[styles.mobileTfBtn, timeframe === tf && styles.mobileTfBtnActive, { borderColor: COLORS.borderLight }]}
+                onPress={() => setTimeframe(tf)}
+              >
+                <Text style={[styles.mobileTfBtnText, timeframe === tf && styles.mobileTfBtnTextActive, timeframe !== tf && { color: COLORS.textSecondary }]}>
+                  {tf === '7d' ? '7 Days' : tf === '30d' ? '30 Days' : 'All Time'}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
         <View style={styles.mainWrapper}>
           {/* Executive KPI Row */}
           <Animated.View entering={FadeInUp.delay(100)} style={styles.kpiRow}>
@@ -136,64 +161,66 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
             </View>
           </Animated.View>
 
-          {/* Category Distribution Card */}
-          <Animated.View entering={FadeInUp.delay(200)} style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Ionicons name="pie-chart-outline" size={18} color={COLORS.primary} style={{ marginRight: 8 }} />
-              <Text style={styles.cardTitle}>Incident Category Distribution</Text>
-            </View>
-
-            <View style={styles.categoryList}>
-              {categories.map((cat, index) => (
-                <Animated.View entering={ZoomIn.delay(300 + index * 50)} key={cat.name} style={styles.catItem}>
-                  <View style={styles.catMetaRow}>
-                    <Text style={styles.catName}>{cat.name}</Text>
-                    <Text style={styles.catCount}>
-                      {cat.count} reports ({cat.pct}%)
-                    </Text>
-                  </View>
-                  <View style={styles.progressBarBg}>
-                    <Animated.View
-                      style={[
-                        styles.progressBarFill,
-                        { width: `${cat.pct}%`, backgroundColor: cat.color },
-                      ]}
-                    />
-                  </View>
-                </Animated.View>
-              ))}
-            </View>
-          </Animated.View>
-
-          {/* Priority Severity Breakdown */}
-          <Animated.View entering={FadeInUp.delay(400)} style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Ionicons name="alert-circle-outline" size={18} color={COLORS.error} style={{ marginRight: 8 }} />
-              <Text style={styles.cardTitle}>Priority Severity Matrix</Text>
-            </View>
-
-            <View style={styles.priorityGrid}>
-              <View style={[styles.priorityPill, { borderColor: '#FECACA', backgroundColor: '#FEF2F2' }]}>
-                <Text style={[styles.priorityPillNum, { color: '#DC2626' }]}>4</Text>
-                <Text style={styles.priorityPillLabel}>Urgent (P1)</Text>
+          <View style={[isDesktop ? { flexDirection: 'row', gap: SPACING.lg } : {}, { marginBottom: SPACING.lg }]}>
+            {/* Category Distribution Card */}
+            <Animated.View entering={FadeInUp.delay(200)} style={[styles.card, isDesktop && { flex: 1, marginBottom: 0 }]}>
+              <View style={styles.cardHeader}>
+                <Ionicons name="pie-chart-outline" size={18} color={COLORS.primary} style={{ marginRight: 8 }} />
+                <Text style={styles.cardTitle}>Incident Category Distribution</Text>
               </View>
 
-              <View style={[styles.priorityPill, { borderColor: '#FED7AA', backgroundColor: '#FFF7ED' }]}>
-                <Text style={[styles.priorityPillNum, { color: '#D97706' }]}>8</Text>
-                <Text style={styles.priorityPillLabel}>High (P2)</Text>
+              <View style={styles.categoryList}>
+                {categories.map((cat, index) => (
+                  <Animated.View entering={ZoomIn.delay(300 + index * 50)} key={cat.name} style={styles.catItem}>
+                    <View style={styles.catMetaRow}>
+                      <Text style={styles.catName}>{cat.name}</Text>
+                      <Text style={styles.catCount}>
+                        {cat.count} reports ({cat.pct}%)
+                      </Text>
+                    </View>
+                    <View style={styles.progressBarBg}>
+                      <Animated.View
+                        style={[
+                          styles.progressBarFill,
+                          { width: `${cat.pct}%`, backgroundColor: cat.color },
+                        ]}
+                      />
+                    </View>
+                  </Animated.View>
+                ))}
+              </View>
+            </Animated.View>
+
+            {/* Priority Severity Breakdown */}
+            <Animated.View entering={FadeInUp.delay(400)} style={[styles.card, isDesktop && { flex: 1, marginBottom: 0 }]}>
+              <View style={styles.cardHeader}>
+                <Ionicons name="alert-circle-outline" size={18} color={COLORS.error} style={{ marginRight: 8 }} />
+                <Text style={styles.cardTitle}>Priority Severity Matrix</Text>
               </View>
 
-              <View style={[styles.priorityPill, { borderColor: '#FEF08A', backgroundColor: '#FEFCE8' }]}>
-                <Text style={[styles.priorityPillNum, { color: '#854D0E' }]}>11</Text>
-                <Text style={styles.priorityPillLabel}>Medium (P3)</Text>
-              </View>
+              <View style={styles.priorityGrid}>
+                <View style={[styles.priorityPill, { borderColor: '#FECACA', backgroundColor: '#FEF2F2' }]}>
+                  <Text style={[styles.priorityPillNum, { color: '#DC2626' }]}>4</Text>
+                  <Text style={styles.priorityPillLabel}>Urgent (P1)</Text>
+                </View>
 
-              <View style={[styles.priorityPill, { borderColor: '#E4E4E7', backgroundColor: '#FAFAFA' }]}>
-                <Text style={[styles.priorityPillNum, { color: '#52525B' }]}>5</Text>
-                <Text style={styles.priorityPillLabel}>Routine (P4)</Text>
+                <View style={[styles.priorityPill, { borderColor: '#FED7AA', backgroundColor: '#FFF7ED' }]}>
+                  <Text style={[styles.priorityPillNum, { color: '#D97706' }]}>8</Text>
+                  <Text style={styles.priorityPillLabel}>High (P2)</Text>
+                </View>
+
+                <View style={[styles.priorityPill, { borderColor: '#FEF08A', backgroundColor: '#FEFCE8' }]}>
+                  <Text style={[styles.priorityPillNum, { color: '#854D0E' }]}>11</Text>
+                  <Text style={styles.priorityPillLabel}>Medium (P3)</Text>
+                </View>
+
+                <View style={[styles.priorityPill, { borderColor: '#E4E4E7', backgroundColor: '#FAFAFA' }]}>
+                  <Text style={[styles.priorityPillNum, { color: '#52525B' }]}>5</Text>
+                  <Text style={styles.priorityPillLabel}>Routine (P4)</Text>
+                </View>
               </View>
-            </View>
-          </Animated.View>
+            </Animated.View>
+          </View>
 
           {/* Regional Risk & Ward Table */}
           <Animated.View entering={FadeInUp.delay(500)} style={styles.card}>
@@ -250,27 +277,29 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
           </Animated.View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.backgroundNeutral,
   },
-  headerBar: {
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.sm,
-    paddingBottom: SPACING.lg,
-    borderBottomWidth: 1.5,
+  
+  // Desktop Header
+  desktopHeaderBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING['3xl'],
+    paddingTop: SPACING['3xl'],
+    paddingBottom: SPACING.xl,
+    borderBottomWidth: 1,
     borderBottomColor: COLORS.borderLight,
     backgroundColor: COLORS.background,
   },
-  backBtn: {
-    marginRight: SPACING.md,
-  },
-  headerTag: {
+  desktopHeaderTag: {
     backgroundColor: COLORS.primaryLight,
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
@@ -278,19 +307,17 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.xs,
     marginBottom: 4,
   },
-  headerTagText: {
+  desktopHeaderTagText: {
     ...TYPOGRAPHY.overline,
     color: COLORS.primary,
   },
-  headerTitle: {
-    ...TYPOGRAPHY.h3,
+  desktopHeaderTitle: {
+    ...TYPOGRAPHY.h1,
     color: COLORS.textPrimary,
-    letterSpacing: -0.2,
   },
   timeframeRow: {
     flexDirection: 'row',
     gap: SPACING.sm,
-    marginTop: SPACING.sm,
   },
   tfBtn: {
     paddingHorizontal: SPACING.md,
@@ -312,12 +339,63 @@ const styles = StyleSheet.create({
   tfBtnTextActive: {
     color: '#FFFFFF',
   },
+
+  // Mobile Header
+  mobileHeaderBar: {
+    backgroundColor: '#0F172A',
+    paddingTop: Platform.OS === 'ios' ? SPACING.md : SPACING.lg,
+    paddingBottom: SPACING.md,
+  },
+  mobileHeaderTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.md,
+  },
+  mobileBackBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    marginRight: SPACING.md,
+  },
+  mobileHeaderTitle: {
+    ...TYPOGRAPHY.h3,
+    color: '#FFFFFF',
+  },
+  mobileTimeframeRow: {
+    paddingHorizontal: SPACING.lg,
+    gap: SPACING.sm,
+  },
+  mobileTfBtn: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.full,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  mobileTfBtnActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  mobileTfBtnText: {
+    ...TYPOGRAPHY.caption,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.7)',
+  },
+  mobileTfBtnTextActive: {
+    color: '#FFFFFF',
+  },
+
   container: {
     flex: 1,
     backgroundColor: COLORS.backgroundNeutral,
   },
   scrollContent: {
-    padding: SPACING.lg,
+    padding: SPACING.md,
     paddingBottom: SPACING['5xl'],
   },
   scrollContentDesktop: {
@@ -337,10 +415,11 @@ const styles = StyleSheet.create({
   },
   kpiCard: {
     flex: 1,
-    minWidth: 160,
+    minWidth: 0,
+    flexBasis: '30%',
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.lg,
+    padding: SPACING.md,
     borderWidth: 1.5,
     borderColor: COLORS.borderLight,
     ...SHADOWS.sm,
@@ -430,10 +509,13 @@ const styles = StyleSheet.create({
   },
   priorityGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: SPACING.sm,
   },
   priorityPill: {
     flex: 1,
+    minWidth: 0,
+    flexBasis: '45%',
     alignItems: 'center',
     paddingVertical: SPACING.md,
     borderRadius: BORDER_RADIUS.md,

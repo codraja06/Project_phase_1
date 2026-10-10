@@ -202,6 +202,7 @@ const styles = StyleSheet.create({
   infoCol: {
     flex: 1,
     justifyContent: 'center',
+    minWidth: 0,
   },
   categoryTitle: {
     ...TYPOGRAPHY.h4,
@@ -222,7 +223,8 @@ const styles = StyleSheet.create({
   metaFooter: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.xl,
+    flexWrap: 'wrap',
+    gap: SPACING.md,
     marginTop: SPACING.lg,
     paddingTop: SPACING.md,
     borderTopWidth: 1,

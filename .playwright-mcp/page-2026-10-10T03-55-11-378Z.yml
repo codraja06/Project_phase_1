@@ -1,0 +1,44 @@
+- generic [ref=f2e935]:
+  - generic [ref=f2e936]:
+    - generic [ref=f2e937]:
+      - generic [ref=f2e941]:
+        - generic [ref=f2e942]: 
+        - generic [ref=f2e943]: 
+      - generic [ref=f2e944]: Civic Action Portal
+      - generic [ref=f2e945]: Report hazards, track infrastructure fixes, and empower your neighborhood through intelligent civic participation.
+    - generic [ref=f2e946]: City Resident Access • CivicTrack v2.0
+  - generic [ref=f2e950]:
+    - generic [ref=f2e951]: Sign In
+    - generic [ref=f2e952]: Welcome back to CivicTrack.
+    - generic [ref=f2e955]:
+      - generic [ref=f2e956]:
+        - generic [ref=f2e957]: Email Address
+        - generic [ref=f2e958]:
+          - generic [ref=f2e959]: 
+          - textbox "Email Address" [ref=f2e960]:
+            - /placeholder: name@example.com
+            - text: citizen@example.com
+      - generic [ref=f2e961]:
+        - generic [ref=f2e962]: Password
+        - generic [ref=f2e963]:
+          - generic [ref=f2e964]: 
+          - textbox "Password" [ref=f2e965]:
+            - /placeholder: Enter your password
+            - text: password123
+          - button "Show password" [ref=f2e966] [cursor=pointer]:
+            - generic [ref=f2e967]: 
+      - generic [ref=f2e968] [cursor=pointer]: Forgot password?
+      - button "Sign In" [ref=f2e971] [cursor=pointer]
+      - generic [ref=f2e973]: or continue with
+      - button "Continue with Google" [ref=f2e978] [cursor=pointer]:
+        - generic [ref=f2e979]: 
+    - generic [ref=f2e981]:
+      - generic [ref=f2e982]: Don't have an account?
+      - generic [ref=f2e983] [cursor=pointer]: Create Account
+    - generic [ref=f2e985]:
+      - generic [active] [ref=f2e986] [cursor=pointer]:
+        - generic [ref=f2e987]: 
+        - generic [ref=f2e988]: Auto-fill Demo
+      - generic [ref=f2e989] [cursor=pointer]:
+        - generic [ref=f2e990]: 
+        - generic [ref=f2e991]: Officer Portal →

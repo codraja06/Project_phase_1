@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -21,17 +21,27 @@ export const ImagePickerCamera: React.FC<ImagePickerCameraProps> = ({
   onImageSelected,
   onRetakeImage,
 }) => {
+  const [error, setError] = useState('');
+  const acceptImage = (asset: { uri?: string; mimeType?: string; fileSize?: number }, file?: File) => {
+    const mime = file?.type || asset.mimeType;
+    if ((mime && !['image/jpeg', 'image/png', 'image/webp'].includes(mime)) || (file?.size || asset.fileSize || 0) > 10 * 1024 * 1024) {
+      setError('Choose a JPEG, PNG or WebP image, 10 MB or smaller.'); return;
+    }
+    setError('');
+    if (file) onImageSelected(URL.createObjectURL(file));
+    else if (asset.uri) onImageSelected(asset.uri);
+  };
+
   const handleTakePhoto = async () => {
     if (Platform.OS === 'web') {
       const input = document.createElement('input');
       input.type = 'file';
-      input.accept = 'image/*';
+      input.accept = 'image/jpeg,image/png,image/webp';
       input.capture = 'environment';
       input.onchange = (e: any) => {
         const file = e.target.files?.[0];
         if (file) {
-          const uri = URL.createObjectURL(file);
-          onImageSelected(uri);
+          acceptImage({}, file);
         }
       };
       input.click();
@@ -56,10 +66,10 @@ export const ImagePickerCamera: React.FC<ImagePickerCameraProps> = ({
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        onImageSelected(result.assets[0].uri);
+        acceptImage(result.assets[0]);
       }
     } catch (err: any) {
-      console.warn('Camera error:', err.message);
+      setError(err.message || 'Camera could not be opened.');
     }
   };
 
@@ -67,12 +77,11 @@ export const ImagePickerCamera: React.FC<ImagePickerCameraProps> = ({
     if (Platform.OS === 'web') {
       const input = document.createElement('input');
       input.type = 'file';
-      input.accept = 'image/*';
+      input.accept = 'image/jpeg,image/png,image/webp';
       input.onchange = (e: any) => {
         const file = e.target.files?.[0];
         if (file) {
-          const uri = URL.createObjectURL(file);
-          onImageSelected(uri);
+          acceptImage({}, file);
         }
       };
       input.click();
@@ -97,10 +106,10 @@ export const ImagePickerCamera: React.FC<ImagePickerCameraProps> = ({
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        onImageSelected(result.assets[0].uri);
+        acceptImage(result.assets[0]);
       }
     } catch (err: any) {
-      console.warn('Gallery pick error:', err.message);
+      setError(err.message || 'Photo library could not be opened.');
     }
   };
 
@@ -121,12 +130,10 @@ export const ImagePickerCamera: React.FC<ImagePickerCameraProps> = ({
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
+      {!!error && <Text accessibilityRole="alert" style={{ color: COLORS.error, marginBottom: 12 }}>{error}</Text>}
+
+      <View
         style={[styles.captureCard, { borderStyle: Platform.OS === 'web' ? 'dashed' : 'solid' }]}
-        onPress={handleTakePhoto}
-        activeOpacity={0.9}
-        accessibilityRole="button"
-        accessibilityLabel="Tap to Capture. Take a photo of the issue"
       >
         <View style={styles.iconBox}>
           <Ionicons name="camera" size={32} color={COLORS.primary} />
@@ -154,7 +161,7 @@ export const ImagePickerCamera: React.FC<ImagePickerCameraProps> = ({
             <Text style={styles.actionBtnTextSecondary}>Upload Image</Text>
           </TouchableOpacity>
         </View>
-      </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -200,6 +207,8 @@ const styles = StyleSheet.create({
   },
   buttonRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,

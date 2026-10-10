@@ -1,0 +1,113 @@
+- generic [ref=e18]:
+  - generic [ref=e377]:
+    - generic [ref=e378]:
+      - generic [ref=e379] [cursor=pointer]: 
+      - generic [ref=e381]: Account Settings
+    - generic [ref=e384]:
+      - generic [ref=e385]:
+        - generic [ref=e386]: TC
+        - generic [ref=e388]:
+          - generic [ref=e389]: Test Citizen
+          - generic [ref=e390]:
+            - generic [ref=e391]:
+              - generic [ref=e392]: 
+              - generic [ref=e394]: VERIFIED CITIZEN
+            - generic [ref=e395]: citizen@example.com
+          - generic [ref=e396]: Ward 14 / Civic Zone
+      - button "Edit Profile" [ref=e398] [cursor=pointer]:
+        - generic [ref=e399]: 
+    - generic [ref=e401]:
+      - generic [ref=e403]:
+        - generic [ref=e404]: "12"
+        - generic [ref=e405]: Reports
+      - generic [ref=e407]:
+        - generic [ref=e408]: "3"
+        - generic [ref=e409]: Pending
+      - generic [ref=e411]:
+        - generic [ref=e412]: "1"
+        - generic [ref=e413]: In Progress
+      - generic [ref=e415]:
+        - generic [ref=e416]: "8"
+        - generic [ref=e417]: Resolved
+    - generic [ref=e418]:
+      - generic [ref=e419]:
+        - generic [ref=e420]: Account & Security
+        - generic [ref=e422]:
+          - generic [ref=e424] [cursor=pointer]:
+            - generic [ref=e425]:
+              - generic [ref=e426]: 
+              - generic [ref=e428]:
+                - generic [ref=e429]: Edit Profile Information
+                - generic [ref=e430]: Update display name & contact number
+            - generic [ref=e431]: 
+          - generic [ref=e434] [cursor=pointer]:
+            - generic [ref=e435]:
+              - generic [ref=e436]: 
+              - generic [ref=e438]:
+                - generic [ref=e439]: Password & Security
+                - generic [ref=e440]: Change password and secure login
+            - generic [ref=e441]: 
+          - generic [ref=e444] [cursor=pointer]:
+            - generic [ref=e445]:
+              - generic [ref=e446]: 
+              - generic [ref=e448]:
+                - generic [ref=e449]: Notification Preferences
+                - generic [ref=e450]: Manage push, email & SMS alerts
+            - generic [ref=e451]: 
+      - generic [ref=e452]:
+        - generic [ref=e453]: Support & Info
+        - generic [ref=e455]:
+          - generic [ref=e457] [cursor=pointer]:
+            - generic [ref=e458]:
+              - generic [ref=e459]: 
+              - generic [ref=e461]:
+                - generic [ref=e462]: City Hotline & Support
+                - generic [ref=e463]: 1800-CIVIC-CARE • 8AM - 8PM
+            - generic [ref=e464]: 
+          - generic [ref=e467] [cursor=pointer]:
+            - generic [ref=e468]:
+              - generic [ref=e469]: 
+              - generic [ref=e471]:
+                - generic [ref=e472]: About CivicTrack Platform
+                - generic [ref=e473]: Version 2.0.0 • AI-Driven Civic Tech
+            - generic [ref=e474]: 
+    - generic [ref=e475]:
+      - generic [ref=e476]: Danger Zone
+      - generic [ref=e478] [cursor=pointer]:
+        - generic [ref=e479]:
+          - generic [ref=e480]: 
+          - generic [ref=e482]:
+            - generic [ref=e483]: Sign Out
+            - generic [ref=e484]: End active citizen session
+        - generic [ref=e485]: 
+  - tablist [ref=e340]:
+    - link "  Home" [ref=e341] [cursor=pointer]:
+      - /url: /CitizenTabs/CitizenDashboard
+      - generic:
+        - generic [ref=e342]: 
+        - generic [ref=e344]: 
+      - generic [ref=e346]: Home
+    - link "  Report" [ref=e347] [cursor=pointer]:
+      - /url: /CitizenTabs/ReportIssue
+      - generic:
+        - generic [ref=e348]: 
+        - generic [ref=e350]: 
+      - generic [ref=e352]: Report
+    - link "  Complaints" [ref=e353] [cursor=pointer]:
+      - /url: /CitizenTabs/ComplaintHistory
+      - generic:
+        - generic [ref=e354]: 
+        - generic [ref=e356]: 
+      - generic [ref=e358]: Complaints
+    - link "  Alerts" [ref=e359] [cursor=pointer]:
+      - /url: /CitizenTabs/Notifications
+      - generic:
+        - generic [ref=e360]: 
+        - generic [ref=e362]: 
+      - generic [ref=e364]: Alerts
+    - link "  Profile" [active] [ref=e365] [cursor=pointer]:
+      - /url: /CitizenTabs/CitizenProfile
+      - generic:
+        - generic [ref=e366]: 
+        - generic [ref=e368]: 
+      - generic [ref=e370]: Profile

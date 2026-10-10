@@ -20,12 +20,15 @@ import { SHADOWS } from '../../theme/index';
 import { SPACING } from '../../theme/spacing';
 import { TYPOGRAPHY } from '../../theme/typography';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
+import { useMobileMenu } from '../../contexts/MobileMenuContext';
 import { StatusBadge } from '../../components/StatusBadge';
 import { FilterChipGroup } from '../../components/FilterChip';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { AuthorityMobileHeader } from '../../components/AuthorityMobileHeader';
 
 export const AuthorityMapScreen = ({ navigation }: any) => {
-  const { isDesktop } = useBreakpoint();
+  const { toggleMenu } = useMobileMenu();
+  const { isDesktop, width, height } = useBreakpoint();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
@@ -72,13 +75,17 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
 
   // ─── Web OpenStreetMap embed ───────────────────────────────────────────────
   const renderWebMap = () => {
-    const bbox = `${centerLng - 0.015},${centerLat - 0.015},${centerLng + 0.015},${centerLat + 0.015}`;
+    const aspectRatio = width && height ? width / height : 1;
+    const latDelta = 0.015;
+    const lngDelta = 0.015 * Math.max(1, aspectRatio); // Expand longitude delta for wide screens
+    const bbox = `${centerLng - lngDelta},${centerLat - latDelta},${centerLng + lngDelta},${centerLat + latDelta}`;
     const mapSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${centerLat},${centerLng}`;
     return (
-      <View style={styles.mapContainer}>
+      <View style={[styles.mapContainer, { position: 'relative' }]}>
         <iframe
+          key={`${width}x${height}`}
           src={mapSrc}
-          style={{ width: '100%', height: '100%', border: 'none' } as any}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', border: 'none' } as any}
           title="City Complaints Map"
         />
       </View>
@@ -112,7 +119,7 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
       <Animated.View entering={FadeInUp.delay(200)} style={styles.mapContainer}>
         <MapView
           provider={PROVIDER_DEFAULT}
-          style={styles.map}
+          style={StyleSheet.absoluteFillObject}
           initialRegion={{
             latitude: centerLat,
             longitude: centerLng,
@@ -275,27 +282,20 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
 
   // ─── Mobile / Tablet — original stacked layout ─────────────────────────────
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
+    <View style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#0F172A" translucent={false} />
 
-      <Animated.View entering={FadeInDown.duration(400)} style={styles.headerBar}>
-        <TouchableOpacity
-          style={styles.backBtn}
-          onPress={() => navigation.navigate('AuthorityDashboard')}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="chevron-back" size={24} color={COLORS.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Incident Map</Text>
-      </Animated.View>
+      <AuthorityMobileHeader title="Incident Map" />
 
       <View style={styles.container}>
-        <FilterChipGroup
-          options={filterOptions}
-          selectedValue={statusFilter}
-          onSelect={setStatusFilter}
-          containerStyle={styles.filterBar}
-        />
+        <View style={styles.filterSection}>
+          <FilterChipGroup
+            options={filterOptions}
+            selectedValue={statusFilter}
+            onSelect={setStatusFilter}
+            containerStyle={styles.filterBar}
+          />
+        </View>
 
         {Platform.OS === 'web' ? renderWebMap() : renderNativeMap()}
 
@@ -321,7 +321,7 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
               }
               activeOpacity={0.8}
             >
-              <Text style={styles.inspectBtnText}>Inspect Complaint Dossier</Text>
+              <Text style={styles.inspectBtnText}>Inspect Dossier</Text>
               <Ionicons
                 name="arrow-forward"
                 size={16}
@@ -332,7 +332,7 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
           </Animated.View>
         ) : null}
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -486,34 +486,39 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.backgroundNeutral,
   },
-
+  
   // ── Mobile / Tablet ───────────────────────────────────────────────────────
   headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.sm,
-    paddingBottom: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.borderLight,
-    backgroundColor: COLORS.background,
+    paddingTop: Platform.OS === 'ios' ? SPACING.md : SPACING.lg,
+    paddingBottom: SPACING.lg,
+    backgroundColor: '#0F172A',
   },
   backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.surface,
+    backgroundColor: 'rgba(255,255,255,0.1)',
     marginRight: SPACING.md,
   },
   headerTitle: {
-    ...TYPOGRAPHY.h4,
-    color: COLORS.textPrimary,
+    ...TYPOGRAPHY.h3,
+    color: '#FFFFFF',
   },
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  filterSection: {
+    backgroundColor: COLORS.background,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.borderLight,
   },
   filterBar: {
     paddingHorizontal: SPACING.lg,
@@ -521,8 +526,10 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     flex: 1,
+    minHeight: 200,
     width: '100%',
     backgroundColor: COLORS.backgroundNeutral,
+    overflow: 'hidden',
   },
   map: {
     width: '100%',
@@ -543,7 +550,7 @@ const styles = StyleSheet.create({
     borderTopColor: COLORS.borderLight,
     paddingHorizontal: SPACING.xl,
     paddingTop: SPACING.lg,
-    paddingBottom: SPACING['3xl'],
+    paddingBottom: Platform.OS === 'ios' ? SPACING['4xl'] : SPACING['3xl'],
     ...SHADOWS.elevated,
   },
   previewHeader: {
@@ -583,7 +590,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#FFC107', // Golden Yellow outline
+    backgroundColor: '#FFC107',
     borderWidth: 2,
     borderColor: '#FFA000',
     alignItems: 'center',
@@ -598,7 +605,7 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: COLORS.primary, // Crimson Red
+    backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },

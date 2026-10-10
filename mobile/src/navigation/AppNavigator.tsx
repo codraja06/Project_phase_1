@@ -1,35 +1,29 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
 import { useAuth } from '../hooks/useAuth';
 import { AuthNavigator } from './AuthNavigator';
 import { CitizenNavigator } from './CitizenNavigator';
 import { AuthorityNavigator } from './AuthorityNavigator';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+const Root = createNativeStackNavigator();
 
 export const AppNavigator: React.FC = () => {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return <LoadingSpinner message="Initializing Civic System..." />;
+    return <LoadingSpinner message="Authenticating..." />;
   }
-
-  if (!user) {
-    return (
-      <NavigationContainer>
-        <AuthNavigator />
-      </NavigationContainer>
-    );
-  }
-
-  const role = (user.role || '').toLowerCase().trim();
 
   return (
-    <NavigationContainer>
-      {role === 'authority' ? (
-        <AuthorityNavigator />
+    <Root.Navigator screenOptions={{ headerShown: false }}>
+      {!user ? (
+        <Root.Screen name="AuthRoot" component={AuthNavigator} />
+      ) : user.role === 'authority' ? (
+        <Root.Screen name="AuthorityRoot" component={AuthorityNavigator} />
       ) : (
-        <CitizenNavigator />
+        <Root.Screen name="CitizenRoot" component={CitizenNavigator} />
       )}
-    </NavigationContainer>
+    </Root.Navigator>
   );
 };

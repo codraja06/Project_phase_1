@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Input } from './Input';
+import { Button } from './ui/Button';
 import { View, Text, StyleSheet, Platform, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, BORDER_RADIUS, SHADOWS, TYPOGRAPHY } from '../constants/theme';
@@ -24,8 +26,11 @@ export const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
   height = 240,
   showCard = true,
 }) => {
-  const lat = latitude || 12.9716;
-  const lng = longitude || 77.5946;
+  const lat = Number.isFinite(latitude) ? latitude : 12.9716;
+  const lng = Number.isFinite(longitude) ? longitude : 77.5946;
+  const [manualLat, setManualLat] = useState('');
+  const [manualLng, setManualLng] = useState('');
+  const [coordinateError, setCoordinateError] = useState('');
 
   // ─── WEB: Use OpenStreetMap embed iframe ──────────────────────────────────
   if (Platform.OS === 'web') {
@@ -63,6 +68,28 @@ export const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
           </View>
         )}
 
+        {interactive && onSelectLocation && <View style={{ marginTop: 16 }}>
+          <Text style={{ marginBottom: 12 }}>Enter exact coordinates to set the incident pin, or use your current location.</Text>
+          <Input label="Incident latitude" value={manualLat} onChangeText={setManualLat} keyboardType="numbers-and-punctuation" placeholder="-90 to 90" />
+          <Input label="Incident longitude" value={manualLng} onChangeText={setManualLng} keyboardType="numbers-and-punctuation" placeholder="-180 to 180" />
+          {!!coordinateError && <Text accessibilityRole="alert" style={{ color: COLORS.error, marginBottom: 12 }}>{coordinateError}</Text>}
+          <Button title="Set incident location" variant="outline" onPress={() => {
+            const newLat = Number(manualLat), newLng = Number(manualLng);
+            if (!manualLat.trim() || !manualLng.trim() || !Number.isFinite(newLat) || !Number.isFinite(newLng) || Math.abs(newLat) > 90 || Math.abs(newLng) > 180) { setCoordinateError('Enter a valid latitude and longitude.'); return; }
+            setCoordinateError(''); onSelectLocation(newLat, newLng);
+          }} />
+        </View>}
+        {interactive && onSelectLocation && <View style={{ marginTop: 16 }}>
+          <Text style={{ marginBottom: 12 }}>Enter exact coordinates to set the incident pin, or use your current location.</Text>
+          <Input label="Incident latitude" value={manualLat} onChangeText={setManualLat} keyboardType="numbers-and-punctuation" placeholder="-90 to 90" />
+          <Input label="Incident longitude" value={manualLng} onChangeText={setManualLng} keyboardType="numbers-and-punctuation" placeholder="-180 to 180" />
+          {!!coordinateError && <Text accessibilityRole="alert" style={{ color: COLORS.error, marginBottom: 12 }}>{coordinateError}</Text>}
+          <Button title="Set incident location" variant="outline" onPress={() => {
+            const newLat = Number(manualLat), newLng = Number(manualLng);
+            if (!manualLat.trim() || !manualLng.trim() || !Number.isFinite(newLat) || !Number.isFinite(newLng) || Math.abs(newLat) > 90 || Math.abs(newLng) > 180) { setCoordinateError('Enter a valid latitude and longitude.'); return; }
+            setCoordinateError(''); onSelectLocation(newLat, newLng);
+          }} />
+        </View>}
         {onUseCurrentLocation && (
           <TouchableOpacity
             style={styles.useCurrentBtn}
@@ -329,11 +356,16 @@ const styles = StyleSheet.create({
     borderColor: '#FFA000',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.35,
-    shadowRadius: 3,
-    elevation: 4,
+    ...Platform.select({
+      web: { boxShadow: '0 2px 6px rgba(0,0,0,0.3)' },
+      default: {
+        shadowColor: '#000000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 5,
+      }
+    }),
   },
   pinInnerRedCircle: {
     width: 22,

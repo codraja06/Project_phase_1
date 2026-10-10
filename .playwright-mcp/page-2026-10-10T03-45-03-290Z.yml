@@ -1,0 +1,38 @@
+- generic [ref=f1e21]:
+  - generic [ref=f1e22]:
+    - generic [ref=f1e23]:
+      - generic [ref=f1e27]:
+        - generic [ref=f1e28]: 
+        - generic [ref=f1e29]: 
+      - generic [ref=f1e30]: Municipal Operations Command
+      - generic [ref=f1e31]: Access jurisdictional triage, automated defect verification, and field dispatch workflows.
+    - generic [ref=f1e32]: Secure 256-Bit TLS Connection • CivicTrack v2.0
+  - generic [ref=f1e36]:
+    - button "Back" [ref=f1e38] [cursor=pointer]:
+      - generic [ref=f1e39]: 
+      - generic [ref=f1e40]: Back to Citizen Portal
+    - generic [ref=f1e41]: Officer Sign In
+    - generic [ref=f1e42]: Authenticate to access the command center.
+    - generic [ref=f1e45]:
+      - generic [ref=f1e46]:
+        - generic [ref=f1e47]: Department Official Email
+        - generic [ref=f1e48]:
+          - generic [ref=f1e49]: 
+          - textbox "Department Official Email" [ref=f1e50]:
+            - /placeholder: officer@city.gov
+            - text: citizen@example.com
+      - generic [ref=f1e51]:
+        - generic [ref=f1e52]: Officer Security Password
+        - generic [ref=f1e53]:
+          - generic [ref=f1e54]: 
+          - textbox "Officer Security Password" [ref=f1e55]:
+            - /placeholder: Enter security password
+          - button "Show password" [ref=f1e56] [cursor=pointer]:
+            - generic [ref=f1e57]: 
+      - button "Authenticate as Officer" [ref=f1e59] [cursor=pointer]
+      - generic [ref=f1e61]: OR
+      - button "Continue with Google" [ref=f1e66] [cursor=pointer]:
+        - generic [ref=f1e67]: 
+    - generic [ref=f1e70] [cursor=pointer]:
+      - generic [ref=f1e71]: 
+      - generic [ref=f1e72]: Auto-fill Demo Officer

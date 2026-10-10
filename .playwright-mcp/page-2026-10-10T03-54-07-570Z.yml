@@ -1,0 +1,30 @@
+- generic [ref=f2e97]:
+  - generic [ref=f2e98]:
+    - generic [ref=f2e100]:
+      - generic [ref=f2e102]:
+        - generic [ref=f2e103]: 
+        - generic [ref=f2e104]: 
+      - generic [ref=f2e105]: CivicTrack
+    - generic [ref=f2e107]: MUNICIPAL OPERATIONS
+  - generic [ref=f2e110]:
+    - generic [ref=f2e111]: OPERATIONS
+    - button "Command Center" [ref=f2e112] [cursor=pointer]:
+      - generic [ref=f2e113]: 
+    - button "All Complaints" [ref=f2e116] [cursor=pointer]:
+      - generic [ref=f2e117]: 
+    - button "Incident Map" [ref=f2e119] [cursor=pointer]:
+      - generic [ref=f2e120]: 
+    - button "Operations Analytics" [ref=f2e122] [cursor=pointer]:
+      - generic [ref=f2e123]: 
+    - button "Alerts & Feed" [active] [ref=f2e125] [cursor=pointer]:
+      - generic [ref=f2e126]: 
+    - generic [ref=f2e129]: SETTINGS
+    - button "Profile & Settings" [ref=f2e130] [cursor=pointer]:
+      - generic [ref=f2e131]: 
+  - generic [ref=f2e134]:
+    - generic [ref=f2e135]: MO
+    - generic [ref=f2e137]:
+      - generic [ref=f2e138]: Municipal Officer
+      - generic [ref=f2e139]:
+        - generic [ref=f2e140]: 
+        - generic [ref=f2e141]: Authorized Officer

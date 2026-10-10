@@ -1,0 +1,54 @@
+- generic [ref=e16]:
+  - generic [ref=e196]:
+    - generic [ref=e197]:
+      - generic [ref=e198]:
+        - generic [ref=e200]:
+          - generic [ref=e201]: 
+          - generic [ref=e202]: 
+        - generic [ref=e203]: CivicTrack
+      - generic [ref=e205]: CITIZEN PORTAL
+    - generic [ref=e209]:
+      - generic [ref=e210]: MAIN MENU
+      - button "Dashboard" [ref=e211] [cursor=pointer]:
+        - generic [ref=e212]: 
+      - button "Report Issue" [ref=e214] [cursor=pointer]:
+        - generic [ref=e216]: 
+      - button "My Complaints" [ref=e218] [cursor=pointer]:
+        - generic [ref=e219]: 
+      - button "Notifications" [ref=e221] [cursor=pointer]:
+        - generic [ref=e222]: 
+      - button "Profile & Settings" [ref=e224] [cursor=pointer]:
+        - generic [ref=e225]: 
+    - generic [ref=e228]:
+      - generic [ref=e229]:
+        - generic [ref=e230]: 
+        - generic [ref=e231]: Civic Protection
+      - generic [ref=e232]: AI-assisted incident reporting for cleaner, safer communities.
+  - generic [ref=e236]:
+    - generic [ref=e237]:
+      - generic "Back" [ref=e238] [cursor=pointer]: 
+      - generic [ref=e240]: Report Civic Hazard
+    - generic [ref=e242]:
+      - generic [ref=e243]:
+        - generic [ref=e244]: "1"
+        - generic [ref=e246]: Photo
+      - generic [ref=e248]:
+        - generic [ref=e249]: "2"
+        - generic [ref=e251]: AI Vision
+      - generic [ref=e253]:
+        - generic [ref=e254]: "3"
+        - generic [ref=e256]: GPS Pin
+      - generic [ref=e258]:
+        - generic [ref=e259]: "4"
+        - generic [ref=e261]: Submit
+    - button "Tap to Capture. Take a photo of the issue" [ref=e268] [cursor=pointer]:
+      - generic [ref=e269]: 
+      - generic [ref=e271]: Upload an Issue Image
+      - generic [ref=e272]: Capture a photo or choose an image from your device
+      - generic [ref=e273]:
+        - button " Capture Photo" [ref=e274]:
+          - generic [ref=e275]: 
+          - generic [ref=e276]: Capture Photo
+        - button " Upload Image" [ref=e277]:
+          - generic [ref=e278]: 
+          - generic [ref=e279]: Upload Image

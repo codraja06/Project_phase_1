@@ -1,0 +1,48 @@
+- generic [ref=f3e15]:
+  - generic [ref=f3e16]:
+    - generic [ref=f3e17]:
+      - generic [ref=f3e21]:
+        - generic [ref=f3e22]: 
+        - generic [ref=f3e23]: 
+      - generic [ref=f3e24]: Municipal Operations Command
+      - generic [ref=f3e25]: Access jurisdictional triage, automated defect verification, and field dispatch workflows.
+    - generic [ref=f3e26]: Secure 256-Bit TLS Connection • CivicTrack v2.0
+  - generic [ref=f3e30]:
+    - button "Back" [ref=f3e32] [cursor=pointer]:
+      - generic [ref=f3e33]: 
+      - generic [ref=f3e34]: Back to Citizen Portal
+    - generic [ref=f3e35]: Officer Sign In
+    - generic [ref=f3e36]: Authenticate to access the command center.
+    - generic [ref=f3e38]:
+      - generic [ref=f3e39]:
+        - generic [ref=f3e40]: 
+        - generic [ref=f3e42]:
+          - generic [ref=f3e43]: Remembered Officer Session
+          - generic [ref=f3e44]: Municipal Officer
+          - generic [ref=f3e45]: officer@city.gov
+      - generic [ref=f3e46]:
+        - button "Resume Officer Session" [ref=f3e48] [cursor=pointer]
+        - button "Use another credential" [ref=f3e51] [cursor=pointer]
+    - generic [ref=f3e55]:
+      - generic [ref=f3e56]:
+        - generic [ref=f3e57]: Department Official Email
+        - generic [ref=f3e58]:
+          - generic [ref=f3e59]: 
+          - textbox "Department Official Email" [ref=f3e60]:
+            - /placeholder: officer@city.gov
+            - text: officer@city.gov
+      - generic [ref=f3e61]:
+        - generic [ref=f3e62]: Officer Security Password
+        - generic [ref=f3e63]:
+          - generic [ref=f3e64]: 
+          - textbox "Officer Security Password" [ref=f3e65]:
+            - /placeholder: Enter security password
+          - button "Show password" [ref=f3e66] [cursor=pointer]:
+            - generic [ref=f3e67]: 
+      - button "Authenticate as Officer" [ref=f3e69] [cursor=pointer]
+      - generic [ref=f3e71]: OR
+      - button "Continue with Google" [ref=f3e76] [cursor=pointer]:
+        - generic [ref=f3e77]: 
+    - generic [ref=f3e80] [cursor=pointer]:
+      - generic [ref=f3e81]: 
+      - generic [ref=f3e82]: Auto-fill Demo Officer

@@ -7,9 +7,8 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
-  StatusBar,
-} from 'react-native';
+  StatusBar} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -42,14 +41,11 @@ export const AuthorityLoginScreen: React.FC<Props> = ({ navigation }) => {
     control,
     handleSubmit,
     setValue,
-    formState: { errors },
-  } = useForm<AuthorityLoginForm>({
+    formState: { errors }} = useForm<AuthorityLoginForm>({
     resolver: zodResolver(authorityLoginSchema),
     defaultValues: {
       email: savedSession?.user?.email || '',
-      password: '',
-    },
-  });
+      password: ''}});
 
   useEffect(() => {
     if (savedSession?.user?.email && (savedSession.user.role || '').toLowerCase() === 'authority') {
@@ -138,7 +134,7 @@ export const AuthorityLoginScreen: React.FC<Props> = ({ navigation }) => {
             <ScrollView contentContainerStyle={styles.authSide}>
               <View style={styles.authWrapper}>
                 <Animated.View entering={FadeInDown.delay(100)}>
-                  <TouchableOpacity
+                  <TouchableOpacity hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Back"
                     style={styles.backBtnDesktop}
                     onPress={() => navigation.navigate('CitizenLogin')}
                   >
@@ -243,7 +239,7 @@ export const AuthorityLoginScreen: React.FC<Props> = ({ navigation }) => {
           >
             <View style={styles.mobileHeader}>
               <Animated.View entering={FadeInDown.delay(100)}>
-                <TouchableOpacity
+                <TouchableOpacity hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Back"
                   style={styles.backBtnMobile}
                   onPress={() => navigation.navigate('CitizenLogin')}
                 >
@@ -390,5 +386,4 @@ const styles = StyleSheet.create({
   dividerLine: { flex: 1, height: 1, backgroundColor: COLORS.borderLight },
   dividerText: { marginHorizontal: SPACING.lg, ...TYPOGRAPHY.caption, color: COLORS.textMuted },
   demoPillDesktop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.primaryLight, padding: 10, borderRadius: BORDER_RADIUS.md, marginTop: SPACING['3xl'] },
-  demoPillTextDesktop: { ...TYPOGRAPHY.bodySmall, color: COLORS.primary, fontWeight: '700' },
-});
+  demoPillTextDesktop: { ...TYPOGRAPHY.bodySmall, color: COLORS.primary, fontWeight: '700' }});

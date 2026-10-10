@@ -1,0 +1,43 @@
+- tablist [ref=f2e151]:
+  - link "  Dashboard" [ref=f2e152] [cursor=pointer]:
+    - /url: /AuthorityTabs/AuthorityDashboard
+    - generic:
+      - generic [ref=f2e153]: 
+      - generic [ref=f2e155]: 
+    - generic [ref=f2e157]: Dashboard
+  - link "  Complaints" [ref=f2e158] [cursor=pointer]:
+    - /url: /AuthorityTabs/AllComplaints
+    - generic:
+      - generic [ref=f2e159]: 
+      - generic [ref=f2e161]: 
+    - generic [ref=f2e163]: Complaints
+  - link "  Map" [ref=f2e164] [cursor=pointer]:
+    - /url: /AuthorityTabs/AuthorityMap
+    - generic:
+      - generic [ref=f2e165]: 
+      - generic [ref=f2e167]: 
+    - generic [ref=f2e169]: Map
+  - link "  Analytics" [ref=f2e170] [cursor=pointer]:
+    - /url: /AuthorityTabs/AuthorityAnalytics
+    - generic:
+      - generic [ref=f2e171]: 
+      - generic [ref=f2e173]: 
+    - generic [ref=f2e175]: Analytics
+  - link "  Feed" [ref=f2e176] [cursor=pointer]:
+    - /url: /AuthorityTabs/AuthorityNotifications
+    - generic:
+      - generic [ref=f2e177]: 
+      - generic [ref=f2e179]: 
+    - generic [ref=f2e181]: Feed
+  - link "  Users" [ref=f2e182] [cursor=pointer]:
+    - /url: /AuthorityTabs/AuthorityUsers
+    - generic:
+      - generic [ref=f2e183]: 
+      - generic [ref=f2e185]: 
+    - generic [ref=f2e187]: Users
+  - link "  Profile" [ref=f2e188] [cursor=pointer]:
+    - /url: /AuthorityTabs/AuthorityProfile
+    - generic:
+      - generic [ref=f2e189]: 
+      - generic [ref=f2e191]: 
+    - generic [ref=f2e193]: Profile

@@ -1,0 +1,407 @@
+- generic [ref=e91]:
+  - generic [ref=e98]:
+    - generic [ref=e99]:
+      - generic [ref=e100]:
+        - generic [ref=e102]:
+          - generic [ref=e103]: 
+          - generic [ref=e104]: MUNICIPAL OPS
+        - generic [ref=e105]: Command Center
+        - generic [ref=e106]: Real-time triage and resolution dispatch hub.
+      - generic [ref=e107]:
+        - generic "Notifications" [ref=e108] [cursor=pointer]: 
+        - generic [ref=e111] [cursor=pointer]: 
+    - generic [ref=e113]:
+      - generic [ref=e114]:
+        - generic [ref=e115]:
+          - generic [ref=e116]: OPERATIONAL KPIs
+          - generic [ref=e117] [cursor=pointer]:
+            - generic [ref=e118]: Last 30 Days
+            - generic [ref=e119]: 
+        - generic [ref=e120]:
+          - generic [ref=e122] [cursor=pointer]:
+            - generic [ref=e123]: 
+            - generic [ref=e126]: "15"
+            - generic [ref=e127]: Total Incidents
+          - generic [ref=e129] [cursor=pointer]:
+            - generic [ref=e130]: 
+            - generic [ref=e133]: "13"
+            - generic [ref=e134]: Pending Triage
+          - generic [ref=e136] [cursor=pointer]:
+            - generic [ref=e137]: 
+            - generic [ref=e140]: "0"
+            - generic [ref=e141]: Under Repair
+          - generic [ref=e143] [cursor=pointer]:
+            - generic [ref=e144]: 
+            - generic [ref=e147]: "2"
+            - generic [ref=e148]: Resolved
+          - generic [ref=e150] [cursor=pointer]:
+            - generic [ref=e151]: 
+            - generic [ref=e154]: "0"
+            - generic [ref=e155]: High Priority
+          - generic [ref=e157] [cursor=pointer]:
+            - generic [ref=e158]: 
+            - generic [ref=e161]: "0"
+            - generic [ref=e162]: Today's Intake
+        - generic [ref=e164]:
+          - generic [ref=e165]:
+            - generic [ref=e166]: SLA & Operational Performance
+            - generic [ref=e167]: 87% On-Time SLA
+          - generic [ref=e168]:
+            - generic [ref=e169]:
+              - generic [ref=e170]: ~24.5h
+              - generic [ref=e171]: Avg Resolution
+            - generic [ref=e173]:
+              - generic [ref=e174]: < 48h
+              - generic [ref=e175]: City Target
+            - generic [ref=e177]:
+              - generic [ref=e178]: 94%
+              - generic [ref=e179]: Triage Rate
+          - generic [ref=e180]:
+            - generic [ref=e181]: INCIDENT DISTRIBUTION
+            - generic [ref=e182]:
+              - generic [ref=e183]: "Potholes: 14"
+              - generic [ref=e187]: "Garbage: 0"
+              - generic [ref=e190]: "Streetlight: 1"
+        - generic [ref=e195]:
+          - generic [ref=e196]:
+            - generic [ref=e197]: Cleaner Neighborhoods • Stronger Communities
+            - generic [ref=e198]: REPORT • TRACK • RESOLVE
+          - generic [ref=e199]: 
+      - generic [ref=e200]:
+        - generic [ref=e201]:
+          - generic [ref=e202]:
+            - generic [ref=e203]: Incident Queue
+            - generic [ref=e204]: Live incident reports from citizens across the city.
+          - button "Manage Queue →" [ref=e206] [cursor=pointer]
+        - generic [ref=e210]:
+          - generic [ref=e211] [cursor=pointer]: All Activity (15)
+          - generic [ref=e213] [cursor=pointer]: Urgent / High
+          - generic [ref=e215] [cursor=pointer]: Potholes
+          - generic [ref=e217] [cursor=pointer]: Garbage
+          - generic [ref=e219] [cursor=pointer]: Water / Drain
+          - generic [ref=e221] [cursor=pointer]: Streetlights
+        - generic [ref=e225]:
+          - generic [ref=e228] [cursor=pointer]:
+            - generic [ref=e229]:
+              - generic [ref=e230]: CIV-150247
+              - 'generic "Status: Pending" [ref=e232]':
+                - generic [ref=e233]: 
+                - generic [ref=e234]: Pending
+            - generic [ref=e235]:
+              - generic [ref=e236]: 
+              - generic [ref=e239]:
+                - generic [ref=e240]: Road Damage
+                - generic [ref=e241]: Cracks on road
+                - generic [ref=e242]:
+                  - generic [ref=e243]: 
+                  - generic [ref=e244]: Test Citizen
+            - generic [ref=e245]:
+              - generic [ref=e246]:
+                - generic [ref=e247]: 
+                - generic [ref=e248]: 21 Sept 2026
+              - generic [ref=e249]:
+                - generic [ref=e250]: 
+                - generic [ref=e251]: City Center
+          - generic [ref=e254] [cursor=pointer]:
+            - generic [ref=e255]:
+              - generic [ref=e256]: "#CIV3CAEF"
+              - 'generic "Status: Pending" [ref=e258]':
+                - generic [ref=e259]: 
+                - generic [ref=e260]: Pending
+            - generic [ref=e265]:
+              - generic [ref=e266]: Broken Streetlight
+              - generic [ref=e267]: ytfhvuv
+              - generic [ref=e268]:
+                - generic [ref=e269]: 
+                - generic [ref=e270]: Citizen
+            - generic [ref=e271]:
+              - generic [ref=e272]:
+                - generic [ref=e273]: 
+                - generic [ref=e274]: 13 Sept 2026
+              - generic [ref=e275]:
+                - generic [ref=e276]: 
+                - generic [ref=e277]: கொள்ளுமேடு
+          - generic [ref=e280] [cursor=pointer]:
+            - generic [ref=e281]:
+              - generic [ref=e282]: "#CIVB6B7F"
+              - 'generic "Status: Resolved" [ref=e284]':
+                - generic [ref=e285]: 
+                - generic [ref=e286]: Resolved
+            - generic [ref=e291]:
+              - generic [ref=e292]: Pothole
+              - generic [ref=e293]: v dbe4
+              - generic [ref=e294]:
+                - generic [ref=e295]: 
+                - generic [ref=e296]: Citizen
+            - generic [ref=e297]:
+              - generic [ref=e298]:
+                - generic [ref=e299]: 
+                - generic [ref=e300]: 12 Sept 2026
+              - generic [ref=e301]:
+                - generic [ref=e302]: 
+                - generic [ref=e303]: அலமாதி
+          - generic [ref=e306] [cursor=pointer]:
+            - generic [ref=e307]:
+              - generic [ref=e308]: "#CIVB6B7C"
+              - 'generic "Status: Pending" [ref=e310]':
+                - generic [ref=e311]: 
+                - generic [ref=e312]: Pending
+            - generic [ref=e317]:
+              - generic [ref=e318]: Pothole
+              - generic [ref=e319]: v dbe4
+              - generic [ref=e320]:
+                - generic [ref=e321]: 
+                - generic [ref=e322]: Citizen
+            - generic [ref=e323]:
+              - generic [ref=e324]:
+                - generic [ref=e325]: 
+                - generic [ref=e326]: 12 Sept 2026
+              - generic [ref=e327]:
+                - generic [ref=e328]: 
+                - generic [ref=e329]: அலமாதி
+          - generic [ref=e332] [cursor=pointer]:
+            - generic [ref=e333]:
+              - generic [ref=e334]: "#CIVB6B79"
+              - 'generic "Status: Pending" [ref=e336]':
+                - generic [ref=e337]: 
+                - generic [ref=e338]: Pending
+            - generic [ref=e343]:
+              - generic [ref=e344]: Pothole
+              - generic [ref=e345]: v dbe4
+              - generic [ref=e346]:
+                - generic [ref=e347]: 
+                - generic [ref=e348]: Citizen
+            - generic [ref=e349]:
+              - generic [ref=e350]:
+                - generic [ref=e351]: 
+                - generic [ref=e352]: 12 Sept 2026
+              - generic [ref=e353]:
+                - generic [ref=e354]: 
+                - generic [ref=e355]: அலமாதி
+          - generic [ref=e358] [cursor=pointer]:
+            - generic [ref=e359]:
+              - generic [ref=e360]: "#CIVB6B76"
+              - 'generic "Status: Pending" [ref=e362]':
+                - generic [ref=e363]: 
+                - generic [ref=e364]: Pending
+            - generic [ref=e369]:
+              - generic [ref=e370]: Pothole
+              - generic [ref=e371]: v dbe4
+              - generic [ref=e372]:
+                - generic [ref=e373]: 
+                - generic [ref=e374]: Citizen
+            - generic [ref=e375]:
+              - generic [ref=e376]:
+                - generic [ref=e377]: 
+                - generic [ref=e378]: 12 Sept 2026
+              - generic [ref=e379]:
+                - generic [ref=e380]: 
+                - generic [ref=e381]: அலமாதி
+          - generic [ref=e384] [cursor=pointer]:
+            - generic [ref=e385]:
+              - generic [ref=e386]: CIV-637594
+              - 'generic "Status: Resolved" [ref=e388]':
+                - generic [ref=e389]: 
+                - generic [ref=e390]: Resolved
+            - generic [ref=e395]:
+              - generic [ref=e396]: Pothole
+              - generic [ref=e397]: v dbe4
+              - generic [ref=e398]:
+                - generic [ref=e399]: 
+                - generic [ref=e400]: Citizen
+            - generic [ref=e401]:
+              - generic [ref=e402]:
+                - generic [ref=e403]: 
+                - generic [ref=e404]: 12 Sept 2026
+              - generic [ref=e405]:
+                - generic [ref=e406]: 
+                - generic [ref=e407]: அலமாதி
+          - generic [ref=e410] [cursor=pointer]:
+            - generic [ref=e411]:
+              - generic [ref=e412]: "#CIVB6B70"
+              - 'generic "Status: Pending" [ref=e414]':
+                - generic [ref=e415]: 
+                - generic [ref=e416]: Pending
+            - generic [ref=e421]:
+              - generic [ref=e422]: Pothole
+              - generic [ref=e423]: v dbe4
+              - generic [ref=e424]:
+                - generic [ref=e425]: 
+                - generic [ref=e426]: Citizen
+            - generic [ref=e427]:
+              - generic [ref=e428]:
+                - generic [ref=e429]: 
+                - generic [ref=e430]: 12 Sept 2026
+              - generic [ref=e431]:
+                - generic [ref=e432]: 
+                - generic [ref=e433]: அலமாதி
+          - generic [ref=e436] [cursor=pointer]:
+            - generic [ref=e437]:
+              - generic [ref=e438]: "#CIVB6B6D"
+              - 'generic "Status: Pending" [ref=e440]':
+                - generic [ref=e441]: 
+                - generic [ref=e442]: Pending
+            - generic [ref=e447]:
+              - generic [ref=e448]: Pothole
+              - generic [ref=e449]: v dbe4
+              - generic [ref=e450]:
+                - generic [ref=e451]: 
+                - generic [ref=e452]: Citizen
+            - generic [ref=e453]:
+              - generic [ref=e454]:
+                - generic [ref=e455]: 
+                - generic [ref=e456]: 12 Sept 2026
+              - generic [ref=e457]:
+                - generic [ref=e458]: 
+                - generic [ref=e459]: அலமாதி
+          - generic [ref=e462] [cursor=pointer]:
+            - generic [ref=e463]:
+              - generic [ref=e464]: "#CIVB6B6A"
+              - 'generic "Status: Pending" [ref=e466]':
+                - generic [ref=e467]: 
+                - generic [ref=e468]: Pending
+            - generic [ref=e473]:
+              - generic [ref=e474]: Pothole
+              - generic [ref=e475]: v dbe4
+              - generic [ref=e476]:
+                - generic [ref=e477]: 
+                - generic [ref=e478]: Citizen
+            - generic [ref=e479]:
+              - generic [ref=e480]:
+                - generic [ref=e481]: 
+                - generic [ref=e482]: 12 Sept 2026
+              - generic [ref=e483]:
+                - generic [ref=e484]: 
+                - generic [ref=e485]: அலமாதி
+          - generic [ref=e488] [cursor=pointer]:
+            - generic [ref=e489]:
+              - generic [ref=e490]: "#CIVB6B67"
+              - 'generic "Status: Pending" [ref=e492]':
+                - generic [ref=e493]: 
+                - generic [ref=e494]: Pending
+            - generic [ref=e499]:
+              - generic [ref=e500]: Pothole
+              - generic [ref=e501]: v dbe4
+              - generic [ref=e502]:
+                - generic [ref=e503]: 
+                - generic [ref=e504]: Citizen
+            - generic [ref=e505]:
+              - generic [ref=e506]:
+                - generic [ref=e507]: 
+                - generic [ref=e508]: 12 Sept 2026
+              - generic [ref=e509]:
+                - generic [ref=e510]: 
+                - generic [ref=e511]: அலமாதி
+          - generic [ref=e514] [cursor=pointer]:
+            - generic [ref=e515]:
+              - generic [ref=e516]: "#CIVB6B64"
+              - 'generic "Status: Pending" [ref=e518]':
+                - generic [ref=e519]: 
+                - generic [ref=e520]: Pending
+            - generic [ref=e525]:
+              - generic [ref=e526]: Pothole
+              - generic [ref=e527]: v dbe4
+              - generic [ref=e528]:
+                - generic [ref=e529]: 
+                - generic [ref=e530]: Citizen
+            - generic [ref=e531]:
+              - generic [ref=e532]:
+                - generic [ref=e533]: 
+                - generic [ref=e534]: 12 Sept 2026
+              - generic [ref=e535]:
+                - generic [ref=e536]: 
+                - generic [ref=e537]: அலமாதி
+          - generic [ref=e540] [cursor=pointer]:
+            - generic [ref=e541]:
+              - generic [ref=e542]: "#CIVB6B61"
+              - 'generic "Status: Pending" [ref=e544]':
+                - generic [ref=e545]: 
+                - generic [ref=e546]: Pending
+            - generic [ref=e551]:
+              - generic [ref=e552]: Pothole
+              - generic [ref=e553]: v dbe4
+              - generic [ref=e554]:
+                - generic [ref=e555]: 
+                - generic [ref=e556]: Citizen
+            - generic [ref=e557]:
+              - generic [ref=e558]:
+                - generic [ref=e559]: 
+                - generic [ref=e560]: 12 Sept 2026
+              - generic [ref=e561]:
+                - generic [ref=e562]: 
+                - generic [ref=e563]: அலமாதி
+          - generic [ref=e566] [cursor=pointer]:
+            - generic [ref=e567]:
+              - generic [ref=e568]: "#CIVB6B5E"
+              - 'generic "Status: Pending" [ref=e570]':
+                - generic [ref=e571]: 
+                - generic [ref=e572]: Pending
+            - generic [ref=e577]:
+              - generic [ref=e578]: Pothole
+              - generic [ref=e579]: v dbe4
+              - generic [ref=e580]:
+                - generic [ref=e581]: 
+                - generic [ref=e582]: Citizen
+            - generic [ref=e583]:
+              - generic [ref=e584]:
+                - generic [ref=e585]: 
+                - generic [ref=e586]: 12 Sept 2026
+              - generic [ref=e587]:
+                - generic [ref=e588]: 
+                - generic [ref=e589]: அலமாதி
+          - generic [ref=e592] [cursor=pointer]:
+            - generic [ref=e593]:
+              - generic [ref=e594]: "#CIVB6B5B"
+              - 'generic "Status: Pending" [ref=e596]':
+                - generic [ref=e597]: 
+                - generic [ref=e598]: Pending
+            - generic [ref=e603]:
+              - generic [ref=e604]: Pothole
+              - generic [ref=e605]: v dbe4
+              - generic [ref=e606]:
+                - generic [ref=e607]: 
+                - generic [ref=e608]: Citizen
+            - generic [ref=e609]:
+              - generic [ref=e610]:
+                - generic [ref=e611]: 
+                - generic [ref=e612]: 12 Sept 2026
+              - generic [ref=e613]:
+                - generic [ref=e614]: 
+                - generic [ref=e615]: அலமாதி
+  - tablist [ref=e617]:
+    - link "  Dashboard" [ref=e618] [cursor=pointer]:
+      - /url: /AuthorityTabs/AuthorityDashboard
+      - generic:
+        - generic [ref=e619]: 
+        - generic [ref=e621]: 
+      - generic [ref=e623]: Dashboard
+    - link "  Complaints" [ref=e624] [cursor=pointer]:
+      - /url: /AuthorityTabs/AllComplaints
+      - generic:
+        - generic [ref=e625]: 
+        - generic [ref=e627]: 
+      - generic [ref=e629]: Complaints
+    - link "  Map" [ref=e630] [cursor=pointer]:
+      - /url: /AuthorityTabs/AuthorityMap
+      - generic:
+        - generic [ref=e631]: 
+        - generic [ref=e633]: 
+      - generic [ref=e635]: Map
+    - link "  Analytics" [ref=e636] [cursor=pointer]:
+      - /url: /AuthorityTabs/AuthorityAnalytics
+      - generic:
+        - generic [ref=e637]: 
+        - generic [ref=e639]: 
+      - generic [ref=e641]: Analytics
+    - link "  Feed" [ref=e642] [cursor=pointer]:
+      - /url: /AuthorityTabs/AuthorityNotifications
+      - generic:
+        - generic [ref=e643]: 
+        - generic [ref=e645]: 
+      - generic [ref=e647]: Feed
+    - link "  Profile" [ref=e648] [cursor=pointer]:
+      - /url: /AuthorityTabs/AuthorityProfile
+      - generic:
+        - generic [ref=e649]: 
+        - generic [ref=e651]: 
+      - generic [ref=e653]: Profile

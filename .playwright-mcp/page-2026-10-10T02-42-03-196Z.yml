@@ -1,0 +1,25 @@
+- generic [ref=f4e12]:
+  - generic [ref=f4e42]:
+    - generic [ref=f4e43]:
+      - generic [ref=f4e44] [cursor=pointer]: 
+      - generic [ref=f4e46]: Incident Map
+    - generic [ref=f4e47]:
+      - generic [ref=f4e50]:
+        - button "All Pinned" [ref=f4e51] [cursor=pointer]
+        - button "Pending" [ref=f4e53] [cursor=pointer]
+        - button "In Progress" [ref=f4e55] [cursor=pointer]
+        - button "Resolved" [ref=f4e57] [cursor=pointer]
+      - iframe [ref=f4e60]
+  - generic [ref=f4e20]:
+    - button "Dashboard" [ref=f4e21] [cursor=pointer]:
+      - generic [ref=f4e22]: 
+    - button "Complaints" [ref=f4e24] [cursor=pointer]:
+      - generic [ref=f4e25]: 
+    - button "Map" [active] [ref=f4e27] [cursor=pointer]:
+      - generic [ref=f4e28]: 
+    - button "Analytics" [ref=f4e30] [cursor=pointer]:
+      - generic [ref=f4e31]: 
+    - button "Feed" [ref=f4e33] [cursor=pointer]:
+      - generic [ref=f4e34]: 
+    - button "Profile" [ref=f4e36] [cursor=pointer]:
+      - generic [ref=f4e37]: 

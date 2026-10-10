@@ -8,6 +8,7 @@ import {
   RefreshControl,
   SafeAreaView,
   StatusBar,
+  Platform,
 } from 'react-native';
 import Animated, { FadeInDown, FadeInUp, Layout, ZoomIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,10 +18,15 @@ import { COLORS } from '../../theme/colors';
 import { BORDER_RADIUS } from '../../theme/radius';
 import { SPACING } from '../../theme/spacing';
 import { TYPOGRAPHY } from '../../theme/typography';
+import { useMobileMenu } from '../../contexts/MobileMenuContext';
 import { NotificationItem, NotificationData } from '../../components/NotificationItem';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
+import { AuthorityMobileHeader } from '../../components/AuthorityMobileHeader';
 
 export const AuthorityNotificationsScreen = ({ navigation }: any) => {
+  const { toggleMenu } = useMobileMenu();
+  const { isDesktop } = useBreakpoint();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -105,22 +111,13 @@ export const AuthorityNotificationsScreen = ({ navigation }: any) => {
   });
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
+    <View style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#0F172A" translucent={false} />
 
-      {/* Screen Header */}
-      <Animated.View entering={FadeInDown.duration(400)} style={styles.headerBar}>
-        <TouchableOpacity
-          style={styles.backBtn}
-          onPress={() => navigation.navigate('AuthorityDashboard')}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel="Back to Dashboard"
-        >
-          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Incident Feed</Text>
-      </Animated.View>
+      {/* Screen Header - Mobile Only */}
+      {!isDesktop && (
+        <AuthorityMobileHeader title="Incident Feed" />
+      )}
 
       <View style={styles.container}>
         <FlatList
@@ -162,7 +159,7 @@ export const AuthorityNotificationsScreen = ({ navigation }: any) => {
           showsVerticalScrollIndicator={false}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -175,7 +172,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.md,
+    paddingTop: Platform.OS === 'ios' ? SPACING.md : SPACING.lg,
     paddingBottom: SPACING.lg,
     backgroundColor: '#0F172A',
   },

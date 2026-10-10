@@ -1,0 +1,34 @@
+- generic [ref=f2e10]:
+  - generic [ref=f2e11]:
+    - generic [ref=f2e12]:
+      - generic [ref=f2e14]:
+        - generic [ref=f2e16]:
+          - generic [ref=f2e17]: 
+          - generic [ref=f2e18]: 
+        - generic [ref=f2e19]: CivicTrack
+      - generic [ref=f2e21]: MUNICIPAL OPERATIONS
+    - generic [ref=f2e24]:
+      - generic [ref=f2e25]: OPERATIONS
+      - button "Command Center" [ref=f2e26] [cursor=pointer]:
+        - generic [ref=f2e27]: 
+      - button "All Complaints" [ref=f2e30] [cursor=pointer]:
+        - generic [ref=f2e31]: 
+      - button "Incident Map" [ref=f2e33] [cursor=pointer]:
+        - generic [ref=f2e34]: 
+      - button "Operations Analytics" [ref=f2e36] [cursor=pointer]:
+        - generic [ref=f2e37]: 
+      - button "Alerts & Feed" [ref=f2e39] [cursor=pointer]:
+        - generic [ref=f2e40]: 
+      - generic [ref=f2e43]: MANAGEMENT
+      - button "User Management" [ref=f2e44] [cursor=pointer]:
+        - generic [ref=f2e45]: 
+      - button "Profile & Settings" [ref=f2e47] [cursor=pointer]:
+        - generic [ref=f2e48]: 
+    - generic [ref=f2e51]:
+      - generic [ref=f2e52]: JD
+      - generic [ref=f2e54]:
+        - generic [ref=f2e55]: John Doe
+        - generic [ref=f2e56]:
+          - generic [ref=f2e57]: 
+          - generic [ref=f2e58]: Authorized Officer
+  - generic [ref=f2e59]: Loading Operations Command Center...

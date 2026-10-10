@@ -1,0 +1,68 @@
+- generic [ref=f2e141]:
+  - generic [ref=f2e748]:
+    - generic [ref=f2e749]:
+      - generic [ref=f2e750] [cursor=pointer]: 
+      - generic [ref=f2e752]: Incident Registry
+      - generic [ref=f2e753]: "16"
+    - generic [ref=f2e757]:
+      - button "All Incidents 16" [ref=f2e758] [cursor=pointer]:
+        - generic [ref=f2e759]: All Incidents
+        - generic [ref=f2e760]: "16"
+      - button "Pending 13" [ref=f2e762] [cursor=pointer]:
+        - generic [ref=f2e763]: Pending
+        - generic [ref=f2e764]: "13"
+      - button "In Progress 0" [ref=f2e766] [cursor=pointer]:
+        - generic [ref=f2e767]: In Progress
+        - generic [ref=f2e768]: "0"
+      - button "Resolved 3" [ref=f2e770] [cursor=pointer]:
+        - generic [ref=f2e771]: Resolved
+        - generic [ref=f2e772]: "3"
+      - button "🔥 High Priority 0" [ref=f2e774] [cursor=pointer]:
+        - generic [ref=f2e775]: 🔥 High Priority
+        - generic [ref=f2e776]: "0"
+    - generic [ref=f2e779] [cursor=pointer]:
+      - generic [ref=f2e780]: 
+      - generic [ref=f2e781]: Select All
+  - tablist [ref=f2e151]:
+    - link "  Dashboard" [ref=f2e152] [cursor=pointer]:
+      - /url: /AuthorityTabs/AuthorityDashboard
+      - generic:
+        - generic [ref=f2e153]: 
+        - generic [ref=f2e155]: 
+      - generic [ref=f2e157]: Dashboard
+    - link "  Complaints" [active] [ref=f2e158] [cursor=pointer]:
+      - /url: /AuthorityTabs/AllComplaints
+      - generic:
+        - generic [ref=f2e159]: 
+        - generic [ref=f2e161]: 
+      - generic [ref=f2e163]: Complaints
+    - link "  Map" [ref=f2e164] [cursor=pointer]:
+      - /url: /AuthorityTabs/AuthorityMap
+      - generic:
+        - generic [ref=f2e165]: 
+        - generic [ref=f2e167]: 
+      - generic [ref=f2e169]: Map
+    - link "  Analytics" [ref=f2e170] [cursor=pointer]:
+      - /url: /AuthorityTabs/AuthorityAnalytics
+      - generic:
+        - generic [ref=f2e171]: 
+        - generic [ref=f2e173]: 
+      - generic [ref=f2e175]: Analytics
+    - link "  Feed" [ref=f2e176] [cursor=pointer]:
+      - /url: /AuthorityTabs/AuthorityNotifications
+      - generic:
+        - generic [ref=f2e177]: 
+        - generic [ref=f2e179]: 
+      - generic [ref=f2e181]: Feed
+    - link "  Users" [ref=f2e182] [cursor=pointer]:
+      - /url: /AuthorityTabs/AuthorityUsers
+      - generic:
+        - generic [ref=f2e183]: 
+        - generic [ref=f2e185]: 
+      - generic [ref=f2e187]: Users
+    - link "  Profile" [ref=f2e188] [cursor=pointer]:
+      - /url: /AuthorityTabs/AuthorityProfile
+      - generic:
+        - generic [ref=f2e189]: 
+        - generic [ref=f2e191]: 
+      - generic [ref=f2e193]: Profile

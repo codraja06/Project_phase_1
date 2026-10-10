@@ -1,5 +1,6 @@
 import { Response, NextFunction } from 'express';
-import axios from 'axios';
+import { OAuth2Client } from 'google-auth-library';
+import { env } from '../config/env';
 import { AuthRequest } from '../middleware/auth';
 import { User } from '../models/User';
 import { generateToken } from '../utils/jwt';
@@ -64,73 +65,25 @@ export const login = async (req: AuthRequest, res: Response, next: NextFunction)
 
 export const googleAuth = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { token, role = 'citizen', userInfo } = req.body;
-
-    let email = userInfo?.email;
-    let name = userInfo?.name;
-    let picture = userInfo?.picture || userInfo?.avatar || '';
-    let googleId = userInfo?.id || userInfo?.googleId || '';
-
-    // If Google token is provided, verify against Google
-    if (token) {
-      try {
-        const verifyRes = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
-        if (verifyRes.data && verifyRes.data.email) {
-          email = verifyRes.data.email;
-          name = verifyRes.data.name || name || email.split('@')[0];
-          picture = verifyRes.data.picture || picture;
-          googleId = verifyRes.data.sub || googleId;
-        }
-      } catch (tokenErr) {
-        try {
-          const userinfoRes = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (userinfoRes.data && userinfoRes.data.email) {
-            email = userinfoRes.data.email;
-            name = userinfoRes.data.name || name || email.split('@')[0];
-            picture = userinfoRes.data.picture || picture;
-            googleId = userinfoRes.data.sub || googleId;
-          }
-        } catch (accessErr) {
-          if (!email) {
-            throw new ApiError(401, 'Google authentication token verification failed.');
-          }
-        }
-      }
+    const { token, role = 'citizen' } = req.body;
+    if (!token || typeof token !== 'string') throw new ApiError(401, 'A verified Google ID token is required.');
+    if (!env.GOOGLE_CLIENT_ID) throw new ApiError(503, 'Google sign-in is not configured. Please use email and password.');
+    let identity;
+    try {
+      const ticket = await new OAuth2Client(env.GOOGLE_CLIENT_ID).verifyIdToken({ idToken: token, audience: env.GOOGLE_CLIENT_ID });
+      identity = ticket.getPayload();
+    } catch {
+      throw new ApiError(401, 'Google authentication token verification failed.');
     }
-
-    if (!email) {
-      throw new ApiError(400, 'Email is required from Google authentication.');
-    }
-
-    email = email.toLowerCase().trim();
-
+    if (!identity?.email || !identity.email_verified || !identity.sub) throw new ApiError(401, 'A verified Google email is required.');
+    const email = identity.email.toLowerCase().trim();
     let user = await User.findOne({ email });
-
+    if (!user && role === 'authority') throw new ApiError(403, 'Officer accounts must be provisioned by your administrator.');
+    if (user && user.role !== role) throw new ApiError(403, 'Please use the login portal for your account role.');
+    // Link existing accounts only after their password has established ownership.
+    if (user && user.googleId !== identity.sub) throw new ApiError(401, 'Use email and password to sign in to this existing account.');
     if (!user) {
-      const selectedRole = role === 'authority' ? 'authority' : 'citizen';
-      user = await User.create({
-        name: name || email.split('@')[0],
-        email,
-        phone: '',
-        role: selectedRole,
-        googleId,
-        avatar: picture,
-      });
-    } else {
-      let modified = false;
-      if (googleId && !user.googleId) {
-        user.googleId = googleId;
-        modified = true;
-      }
-      if (picture && !user.avatar) {
-        user.avatar = picture;
-        modified = true;
-      }
-      if (modified) {
-        await user.save();
-      }
+      user = await User.create({ name: identity.name || email.split('@')[0], email, role: 'citizen', googleId: identity.sub, avatar: identity.picture || '' });
     }
 
     const appToken = generateToken({ userId: user._id.toString(), role: user.role });

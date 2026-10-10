@@ -5,9 +5,11 @@ import Constants from 'expo-constants';
 const getBaseUrl = (): string => {
   const envUrl = process.env.EXPO_PUBLIC_API_URL;
 
+  if (envUrl && !envUrl.includes('YOUR_LAN_IP')) return envUrl.replace(/\/$/, '');
+
   if (Platform.OS === 'web') {
     if (typeof window !== 'undefined' && window.location?.hostname) {
-      return `http://${window.location.hostname}:5000/api`;
+      return `${window.location.protocol}//${window.location.hostname}:5000/api`;
     }
     return envUrl && !envUrl.includes('YOUR_LAN_IP') ? envUrl : 'http://127.0.0.1:5000/api';
   }
@@ -21,7 +23,8 @@ const getBaseUrl = (): string => {
 
   if (debuggerHost) {
     const host = debuggerHost.split(':')[0];
-    if (host && host !== 'localhost' && host !== '127.0.0.1') {
+    const isIpv4 = /^(\d{1,3}\.){3}\d{1,3}$/.test(host);
+    if (isIpv4 && host !== 'localhost' && host !== '127.0.0.1') {
       return `http://${host}:5000/api`;
     }
   }
@@ -32,7 +35,7 @@ const getBaseUrl = (): string => {
   }
 
   // 3. Known WiFi LAN IP of this development machine
-  return 'http://192.168.29.44:5000/api';
+  return Platform.OS === 'android' ? 'http://10.0.2.2:5000/api' : 'http://127.0.0.1:5000/api';
 };
 
 export const API_BASE_URL = getBaseUrl();

@@ -1,0 +1,73 @@
+- generic [ref=e18]:
+  - generic [ref=e283]:
+    - generic [ref=e284]:
+      - button "Back" [ref=e285] [cursor=pointer]:
+        - generic [ref=e286]: 
+      - generic [ref=e287]: My Complaints
+      - generic [ref=e288]: "1"
+    - generic [ref=e290]:
+      - generic [ref=e291]:
+        - generic [ref=e292]: 
+        - textbox "Search reports..." [ref=e293]
+      - generic [ref=e295]:
+        - button "All Reports 1" [ref=e296] [cursor=pointer]:
+          - generic [ref=e297]: All Reports
+          - generic [ref=e298]: "1"
+        - button "Pending 1" [ref=e300] [cursor=pointer]:
+          - generic [ref=e301]: Pending
+          - generic [ref=e302]: "1"
+        - button "In Progress 0" [ref=e304] [cursor=pointer]:
+          - generic [ref=e305]: In Progress
+          - generic [ref=e306]: "0"
+        - button "Resolved 0" [ref=e308] [cursor=pointer]:
+          - generic [ref=e309]: Resolved
+          - generic [ref=e310]: "0"
+    - generic [ref=e318] [cursor=pointer]:
+      - generic [ref=e319]:
+        - generic [ref=e320]: CIV-150247
+        - 'generic "Status: Pending" [ref=e322]':
+          - generic [ref=e323]: 
+          - generic [ref=e324]: Pending
+      - generic [ref=e325]:
+        - generic [ref=e326]: 
+        - generic [ref=e329]:
+          - generic [ref=e330]: Road Damage
+          - generic [ref=e331]: Cracks on road
+      - generic [ref=e332]:
+        - generic [ref=e333]:
+          - generic [ref=e334]: 
+          - generic [ref=e335]: 21 Sept 2026
+        - generic [ref=e336]:
+          - generic [ref=e337]: 
+          - generic [ref=e338]: City Center
+  - tablist [ref=e340]:
+    - link "  Home" [ref=e341] [cursor=pointer]:
+      - /url: /CitizenTabs/CitizenDashboard
+      - generic:
+        - generic [ref=e342]: 
+        - generic [ref=e344]: 
+      - generic [ref=e346]: Home
+    - link "  Report" [ref=e347] [cursor=pointer]:
+      - /url: /CitizenTabs/ReportIssue
+      - generic:
+        - generic [ref=e348]: 
+        - generic [ref=e350]: 
+      - generic [ref=e352]: Report
+    - link "  Complaints" [active] [ref=e353] [cursor=pointer]:
+      - /url: /CitizenTabs/ComplaintHistory
+      - generic:
+        - generic [ref=e354]: 
+        - generic [ref=e356]: 
+      - generic [ref=e358]: Complaints
+    - link "  Alerts" [ref=e359] [cursor=pointer]:
+      - /url: /CitizenTabs/Notifications
+      - generic:
+        - generic [ref=e360]: 
+        - generic [ref=e362]: 
+      - generic [ref=e364]: Alerts
+    - link "  Profile" [ref=e365] [cursor=pointer]:
+      - /url: /CitizenTabs/CitizenProfile
+      - generic:
+        - generic [ref=e366]: 
+        - generic [ref=e368]: 
+      - generic [ref=e370]: Profile

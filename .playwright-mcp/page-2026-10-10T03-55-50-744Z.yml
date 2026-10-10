@@ -1,0 +1,43 @@
+- generic [ref=f2e1000]:
+  - generic [ref=f2e1001]:
+    - generic [ref=f2e1002]:
+      - generic [ref=f2e1003]:
+        - generic [ref=f2e1005]:
+          - generic [ref=f2e1006]: 
+          - generic [ref=f2e1007]: 
+        - generic [ref=f2e1008]: CivicTrack
+      - generic [ref=f2e1010]: CITIZEN PORTAL
+    - generic [ref=f2e1014]:
+      - generic [ref=f2e1015]: MAIN MENU
+      - button "Dashboard" [ref=f2e1016] [cursor=pointer]:
+        - generic [ref=f2e1018]: 
+      - button "Report Issue" [ref=f2e1020] [cursor=pointer]:
+        - generic [ref=f2e1021]: 
+      - button "My Complaints" [active] [ref=f2e1023] [cursor=pointer]:
+        - generic [ref=f2e1024]: 
+      - button "Notifications" [ref=f2e1026] [cursor=pointer]:
+        - generic [ref=f2e1027]: 
+      - button "Profile & Settings" [ref=f2e1029] [cursor=pointer]:
+        - generic [ref=f2e1030]: 
+    - generic [ref=f2e1033]:
+      - generic [ref=f2e1034]:
+        - generic [ref=f2e1035]: 
+        - generic [ref=f2e1036]: Civic Protection
+      - generic [ref=f2e1037]: AI-assisted incident reporting for cleaner, safer communities.
+  - generic [ref=f2e1099]:
+    - generic [ref=f2e1101]:
+      - generic [ref=f2e1102]: My Complaints
+      - generic [ref=f2e1103]: Showing 0 of 0 registered reports
+    - generic [ref=f2e1107]:
+      - button "All Reports 0" [ref=f2e1108] [cursor=pointer]:
+        - generic [ref=f2e1109]: All Reports
+        - generic [ref=f2e1110]: "0"
+      - button "Pending 0" [ref=f2e1112] [cursor=pointer]:
+        - generic [ref=f2e1113]: Pending
+        - generic [ref=f2e1114]: "0"
+      - button "In Progress 0" [ref=f2e1116] [cursor=pointer]:
+        - generic [ref=f2e1117]: In Progress
+        - generic [ref=f2e1118]: "0"
+      - button "Resolved 0" [ref=f2e1120] [cursor=pointer]:
+        - generic [ref=f2e1121]: Resolved
+        - generic [ref=f2e1122]: "0"

@@ -1,0 +1,35 @@
+- generic [ref=f6e20]:
+  - generic [ref=f6e163]:
+    - generic [ref=f6e164] [cursor=pointer]: 
+    - generic [ref=f6e166]: Account Settings
+  - tablist [ref=f6e30]:
+    - link "  Home" [ref=f6e31] [cursor=pointer]:
+      - /url: /citizen/dashboard
+      - generic:
+        - generic [ref=f6e32]: 
+        - generic [ref=f6e34]: 
+      - generic [ref=f6e36]: Home
+    - link "  Report" [ref=f6e37] [cursor=pointer]:
+      - /url: /citizen/report
+      - generic:
+        - generic [ref=f6e38]: 
+        - generic [ref=f6e40]: 
+      - generic [ref=f6e42]: Report
+    - link "  Complaints" [ref=f6e43] [cursor=pointer]:
+      - /url: /citizen/history
+      - generic:
+        - generic [ref=f6e44]: 
+        - generic [ref=f6e46]: 
+      - generic [ref=f6e48]: Complaints
+    - link "  Alerts" [ref=f6e49] [cursor=pointer]:
+      - /url: /citizen/alerts
+      - generic:
+        - generic [ref=f6e50]: 
+        - generic [ref=f6e52]: 
+      - generic [ref=f6e54]: Alerts
+    - link "  Profile" [active] [ref=f6e55] [cursor=pointer]:
+      - /url: /citizen/profile
+      - generic:
+        - generic [ref=f6e56]: 
+        - generic [ref=f6e58]: 
+      - generic [ref=f6e60]: Profile

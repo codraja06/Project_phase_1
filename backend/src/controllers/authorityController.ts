@@ -10,7 +10,7 @@ export const getAllComplaints = async (req: AuthRequest, res: Response, next: Ne
     const { status, category, search, sortBy } = req.query;
     const filter: any = {};
 
-    if (status && status !== 'All' && status !== 'all') {
+    if (typeof status === 'string' && status !== 'All' && status !== 'all') {
       const s = status.toString().toLowerCase().replace('_', ' ');
       if (s === 'pending') filter.status = 'Pending';
       else if (s === 'in progress' || s === 'in_progress') filter.status = 'In Progress';
@@ -18,15 +18,16 @@ export const getAllComplaints = async (req: AuthRequest, res: Response, next: Ne
       else if (s === 'urgent' || s === 'high') filter.priority = { $in: ['high', 'urgent'] };
       else filter.status = status;
     }
-    if (category && category !== 'All' && category !== 'all') {
+    if (typeof category === 'string' && category !== 'All' && category !== 'all') {
       filter.category = category;
     }
-    if (search) {
+    if (search && typeof search === 'string') {
+      const literalSearch = search.slice(0, 200).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       filter.$or = [
-        { complaintId: { $regex: search, $options: 'i' } },
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { address: { $regex: search, $options: 'i' } },
+        { complaintId: { $regex: literalSearch, $options: 'i' } },
+        { title: { $regex: literalSearch, $options: 'i' } },
+        { description: { $regex: literalSearch, $options: 'i' } },
+        { address: { $regex: literalSearch, $options: 'i' } },
       ];
     }
 
@@ -126,14 +127,13 @@ export const updateComplaintStatus = async (req: AuthRequest, res: Response, nex
       );
     }
 
-    complaint.status = targetStatus;
-    if (targetStatus === 'Resolved') {
-      complaint.resolvedAt = new Date();
-    }
-
-    await complaint.save();
-
-    res.status(200).json(new ApiResponse('Complaint status updated successfully', complaint));
+    const updated = await Complaint.findOneAndUpdate(
+      { _id: id, status: currentStatus },
+      { $set: { status: targetStatus, ...(targetStatus === 'Resolved' ? { resolvedAt: new Date() } : {}) } },
+      { new: true, runValidators: true }
+    );
+    if (!updated) throw new ApiError(409, 'This complaint changed. Refresh before trying again.');
+    res.status(200).json(new ApiResponse('Complaint status updated successfully', updated));
   } catch (error) {
     next(error);
   }

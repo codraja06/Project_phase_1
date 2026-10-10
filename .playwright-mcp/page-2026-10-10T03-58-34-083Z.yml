@@ -1,0 +1,25 @@
+- generic [ref=f4e19]:
+  - generic [ref=f4e20]:
+    - generic [ref=f4e21]:
+      - generic [ref=f4e23]:
+        - generic [ref=f4e24]: 
+        - generic [ref=f4e25]: 
+      - generic [ref=f4e26]: CivicTrack
+    - generic [ref=f4e28]: CITIZEN PORTAL
+  - generic [ref=f4e32]:
+    - generic [ref=f4e33]: MAIN MENU
+    - button "Dashboard" [ref=f4e34] [cursor=pointer]:
+      - generic [ref=f4e36]: 
+    - button "Report Issue" [ref=f4e38] [cursor=pointer]:
+      - generic [ref=f4e39]: 
+    - button "My Complaints" [ref=f4e41] [cursor=pointer]:
+      - generic [ref=f4e42]: 
+    - button "Notifications" [ref=f4e44] [cursor=pointer]:
+      - generic [ref=f4e45]: 
+    - button "Profile & Settings" [ref=f4e47] [cursor=pointer]:
+      - generic [ref=f4e48]: 
+  - generic [ref=f4e51]:
+    - generic [ref=f4e52]:
+      - generic [ref=f4e53]: 
+      - generic [ref=f4e54]: Civic Protection
+    - generic [ref=f4e55]: AI-assisted incident reporting for cleaner, safer communities.

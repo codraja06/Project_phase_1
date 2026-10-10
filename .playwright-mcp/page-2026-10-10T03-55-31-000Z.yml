@@ -1,0 +1,54 @@
+- generic [ref=f2e1000]:
+  - generic [ref=f2e1001]:
+    - generic [ref=f2e1002]:
+      - generic [ref=f2e1003]:
+        - generic [ref=f2e1005]:
+          - generic [ref=f2e1006]: 
+          - generic [ref=f2e1007]: 
+        - generic [ref=f2e1008]: CivicTrack
+      - generic [ref=f2e1010]: CITIZEN PORTAL
+    - generic [ref=f2e1014]:
+      - generic [ref=f2e1015]: MAIN MENU
+      - button "Dashboard" [ref=f2e1016] [cursor=pointer]:
+        - generic [ref=f2e1018]: 
+      - button "Report Issue" [active] [ref=f2e1020] [cursor=pointer]:
+        - generic [ref=f2e1021]: 
+      - button "My Complaints" [ref=f2e1023] [cursor=pointer]:
+        - generic [ref=f2e1024]: 
+      - button "Notifications" [ref=f2e1026] [cursor=pointer]:
+        - generic [ref=f2e1027]: 
+      - button "Profile & Settings" [ref=f2e1029] [cursor=pointer]:
+        - generic [ref=f2e1030]: 
+    - generic [ref=f2e1033]:
+      - generic [ref=f2e1034]:
+        - generic [ref=f2e1035]: 
+        - generic [ref=f2e1036]: Civic Protection
+      - generic [ref=f2e1037]: AI-assisted incident reporting for cleaner, safer communities.
+  - generic [ref=f2e1051]:
+    - generic [ref=f2e1052]:
+      - generic "Back" [ref=f2e1053] [cursor=pointer]: 
+      - generic [ref=f2e1055]: Report Civic Hazard
+    - generic [ref=f2e1057]:
+      - generic [ref=f2e1058]:
+        - generic [ref=f2e1059]: "1"
+        - generic [ref=f2e1061]: Photo
+      - generic [ref=f2e1063]:
+        - generic [ref=f2e1064]: "2"
+        - generic [ref=f2e1066]: AI Vision
+      - generic [ref=f2e1068]:
+        - generic [ref=f2e1069]: "3"
+        - generic [ref=f2e1071]: GPS Pin
+      - generic [ref=f2e1073]:
+        - generic [ref=f2e1074]: "4"
+        - generic [ref=f2e1076]: Submit
+    - generic [ref=f2e1083]:
+      - generic [ref=f2e1084]: 
+      - generic [ref=f2e1086]: Upload an Issue Image
+      - generic [ref=f2e1087]: Capture a photo or choose an image from your device
+      - generic [ref=f2e1088]:
+        - button " Capture Photo" [ref=f2e1089] [cursor=pointer]:
+          - generic [ref=f2e1090]: 
+          - generic [ref=f2e1091]: Capture Photo
+        - button " Upload Image" [ref=f2e1092] [cursor=pointer]:
+          - generic [ref=f2e1093]: 
+          - generic [ref=f2e1094]: Upload Image

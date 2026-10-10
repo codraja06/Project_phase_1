@@ -37,6 +37,7 @@ export const Card: React.FC<CardProps> = ({
   if (isPressable) {
     return (
       <AnimatedPressable
+        accessibilityRole="button"
         onPress={onPress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}

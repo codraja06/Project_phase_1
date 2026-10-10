@@ -6,9 +6,8 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
-  SafeAreaView,
-  StatusBar,
-} from 'react-native';
+  StatusBar} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
@@ -73,8 +72,7 @@ export const NotificationsScreen = ({ navigation }: any) => {
         timestamp: formattedDate,
         type: 'resolved',
         isRead: true,
-        complaintId: c._id,
-      };
+        complaintId: c._id};
     } else if (normStatus === 'in progress' || normStatus === 'in_progress') {
       return {
         id: `notif-${c._id}-inprogress`,
@@ -83,8 +81,7 @@ export const NotificationsScreen = ({ navigation }: any) => {
         timestamp: formattedDate,
         type: 'in_progress',
         isRead: false,
-        complaintId: c._id,
-      };
+        complaintId: c._id};
     } else {
       return {
         id: `notif-${c._id}-received`,
@@ -93,8 +90,7 @@ export const NotificationsScreen = ({ navigation }: any) => {
         timestamp: formattedDate,
         type: 'received',
         isRead: true,
-        complaintId: c._id,
-      };
+        complaintId: c._id};
     }
   });
 
@@ -104,7 +100,7 @@ export const NotificationsScreen = ({ navigation }: any) => {
 
       {/* Screen Header */}
       <Animated.View entering={FadeInDown.duration(400)} style={styles.headerBar}>
-        <TouchableOpacity
+        <TouchableOpacity hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Back"
           style={styles.backBtn}
           onPress={() => navigation.navigate('CitizenDashboard')}
           activeOpacity={0.7}
@@ -156,8 +152,7 @@ export const NotificationsScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
-  },
+    backgroundColor: COLORS.background},
   headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -166,8 +161,7 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.md,
     borderBottomWidth: 1.5,
     borderBottomColor: COLORS.borderLight,
-    backgroundColor: COLORS.background,
-  },
+    backgroundColor: COLORS.background},
   backBtn: {
     width: 38,
     height: 38,
@@ -177,36 +171,28 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderWidth: 1,
     borderColor: COLORS.border,
-    marginRight: SPACING.md,
-  },
+    marginRight: SPACING.md},
   headerTitle: {
     ...TYPOGRAPHY.h3,
-    color: COLORS.textPrimary,
-  },
+    color: COLORS.textPrimary},
   container: {
     flex: 1,
-    backgroundColor: COLORS.backgroundNeutral,
-  },
+    backgroundColor: COLORS.backgroundNeutral},
   listContent: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.lg,
-    paddingBottom: SPACING['4xl'],
-  },
+    paddingBottom: SPACING['4xl']},
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: SPACING['6xl'],
-  },
+    paddingVertical: SPACING['6xl']},
   emptyTitle: {
     ...TYPOGRAPHY.h4,
     color: COLORS.textPrimary,
     marginTop: SPACING.md,
-    marginBottom: SPACING.xs,
-  },
+    marginBottom: SPACING.xs},
   emptySub: {
     ...TYPOGRAPHY.bodySmall,
     color: COLORS.textSecondary,
     textAlign: 'center',
-    maxWidth: 280,
-  },
-});
+    maxWidth: 280}});

@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import {
+  KeyboardAvoidingView,
   View,
   Text,
   StyleSheet,
   ScrollView,
   Alert,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   Modal,
   Platform,
-  Switch,
-} from 'react-native';
+  Switch} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
@@ -122,26 +122,22 @@ export const ProfileScreen = ({ navigation }: any) => {
             setName(user?.name || '');
             setPhone(user?.phone || '');
             setEditProfileVisible(true);
-          },
-        },
+          }},
         {
           icon: 'lock-closed-outline' as const,
           iconBg: COLORS.primaryLight,
           iconColor: COLORS.primary,
           label: 'Password & Security',
           sub: 'Change password and secure login',
-          onPress: () => setChangePasswordVisible(true),
-        },
+          onPress: () => setChangePasswordVisible(true)},
         {
           icon: 'notifications-outline' as const,
           iconBg: '#FEFCE8', // Yellow tint
           iconColor: COLORS.warning,
           label: 'Notification Preferences',
           sub: 'Manage push, email & SMS alerts',
-          onPress: () => setNotifSettingsVisible(true),
-        },
-      ],
-    },
+          onPress: () => setNotifSettingsVisible(true)},
+      ]},
     {
       title: 'Support & Info',
       items: [
@@ -151,24 +147,22 @@ export const ProfileScreen = ({ navigation }: any) => {
           iconColor: COLORS.textSecondary,
           label: 'City Hotline & Support',
           sub: '1800-CIVIC-CARE • 8AM - 8PM',
-          onPress: handleHelpSupport,
-        },
+          onPress: handleHelpSupport},
         {
           icon: 'information-circle-outline' as const,
           iconBg: COLORS.borderLight,
           iconColor: COLORS.textSecondary,
           label: 'About CivicTrack Platform',
           sub: 'Version 2.0.0 • AI-Driven Civic Tech',
-          onPress: handleAbout,
-        },
-      ],
-    },
+          onPress: handleAbout},
+      ]},
   ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScrollView
         style={styles.container}
         contentContainerStyle={isDesktop ? styles.desktopContent : styles.mobileContent}
@@ -283,6 +277,7 @@ export const ProfileScreen = ({ navigation }: any) => {
 
         <Animated.Text entering={FadeIn.delay(600)} style={styles.footerVersion}>CivicTrack v2.0.0 • AI-Powered Civic Management</Animated.Text>
       </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Edit Profile Modal */}
       <Modal visible={editProfileVisible} animationType="fade" transparent>
@@ -449,15 +444,13 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexShrink: 0,
     minWidth: 120,
-    padding: 0,
-  },
+    padding: 0},
   statCardDesktop: {
     flexBasis: Platform.OS === 'web' ? ('calc(25% - 9px)' as any) : '22%',
     flexGrow: 1,
     flexShrink: 0,
     minWidth: 120,
-    padding: 0,
-  },
+    padding: 0},
   statCardContent: { padding: SPACING.lg, alignItems: 'center', justifyContent: 'center' },
   statValue: { ...TYPOGRAPHY.h2, marginBottom: 4 },
   statLabel: { ...TYPOGRAPHY.caption, fontWeight: '700', color: COLORS.textMuted, textTransform: 'uppercase' },
@@ -477,5 +470,4 @@ const styles = StyleSheet.create({
   modalTitle: { ...TYPOGRAPHY.h4, color: COLORS.textPrimary },
   toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: SPACING.md },
   toggleTitle: { ...TYPOGRAPHY.bodySmall, fontWeight: '700', color: COLORS.textPrimary, marginBottom: 2 },
-  toggleSubtitle: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary },
-});
+  toggleSubtitle: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary }});

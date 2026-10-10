@@ -175,6 +175,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+    minWidth: 0,
     ...TYPOGRAPHY.input,
     paddingVertical: Platform.OS === 'ios' ? 12 : 10,
     minHeight: 44,
