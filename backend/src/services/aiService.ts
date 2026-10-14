@@ -39,7 +39,7 @@ export const detectCivicIssue = async (filePath: string): Promise<PredictRespons
         headers: {
           ...formData.getHeaders(),
         },
-        timeout: 15000, // 15 seconds timeout
+        timeout: 45000, // Allow CPU-based inference across the four models on Render.
       }
     );
 

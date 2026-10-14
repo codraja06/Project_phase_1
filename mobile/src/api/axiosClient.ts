@@ -3,6 +3,15 @@ import { API_BASE_URL } from '../constants/config';
 import { storageService } from '../services/storage';
 
 let onUnauthorizedCallback: (() => void) | null = null;
+const requestStarts = new WeakMap<object, number>();
+
+const safeEndpoint = (baseURL: string | undefined, path: string | undefined): string =>
+  `${baseURL || API_BASE_URL}${(path || '').split('?')[0]}`.replace(/\/\/[^/@]+@/, '//');
+
+const elapsed = (config: object | undefined): string => {
+  const start = config ? requestStarts.get(config) : undefined;
+  return start === undefined ? 'unknown duration' : `${Date.now() - start}ms`;
+};
 
 export const setOnUnauthorizedCallback = (cb: () => void) => {
   onUnauthorizedCallback = cb;
@@ -43,9 +52,10 @@ axiosClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // 3. Safe diagnostic log in development (no sensitive headers or request body logged)
+    requestStarts.set(config, Date.now());
+    // Do not log credentials, tokens, request bodies, or query parameters.
     if (__DEV__) {
-      console.log(`[API Request] ${config.method?.toUpperCase()} ${config.baseURL || ''}${config.url || ''}`);
+      console.log(`[API Request] ${config.method?.toUpperCase()} ${safeEndpoint(config.baseURL, config.url)}`);
     }
 
     return config;
@@ -56,11 +66,14 @@ axiosClient.interceptors.request.use(
 // Response interceptor: structured error handling and friendly diagnostic messages
 axiosClient.interceptors.response.use(
   (response) => {
+    if (__DEV__) {
+      console.log(`[API Response] ${response.status} ${safeEndpoint(response.config.baseURL, response.config.url)} (${elapsed(response.config)})`);
+    }
     // Express API wraps responses in { success, data, message }
     return response.data;
   },
   async (error: AxiosError<any>) => {
-    const attemptedUrl = `${error.config?.baseURL || API_BASE_URL}${error.config?.url || ''}`;
+    const attemptedUrl = safeEndpoint(error.config?.baseURL, error.config?.url);
     const isLoginEndpoint = error.config?.url?.includes('/auth/login');
 
     let userFriendlyMessage = 'An unexpected error occurred. Please try again.';
@@ -79,7 +92,9 @@ axiosClient.interceptors.response.use(
       }
 
       // Extract meaningful server error message
-      if (responseData?.message) {
+      if (status >= 500) {
+        userFriendlyMessage = 'Backend server encountered an error. Please try again later.';
+      } else if (typeof responseData?.message === 'string') {
         userFriendlyMessage = responseData.message;
       } else if (Array.isArray(responseData?.errors) && responseData.errors.length > 0) {
         userFriendlyMessage = responseData.errors
@@ -95,26 +110,25 @@ axiosClient.interceptors.response.use(
         userFriendlyMessage = 'Access denied. You do not have permission to perform this action.';
       } else if (status === 404) {
         userFriendlyMessage = 'Requested service endpoint was not found (404).';
-      } else if (status >= 500) {
-        userFriendlyMessage = 'Backend server encountered an error. Please try again later.';
       } else {
         userFriendlyMessage = `Server responded with status ${status}.`;
       }
 
       if (__DEV__) {
-        console.warn(`[API Response Error] ${status} ${attemptedUrl}:`, userFriendlyMessage);
+        console.warn(`[API Response Error] ${status} ${attemptedUrl} (${elapsed(error.config)}):`, userFriendlyMessage);
       }
     } else if (error.code === 'ECONNABORTED' || error.message?.toLowerCase().includes('timeout')) {
-      userFriendlyMessage = `Connection timed out (15s). The server at ${error.config?.baseURL || API_BASE_URL} is taking too long to respond.`;
+      const timeoutSeconds = Math.round((error.config?.timeout || 15000) / 1000);
+      userFriendlyMessage = `Connection to the backend timed out after ${timeoutSeconds} seconds. Open Server Settings to test the address.`;
       if (__DEV__) {
-        console.warn(`[API Timeout] Target: ${attemptedUrl}`);
+        console.warn(`[API Timeout] ${attemptedUrl} (${elapsed(error.config)})`);
       }
     } else if (error.request) {
       // Native Android / iOS network error where no HTTP response was received
       const targetBase = error.config?.baseURL || API_BASE_URL;
-      userFriendlyMessage = `Cannot reach backend server at ${targetBase}. Please ensure your backend is running on port 5000 and your phone is connected to the same Wi-Fi network.`;
+      userFriendlyMessage = `Cannot reach backend server at ${targetBase}. Open Server Settings to test the address and check that the backend is running.`;
       if (__DEV__) {
-        console.warn(`[API Network Failure] Could not connect to: ${attemptedUrl} (${error.code || error.message})`);
+        console.warn(`[API Network Failure] ${attemptedUrl} (${elapsed(error.config)}; ${error.code || error.message}; no HTTP response)`);
       }
     } else if (error.message) {
       userFriendlyMessage = error.message;

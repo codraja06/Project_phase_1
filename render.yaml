@@ -1,0 +1,42 @@
+# Review the paid compute plans before creating this Blueprint in Render.
+# MongoDB Atlas and Cloudinary are configured separately; no credentials belong here.
+services:
+  - type: pserv
+    name: civictrack-ai
+    runtime: python
+    region: singapore
+    plan: 1c-2g
+    rootDir: ai-service
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PORT
+        value: "10000"
+
+  - type: web
+    name: civictrack-api
+    runtime: node
+    region: singapore
+    plan: 0.5c-512mb
+    rootDir: backend
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: AI_SERVICE_HOSTPORT
+        fromService:
+          name: civictrack-ai
+          type: pserv
+          property: hostport
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false

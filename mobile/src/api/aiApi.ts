@@ -32,7 +32,7 @@ export const aiApi = {
     // envelope = { success: true, message: "...", data: { success: true, detections: [...] } }
     const envelope: any = await axiosClient.post(ENDPOINTS.AI.DETECT, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 30000,
+      timeout: 60000,
     });
 
     // envelope.data contains the inner AI result payload: { success, detections, message? }

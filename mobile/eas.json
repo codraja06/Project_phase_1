@@ -9,14 +9,26 @@
         "buildType": "apk"
       },
       "env": {
+        "CIVICTRACK_ALLOW_LOCAL_HTTP": "true",
         "EXPO_PUBLIC_API_URL": "http://192.168.29.44:5000/api",
         "EXPO_PUBLIC_MAP_PROVIDER": "osm",
         "EXPO_PUBLIC_LOCATION_TIMEOUT": "15000"
       }
     },
     "production": {
+      "environment": "production",
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://192.168.29.44:5000/api",
+        "EXPO_PUBLIC_MAP_PROVIDER": "osm",
+        "EXPO_PUBLIC_LOCATION_TIMEOUT": "15000"
+      }
+    },
+    "render-apk": {
+      "environment": "production",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
         "EXPO_PUBLIC_MAP_PROVIDER": "osm",
         "EXPO_PUBLIC_LOCATION_TIMEOUT": "15000"
       }

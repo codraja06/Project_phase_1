@@ -3,6 +3,8 @@
 > **Final-Year Engineering Project — Phase 1**
 > Detects civic issues (potholes, road damage, garbage) from photos using YOLO object detection, pins them on a GPS map, submits them to a city authority, and enables the authority to track and resolve complaints through a status pipeline.
 
+For internet deployment, follow the [Render deployment procedure](RENDER_DEPLOYMENT.md). It covers the API, private AI service, MongoDB Atlas, Cloudinary, and a new Android APK.
+
 ---
 
 ## Architecture
@@ -33,7 +35,7 @@
 | **Mobile** | React Native, Expo 51, TypeScript, React Navigation, Zod, React Hook Form, Expo Camera, Expo Location, react-native-maps, Axios |
 | **Backend** | Node.js, Express, TypeScript, JWT, bcrypt, Helmet, CORS, Rate Limiting, Zod, Multer, Mongoose |
 | **Database** | MongoDB (local or Atlas) |
-| **Image Storage** | Cloudinary (with local fallback) |
+| **Image Storage** | Cloudinary in production (local fallback during development) |
 | **AI Service** | Python, FastAPI, Ultralytics YOLOv8, OpenCV, Pillow |
 
 ---

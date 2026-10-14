@@ -23,7 +23,6 @@
     },
     "android": {
       "package": "com.yourorganization.swacchaai",
-      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"

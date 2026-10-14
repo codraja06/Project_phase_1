@@ -10,7 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { FormDialog } from './FormDialog';
 import { storageService } from '../services/storage';
-import { DEFAULT_LAN_URL, API_BASE_URL } from '../constants/config';
+import { API_BASE_URL } from '../constants/config';
 import { COLORS } from '../theme/colors';
 
 interface ServerConfigModalProps {
@@ -41,19 +41,19 @@ export const ServerConfigModal: React.FC<ServerConfigModalProps> = ({
   const loadCurrentUrl = async () => {
     try {
       const custom = await storageService.getCustomServerUrl();
-      setUrl(custom || API_BASE_URL || DEFAULT_LAN_URL);
+      setUrl(custom || API_BASE_URL);
       setTestResult(null);
     } catch {
-      setUrl(DEFAULT_LAN_URL);
+      setUrl(API_BASE_URL);
     }
   };
 
   const handleTestConnection = async () => {
     const target = url.trim().replace(/\/$/, '');
-    if (!target) {
+    if (!/^https?:\/\/[^\s/@?#]+(?::\d+)?\/api$/i.test(target)) {
       setTestResult({
         success: false,
-        message: 'Please enter a valid backend server URL.',
+        message: 'Enter the full backend address ending in /api, such as http://192.168.1.10:5000/api.',
       });
       return;
     }
@@ -62,17 +62,15 @@ export const ServerConfigModal: React.FC<ServerConfigModalProps> = ({
     setTestResult(null);
     const start = Date.now();
 
+    const healthUrl = `${target}/health`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
     try {
-      // Test the /health endpoint or root health
-      const healthUrl = target.endsWith('/api') ? `${target}/health` : `${target}/api/health`;
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 6000);
 
       const response = await fetch(healthUrl, {
         method: 'GET',
         signal: controller.signal,
       });
-      clearTimeout(timeoutId);
 
       const latency = Date.now() - start;
 
@@ -100,13 +98,17 @@ export const ServerConfigModal: React.FC<ServerConfigModalProps> = ({
         message: `Cannot reach server: ${errorMsg}. Check IP and Wi-Fi.`,
       });
     } finally {
+      clearTimeout(timeoutId);
       setTesting(false);
     }
   };
 
   const handleSave = async () => {
     const clean = url.trim().replace(/\/$/, '');
-    if (!clean) return;
+    if (!/^https?:\/\/[^\s/@?#]+(?::\d+)?\/api$/i.test(clean)) {
+      setTestResult({ success: false, message: 'Enter a valid backend address ending in /api before saving.' });
+      return;
+    }
 
     try {
       await storageService.setCustomServerUrl(clean);
@@ -122,10 +124,10 @@ export const ServerConfigModal: React.FC<ServerConfigModalProps> = ({
   const handleResetDefault = async () => {
     try {
       await storageService.removeCustomServerUrl();
-      setUrl(DEFAULT_LAN_URL);
+      setUrl(API_BASE_URL);
       setTestResult(null);
       if (onSaved) {
-        onSaved(DEFAULT_LAN_URL);
+        onSaved(API_BASE_URL);
       }
     } catch (err) {
       console.error('Failed to reset server URL:', err);
@@ -161,7 +163,7 @@ export const ServerConfigModal: React.FC<ServerConfigModalProps> = ({
         />
 
         <Text style={styles.hint}>
-          Default LAN URL: <Text style={styles.hintBold}>{DEFAULT_LAN_URL}</Text>
+          Build default URL: <Text style={styles.hintBold}>{API_BASE_URL}</Text>
         </Text>
 
         {testResult && (

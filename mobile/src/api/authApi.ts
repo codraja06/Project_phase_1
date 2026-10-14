@@ -14,6 +14,9 @@ export const authApi = {
 
   async login(data: any): Promise<{ user: User; token: string }> {
     const envelope: any = await axiosClient.post(ENDPOINTS.AUTH.LOGIN, data);
+    if (envelope?.success !== true || !envelope.data?.user || typeof envelope.data.token !== 'string' || !envelope.data.token) {
+      throw new Error('Login service returned an invalid response. Please try again later.');
+    }
     return envelope.data; // { user, token }
   },
 

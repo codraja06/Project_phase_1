@@ -17,10 +17,10 @@ export const env = {
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || '',
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || '',
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || '',
-  AI_SERVICE_URL: process.env.AI_SERVICE_URL || 'http://127.0.0.1:8000',
+  AI_SERVICE_URL: process.env.AI_SERVICE_URL || (process.env.AI_SERVICE_HOSTPORT ? `http://${process.env.AI_SERVICE_HOSTPORT}` : 'http://127.0.0.1:8000'),
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
   GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY || '',
   // Set this to your machine's LAN IP so local image URLs are accessible from physical devices
   // Example: BACKEND_PUBLIC_URL=http://192.168.1.105:5000
-  BACKEND_PUBLIC_URL: process.env.BACKEND_PUBLIC_URL || 'http://127.0.0.1:5000',
+  BACKEND_PUBLIC_URL: process.env.BACKEND_PUBLIC_URL || process.env.RENDER_EXTERNAL_URL || 'http://127.0.0.1:5000',
 };

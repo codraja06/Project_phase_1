@@ -2,6 +2,7 @@ import { cloudinary } from '../config/cloudinary';
 import { env } from '../config/env';
 import fs from 'fs';
 import path from 'path';
+import { ApiError } from '../utils/apiError';
 
 export const uploadToCloudinary = async (filePath: string): Promise<string> => {
   try {
@@ -19,11 +20,20 @@ export const uploadToCloudinary = async (filePath: string): Promise<string> => {
       return result.secure_url;
     }
 
-    // Fallback: return accessible local backend static URL
+    if (env.NODE_ENV === 'production') {
+      throw new ApiError(503, 'Image storage is not configured.');
+    }
+
+    // Local development fallback: return accessible backend static URL
     // BACKEND_PUBLIC_URL should be set to your machine's LAN IP for device testing
     const filename = path.basename(filePath);
     return `${env.BACKEND_PUBLIC_URL}/uploads/${filename}`;
   } catch (error) {
+    if (env.NODE_ENV === 'production') {
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      console.error('Cloudinary upload error:', error);
+      throw new ApiError(503, 'Image storage is temporarily unavailable. Please try again.');
+    }
     console.error('Cloudinary upload error, falling back to local storage URL:', error);
     const filename = path.basename(filePath);
     return `${env.BACKEND_PUBLIC_URL}/uploads/${filename}`;
