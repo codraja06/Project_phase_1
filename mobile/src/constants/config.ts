@@ -1,21 +1,29 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
-// Intelligent host resolution for Web, Physical Devices (LAN/Tunnel), and Emulators
-const getBaseUrl = (): string => {
-  const envUrl = process.env.EXPO_PUBLIC_API_URL;
+export const DEFAULT_LAN_URL = 'http://192.168.29.44:5000/api';
 
-  if (envUrl && !envUrl.includes('YOUR_LAN_IP')) return envUrl.replace(/\/$/, '');
+// Intelligent host resolution for Web, Physical Devices (LAN/Tunnel), and Emulators
+export const getBaseUrl = (): string => {
+  const envUrl = process.env.EXPO_PUBLIC_API_URL || (Constants.expoConfig?.extra?.apiUrl as string);
+
+  if (
+    envUrl &&
+    !envUrl.includes('YOUR_LAN_IP') &&
+    !envUrl.includes('YOUR_COMPUTER_LAN_IP') &&
+    !envUrl.includes('trycloudflare.com')
+  ) {
+    return envUrl.replace(/\/$/, '');
+  }
 
   if (Platform.OS === 'web') {
     if (typeof window !== 'undefined' && window.location?.hostname) {
       return `${window.location.protocol}//${window.location.hostname}:5000/api`;
     }
-    return envUrl && !envUrl.includes('YOUR_LAN_IP') ? envUrl : 'http://127.0.0.1:5000/api';
+    return DEFAULT_LAN_URL;
   }
 
-  // 1. Dynamic host resolution from Expo development server
-  // When running Expo Go, Constants.expoConfig?.hostUri contains the IP:Port of the dev machine
+  // 1. Dynamic host resolution from Expo development server (Expo Go)
   const debuggerHost =
     Constants.expoConfig?.hostUri ||
     (Constants as any).manifest2?.extra?.expoGo?.debuggerHost ||
@@ -29,13 +37,8 @@ const getBaseUrl = (): string => {
     }
   }
 
-  // 2. Environment variable if explicitly defined and not a loopback address on device
-  if (envUrl && !envUrl.includes('YOUR_LAN_IP') && !envUrl.includes('127.0.0.1')) {
-    return envUrl;
-  }
-
-  // 3. Known WiFi LAN IP of this development machine
-  return Platform.OS === 'android' ? 'http://10.0.2.2:5000/api' : 'http://127.0.0.1:5000/api';
+  // 2. Fallback for physical devices and standalone APKs
+  return DEFAULT_LAN_URL;
 };
 
 export const API_BASE_URL = getBaseUrl();

@@ -26,6 +26,7 @@ import { BORDER_RADIUS } from '../../theme/radius';
 import { SPACING } from '../../theme/spacing';
 import { TYPOGRAPHY } from '../../theme/typography';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
+import { ServerConfigModal } from '../../components/ServerConfigModal';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'AuthorityLogin'>;
 
@@ -36,6 +37,7 @@ export const AuthorityLoginScreen: React.FC<Props> = ({ navigation }) => {
   const [resumeLoading, setResumeLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [serverModalVisible, setServerModalVisible] = useState(false);
 
   const {
     control,
@@ -105,7 +107,7 @@ export const AuthorityLoginScreen: React.FC<Props> = ({ navigation }) => {
   const isOfficerSaved = savedSession?.user && (savedSession.user.role || '').toLowerCase() === 'authority';
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.authorityDark} />
       
       <KeyboardAvoidingView
@@ -126,7 +128,7 @@ export const AuthorityLoginScreen: React.FC<Props> = ({ navigation }) => {
                 </Text>
               </Animated.View>
               <Animated.View entering={FadeInUp.delay(500)} style={styles.brandingFooter}>
-                <Text style={styles.brandingFooterText}>Secure 256-Bit TLS Connection • CivicTrack v2.0</Text>
+                <Text style={styles.brandingFooterText}>Municipal officer access • CivicTrack v1.0</Text>
               </Animated.View>
             </View>
 
@@ -148,8 +150,15 @@ export const AuthorityLoginScreen: React.FC<Props> = ({ navigation }) => {
 
                 {errorMessage && (
                   <Animated.View entering={FadeIn.duration(300)} style={styles.errorBanner}>
-                    <Ionicons name="alert-circle" size={18} color={COLORS.error} style={{ marginRight: SPACING.xs }} />
-                    <Text style={styles.errorBannerText}>{errorMessage}</Text>
+                    <Ionicons name="alert-circle" size={18} color={COLORS.error} style={{ marginRight: SPACING.xs, marginTop: 2 }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.errorBannerText}>{errorMessage}</Text>
+                      {errorMessage.toLowerCase().includes('server') && (
+                        <TouchableOpacity onPress={() => setServerModalVisible(true)} style={{ marginTop: 4 }}>
+                          <Text style={styles.errorActionLink}>Check or change server address →</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
                   </Animated.View>
                 )}
 
@@ -253,13 +262,29 @@ export const AuthorityLoginScreen: React.FC<Props> = ({ navigation }) => {
               </Animated.View>
               <Animated.Text entering={FadeInDown.delay(300)} style={styles.mobileTitle}>Operations Command</Animated.Text>
               <Animated.Text entering={FadeInDown.delay(400)} style={styles.mobileSubtitle}>Municipal authentication required.</Animated.Text>
+              <TouchableOpacity
+                onPress={() => setServerModalVisible(true)}
+                style={styles.serverPillBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Server connection settings"
+              >
+                <Ionicons name="server-outline" size={13} color="rgba(255,255,255,0.8)" style={{ marginRight: 5 }} />
+                <Text style={styles.serverPillText}>Server Settings</Text>
+              </TouchableOpacity>
             </View>
 
             <View style={styles.mobileBody}>
               {errorMessage && (
                 <Animated.View entering={FadeIn.duration(300)} style={styles.errorBanner}>
-                  <Ionicons name="alert-circle" size={18} color={COLORS.error} style={{ marginRight: SPACING.xs }} />
-                  <Text style={styles.errorBannerText}>{errorMessage}</Text>
+                  <Ionicons name="alert-circle" size={18} color={COLORS.error} style={{ marginRight: SPACING.xs, marginTop: 2 }} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.errorBannerText}>{errorMessage}</Text>
+                    {errorMessage.toLowerCase().includes('server') && (
+                      <TouchableOpacity onPress={() => setServerModalVisible(true)} style={{ marginTop: 4 }}>
+                        <Text style={styles.errorActionLink}>Check or change server address →</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
                 </Animated.View>
               )}
 
@@ -342,6 +367,7 @@ export const AuthorityLoginScreen: React.FC<Props> = ({ navigation }) => {
           </ScrollView>
         )}
       </KeyboardAvoidingView>
+      <ServerConfigModal visible={serverModalVisible} onClose={() => setServerModalVisible(false)} />
     </SafeAreaView>
   );
 };
@@ -365,8 +391,8 @@ const styles = StyleSheet.create({
   authSubtitle: { ...TYPOGRAPHY.body, color: COLORS.textSecondary, marginBottom: SPACING['4xl'] },
   
   // Mobile
-  mobileContainer: { flexGrow: 1, backgroundColor: COLORS.background },
-  mobileHeader: { backgroundColor: COLORS.authorityDark, padding: SPACING['3xl'], paddingTop: Platform.OS === 'ios' ? SPACING['5xl'] : SPACING['6xl'], paddingBottom: SPACING['5xl'], borderBottomLeftRadius: 32, borderBottomRightRadius: 32, alignItems: 'center' },
+  mobileContainer: { flexGrow: 1, backgroundColor: COLORS.background, paddingBottom: SPACING['4xl'] },
+  mobileHeader: { backgroundColor: COLORS.authorityDark, padding: SPACING['3xl'], paddingTop: SPACING.xl, paddingBottom: SPACING['4xl'], borderBottomLeftRadius: 32, borderBottomRightRadius: 32, alignItems: 'center' },
   backBtnMobile: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING['3xl'], backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm, borderRadius: BORDER_RADIUS.xl, alignSelf: 'flex-start', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
   backBtnTextMobile: { ...TYPOGRAPHY.caption, color: '#FFFFFF', fontWeight: '700', marginLeft: SPACING.xs },
   mobileTitle: { ...TYPOGRAPHY.h1, color: '#FFFFFF', marginBottom: SPACING.xs },
@@ -374,7 +400,29 @@ const styles = StyleSheet.create({
   mobileBody: { padding: SPACING['2xl'], marginTop: -20 },
 
   // Shared
-  errorBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.errorLight, padding: SPACING.lg, borderRadius: BORDER_RADIUS.md, marginBottom: SPACING.xl, borderWidth: 1, borderColor: COLORS.errorBorder },
+  serverPillBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    paddingVertical: 5,
+    paddingHorizontal: 12,
+    borderRadius: BORDER_RADIUS.full,
+    marginTop: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.25)',
+  },
+  serverPillText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  errorActionLink: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.primary,
+    textDecorationLine: 'underline',
+  },
+  errorBanner: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: COLORS.errorLight, padding: SPACING.lg, borderRadius: BORDER_RADIUS.md, marginBottom: SPACING.xl, borderWidth: 1, borderColor: COLORS.errorBorder },
   errorBannerText: { ...TYPOGRAPHY.caption, color: COLORS.errorDark, flex: 1, fontWeight: '600' },
   savedSessionCard: { backgroundColor: COLORS.backgroundNeutral, borderColor: COLORS.borderLight, marginBottom: SPACING['3xl'] },
   savedSessionContent: { flexDirection: 'row', alignItems: 'center', padding: SPACING.xl },

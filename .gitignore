@@ -75,3 +75,24 @@ Desktop.ini
 # ── Coverage / Test Output ─────────────────────────────────────────────────
 coverage/
 .nyc_output/
+
+# Reproducible verification bundles; retain the small QA screenshots and results.
+mobile/tests/artifacts/android-export/
+mobile/tests/artifacts/final-export/
+
+# ── Agent / Assistant Junctions & Caches (Do not commit symlinks) ───────────
+.agents/
+.bob/
+.claude/
+.codeartsdoer/
+.codebuddy/
+.grok/
+.hermes/
+.kimchi/
+.mcpjam/
+.playwright-mcp/
+.zencoder/
+skills/
+skills-lock.json
+data/skills/
+.audit-*.py

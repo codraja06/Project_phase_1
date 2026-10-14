@@ -39,7 +39,7 @@ export const CivicTrackLogo: React.FC<CivicTrackLogoProps> = ({
 
       {showText && (
         <View style={styles.textContainer}>
-          <Text style={[styles.title, { fontSize: titleSize }]}>CivicTrack</Text>
+          <Text style={[styles.title, { fontSize: titleSize }]}>Civic Track</Text>
           {showTagline && (
             <View style={styles.taglineWrapper}>
               <Text style={styles.taglineLine1}>Cleaner Cities</Text>

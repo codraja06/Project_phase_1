@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useComplaintSummary } from '../../hooks/useComplaintSummary';
+import React, { useState, useEffect } from 'react';
 import {
   KeyboardAvoidingView,
   View,
@@ -20,6 +22,8 @@ import { Input, PasswordInput } from '../../components/Input';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
+import { FormDialog } from '../../components/FormDialog';
+import { showMessage } from '../../utils/showMessage';
 import { ConfirmationDialog } from '../../components/ConfirmationDialog';
 import { COLORS } from '../../theme/colors';
 import { BORDER_RADIUS } from '../../theme/radius';
@@ -33,6 +37,9 @@ export const ProfileScreen = ({ navigation }: any) => {
   const { user, logout, updateUser } = useAuth();
 
   // Modals
+  const { complaints, loading: statsLoading, error: statsError, refresh: refreshStats } = useComplaintSummary('citizen');
+  const count = (status?: string) => statsLoading || statsError ? '—' : String(status ? complaints.filter(c => c.status === status).length : complaints.length);
+
   const [editProfileVisible, setEditProfileVisible] = useState(false);
   const [changePasswordVisible, setChangePasswordVisible] = useState(false);
   const [notifSettingsVisible, setNotifSettingsVisible] = useState(false);
@@ -53,15 +60,31 @@ export const ProfileScreen = ({ navigation }: any) => {
   const [emailAlertsEnabled, setEmailAlertsEnabled] = useState(true);
   const [smsAlertsEnabled, setSmsAlertsEnabled] = useState(false);
 
+  const preferencesKey = `notification-preferences:${user?._id || user?.email}`;
+  useEffect(() => {
+    let active = true;
+    AsyncStorage.getItem(preferencesKey).then(value => {
+      if (!value || !active) return;
+      const settings = JSON.parse(value); setPushEnabled(Boolean(settings.push)); setEmailAlertsEnabled(Boolean(settings.email)); setSmsAlertsEnabled(Boolean(settings.sms));
+    }).catch(() => showMessage('Preferences unavailable', 'Please save your notification preferences again.'));
+    return () => { active = false; };
+  }, [preferencesKey]);
+  const savePreferences = async () => {
+    try {
+      await AsyncStorage.setItem(preferencesKey, JSON.stringify({ push: pushEnabled, email: emailAlertsEnabled, sms: smsAlertsEnabled }));
+      setNotifSettingsVisible(false);
+      showMessage('Preferences saved on this device', 'Push, email and SMS delivery require municipal notification services, which are not configured yet.');
+    } catch { showMessage('Unable to save preferences', 'Please retry.'); }
+  };
   const handleUpdateProfile = async () => {
     try {
       setUpdatingProfile(true);
       const updated = await authApi.updateProfile({ name, phone });
       updateUser(updated);
       setEditProfileVisible(false);
-      Alert.alert('Profile Updated', 'Your profile details have been successfully saved.');
+      showMessage('Profile Updated', 'Your profile details have been successfully saved.');
     } catch (error: any) {
-      Alert.alert('Update Failed', error.message || 'Failed to update profile details.');
+      showMessage('Update Failed', error.message || 'Failed to update profile details.');
     } finally {
       setUpdatingProfile(false);
     }
@@ -69,11 +92,11 @@ export const ProfileScreen = ({ navigation }: any) => {
 
   const handleChangePassword = async () => {
     if (!oldPassword || !newPassword) {
-      Alert.alert('Validation Error', 'Please enter both current and new passwords.');
+      showMessage('Validation Error', 'Please enter both current and new passwords.');
       return;
     }
     if (newPassword.length < 6) {
-      Alert.alert('Validation Error', 'New password must be at least 6 characters.');
+      showMessage('Validation Error', 'New password must be at least 6 characters.');
       return;
     }
     try {
@@ -82,25 +105,25 @@ export const ProfileScreen = ({ navigation }: any) => {
       setOldPassword('');
       setNewPassword('');
       setChangePasswordVisible(false);
-      Alert.alert('Security Update', 'Your password has been changed successfully.');
+      showMessage('Security Update', 'Your password has been changed successfully.');
     } catch (error: any) {
-      Alert.alert('Password Change Failed', error.message || 'Incorrect current password.');
+      showMessage('Password Change Failed', error.message || 'Incorrect current password.');
     } finally {
       setUpdatingPassword(false);
     }
   };
 
   const handleHelpSupport = () => {
-    Alert.alert(
+    showMessage(
       'CivicTrack Support & Helpline',
-      'City Civic Care Helpline: 1800-CIVIC-CARE\nEmergency Triage: 112\nEmail: citizen-support@civictrack.city.gov\nAvailable Mon-Sat 8:00 AM - 8:00 PM'
+      'Local support contact has not been configured. Please contact your municipality directly.'
     );
   };
 
   const handleAbout = () => {
-    Alert.alert(
+    showMessage(
       'About CivicTrack',
-      'CivicTrack v2.0.0\nAI-Powered Civic Issue Detection and Smart Complaint Management System.\nEmpowering citizens with YOLOv8 Computer Vision & direct municipal triage integration.'
+      'CivicTrack v1.0.0\nAI-Powered Civic Issue Detection and Smart Complaint Management System.\nEmpowering citizens with YOLOv8 Computer Vision & direct municipal triage integration.'
     );
   };
 
@@ -153,7 +176,7 @@ export const ProfileScreen = ({ navigation }: any) => {
           iconBg: COLORS.borderLight,
           iconColor: COLORS.textSecondary,
           label: 'About CivicTrack Platform',
-          sub: 'Version 2.0.0 • AI-Driven Civic Tech',
+          sub: 'Version 1.0.0 • AI-Driven Civic Tech',
           onPress: handleAbout},
       ]},
   ];
@@ -211,12 +234,19 @@ export const ProfileScreen = ({ navigation }: any) => {
         </Animated.View>
 
         {/* ── Compact Stat Cards ──────────────────────────────────────────── */}
+        {!!statsError && (
+          <View accessibilityRole="alert" style={styles.statsErrorBanner}>
+            <Ionicons name="alert-circle-outline" size={18} color={COLORS.error} style={{ marginRight: SPACING.sm }} />
+            <Text style={styles.statsErrorText}>{statsError}</Text>
+            <Button title="Retry" variant="outline" size="sm" onPress={refreshStats} style={{ marginLeft: 'auto' }} />
+          </View>
+        )}
         <Animated.View entering={FadeInUp.delay(200)} style={styles.statsGrid}>
           {[
-            { label: 'Reports', value: '12', color: COLORS.primary },
-            { label: 'Pending', value: '3', color: COLORS.pending },
-            { label: 'In Progress', value: '1', color: COLORS.inProgress },
-            { label: 'Resolved', value: '8', color: COLORS.resolved },
+            { label: 'Reports', value: count(), color: COLORS.primary },
+            { label: 'Pending', value: count('Pending'), color: COLORS.pending },
+            { label: 'In Progress', value: count('In Progress'), color: COLORS.inProgress },
+            { label: 'Resolved', value: count('Resolved'), color: COLORS.resolved },
           ].map((stat, i) => (
             <Card key={i} style={isDesktop ? styles.statCardDesktop : styles.statCard}>
               <CardContent style={styles.statCardContent}>
@@ -275,17 +305,15 @@ export const ProfileScreen = ({ navigation }: any) => {
           </Card>
         </Animated.View>
 
-        <Animated.Text entering={FadeIn.delay(600)} style={styles.footerVersion}>CivicTrack v2.0.0 • AI-Powered Civic Management</Animated.Text>
+        <Animated.Text entering={FadeIn.delay(600)} style={styles.footerVersion}>CivicTrack v1.0.0 • AI-Powered Civic Management</Animated.Text>
       </ScrollView>
       </KeyboardAvoidingView>
 
       {/* Edit Profile Modal */}
-      <Modal visible={editProfileVisible} animationType="fade" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+      <FormDialog visible={editProfileVisible} onClose={() => setEditProfileVisible(false)}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Edit Profile Information</Text>
-              <TouchableOpacity onPress={() => setEditProfileVisible(false)}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close dialog" onPress={() => setEditProfileVisible(false)} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
                 <Ionicons name="close" size={24} color={COLORS.textSecondary} />
               </TouchableOpacity>
             </View>
@@ -312,17 +340,13 @@ export const ProfileScreen = ({ navigation }: any) => {
               loading={updatingProfile}
               style={{ marginTop: SPACING.sm }}
             />
-          </View>
-        </View>
-      </Modal>
+      </FormDialog>
 
       {/* Change Password Modal */}
-      <Modal visible={changePasswordVisible} animationType="fade" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+      <FormDialog visible={changePasswordVisible} onClose={() => setChangePasswordVisible(false)}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Change Security Password</Text>
-              <TouchableOpacity onPress={() => setChangePasswordVisible(false)}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close dialog" onPress={() => setChangePasswordVisible(false)} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
                 <Ionicons name="close" size={24} color={COLORS.textSecondary} />
               </TouchableOpacity>
             </View>
@@ -348,17 +372,13 @@ export const ProfileScreen = ({ navigation }: any) => {
               loading={updatingPassword}
               style={{ marginTop: SPACING.sm }}
             />
-          </View>
-        </View>
-      </Modal>
+      </FormDialog>
 
       {/* Notification Preferences Modal */}
-      <Modal visible={notifSettingsVisible} animationType="fade" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+      <FormDialog visible={notifSettingsVisible} onClose={() => setNotifSettingsVisible(false)}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Notification Settings</Text>
-              <TouchableOpacity onPress={() => setNotifSettingsVisible(false)}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close dialog" onPress={() => setNotifSettingsVisible(false)} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
                 <Ionicons name="close" size={24} color={COLORS.textSecondary} />
               </TouchableOpacity>
             </View>
@@ -366,7 +386,7 @@ export const ProfileScreen = ({ navigation }: any) => {
             <View style={styles.toggleRow}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.toggleTitle}>Push Notifications</Text>
-                <Text style={styles.toggleSubtitle}>Instant alerts when status changes</Text>
+                <Text style={styles.toggleSubtitle}>Preference only; delivery service not configured</Text>
               </View>
               <Switch value={pushEnabled} onValueChange={setPushEnabled} trackColor={{ false: COLORS.borderStrong, true: COLORS.primary }} />
             </View>
@@ -376,7 +396,7 @@ export const ProfileScreen = ({ navigation }: any) => {
             <View style={styles.toggleRow}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.toggleTitle}>Email Digest</Text>
-                <Text style={styles.toggleSubtitle}>Weekly municipal resolution summaries</Text>
+                <Text style={styles.toggleSubtitle}>Preference only; delivery service not configured</Text>
               </View>
               <Switch value={emailAlertsEnabled} onValueChange={setEmailAlertsEnabled} trackColor={{ false: COLORS.borderStrong, true: COLORS.primary }} />
             </View>
@@ -386,19 +406,17 @@ export const ProfileScreen = ({ navigation }: any) => {
             <View style={styles.toggleRow}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.toggleTitle}>SMS Priority Updates</Text>
-                <Text style={styles.toggleSubtitle}>Direct SMS notifications for emergency hazards</Text>
+                <Text style={styles.toggleSubtitle}>Preference only; delivery service not configured</Text>
               </View>
               <Switch value={smsAlertsEnabled} onValueChange={setSmsAlertsEnabled} trackColor={{ false: COLORS.borderStrong, true: COLORS.primary }} />
             </View>
 
             <Button
               title="Save Preferences"
-              onPress={() => setNotifSettingsVisible(false)}
+              onPress={savePreferences}
               style={{ marginTop: SPACING.lg }}
             />
-          </View>
-        </View>
-      </Modal>
+      </FormDialog>
 
       {/* Logout Confirmation Dialog */}
       <ConfirmationDialog
@@ -422,7 +440,7 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: COLORS.background },
   container: { flex: 1 },
   desktopContent: { padding: SPACING['5xl'], maxWidth: 900, alignSelf: 'center', width: '100%' },
-  mobileContent: { padding: SPACING.lg, paddingBottom: SPACING['5xl'] },
+  mobileContent: { padding: SPACING.lg, paddingBottom: 100 },
   desktopHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING['4xl'] },
   mobileHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING['3xl'], marginTop: SPACING.sm },
   backBtn: { width: 36, height: 36, borderRadius: BORDER_RADIUS.full, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.borderLight, marginRight: SPACING.md },
@@ -438,12 +456,23 @@ const styles = StyleSheet.create({
   badgeRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.xs, flexWrap: 'wrap' },
   profileEmail: { ...TYPOGRAPHY.bodySmall, color: COLORS.textSecondary, fontWeight: '500' },
   profileLocality: { ...TYPOGRAPHY.caption, color: COLORS.textMuted },
+  statsErrorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.errorLight,
+    borderWidth: 1,
+    borderColor: COLORS.errorBorder,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.md,
+    marginBottom: SPACING.lg,
+  },
+  statsErrorText: { ...TYPOGRAPHY.caption, color: COLORS.errorDark, fontWeight: '600', flex: 1 },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.md, marginBottom: SPACING['4xl'] },
   statCard: {
     flexBasis: Platform.OS === 'web' ? ('calc(50% - 6px)' as any) : '47%',
     flexGrow: 1,
     flexShrink: 0,
-    minWidth: 120,
+    minWidth: 100,
     padding: 0},
   statCardDesktop: {
     flexBasis: Platform.OS === 'web' ? ('calc(25% - 9px)' as any) : '22%',

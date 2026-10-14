@@ -1,3 +1,4 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
@@ -6,7 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
-  SafeAreaView,
+
   StatusBar,
   Platform,
   TextInput,
@@ -46,6 +47,8 @@ export const AuthorityDashboardScreen = ({ navigation }: any) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [allComplaints, setAllComplaints] = useState<Complaint[]>([]);
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [stats, setStats] = useState<ComplaintStats>({
     total: 0,
@@ -59,7 +62,7 @@ export const AuthorityDashboardScreen = ({ navigation }: any) => {
 
   const fetchDashboardData = async () => {
     try {
-      setLoading(true);
+      setLoading(true); setError('');
       const res = await authorityApi.getAllComplaints();
       const list = res.complaints || [];
       setAllComplaints(list);
@@ -72,7 +75,7 @@ export const AuthorityDashboardScreen = ({ navigation }: any) => {
         today: 0,
       });
     } catch (error) {
-      console.error('Failed to load authority dashboard data:', error);
+      setError((error as Error).message || 'Reports are unavailable.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -94,7 +97,7 @@ export const AuthorityDashboardScreen = ({ navigation }: any) => {
     let filtered = allComplaints;
     if (activeFilter === 'urgent') {
       filtered = filtered.filter(
-        (c) => c.priority === 'urgent' || c.priority === 'high' || (c.category || '').toLowerCase().includes('pothole')
+        (c) => c.priority === 'urgent' || c.priority === 'high'
       );
     } else if (activeFilter === 'pothole') {
       filtered = filtered.filter(
@@ -109,8 +112,8 @@ export const AuthorityDashboardScreen = ({ navigation }: any) => {
     } else if (activeFilter === 'streetlight') {
       filtered = filtered.filter((c) => (c.category || '').toLowerCase().includes('light'));
     }
-    return filtered;
-  }, [allComplaints, activeFilter]);
+    return filtered.filter(c => `${c.title} ${c.complaintId || c._id} ${c.address}`.toLowerCase().includes(search.trim().toLowerCase()));
+  }, [allComplaints, activeFilter, search]);
 
   const categoryCounts = useMemo(() => {
     let pothole = 0; let garbage = 0; let water = 0; let streetlight = 0;
@@ -124,6 +127,11 @@ export const AuthorityDashboardScreen = ({ navigation }: any) => {
     return { pothole, garbage, water, streetlight };
   }, [allComplaints]);
 
+  const durations = allComplaints.filter(c => c.status === 'Resolved' && c.resolvedAt && Date.parse(c.resolvedAt) >= Date.parse(c.createdAt)).map(c => (Date.parse(c.resolvedAt!) - Date.parse(c.createdAt)) / 3600000);
+  const average = durations.length ? `${(durations.reduce((a,b) => a+b,0) / durations.length).toFixed(1)}h` : '—';
+  const verifiedPct = allComplaints.length ? `${Math.round(allComplaints.filter(c => c.verified).length / allComplaints.length * 100)}%` : '—';
+  if (error) return <View style={{ flex: 1, padding: 24, justifyContent: 'center', gap: 16 }}><Text accessibilityRole="alert">{error}</Text><Button title="Retry" onPress={fetchDashboardData} /></View>;
+
   if (loading && !refreshing) {
     return <LoadingSpinner message="Initializing Command Center..." />;
   }
@@ -131,7 +139,7 @@ export const AuthorityDashboardScreen = ({ navigation }: any) => {
   // ─── Responsive padding ─────────────────────────────────────────────────────
   const screenPadding = isMobile ? (width < 360 ? 12 : 16) : isTablet ? 20 : 24;
   // KPI grid: 2 columns on mobile, 3 on tablet, 6 on desktop
-  const kpiColumns = isMobile ? 2 : isTablet ? 3 : 6;
+  const kpiColumns = isMobile ? 2 : 3;
   const kpiGap = isMobile ? (width < 360 ? 8 : 12) : 12;
 
   const KPI_DATA = [
@@ -140,21 +148,21 @@ export const AuthorityDashboardScreen = ({ navigation }: any) => {
     { label: 'Under Repair', count: stats.inProgress, filter: 'in_progress', color: '#3B82F6', icon: 'construct' as const },
     { label: 'Resolved', count: stats.resolved, filter: 'resolved', color: '#10B981', icon: 'checkmark-circle' as const },
     { label: 'High Priority', count: stats.highPriority || 0, filter: 'urgent', color: '#C91C24', icon: 'alert-circle' as const },
-    { label: "Today's Intake", count: stats.today || 0, filter: 'all', color: '#8B5CF6', icon: 'calendar' as const },
+    { label: "Today's Intake", count: stats.today || 0, filter: 'today', color: '#8B5CF6', icon: 'calendar' as const },
   ];
 
   if (!isDesktop) {
     return (
       <View style={s.safeAreaMobile}>
-        <StatusBar barStyle="light-content" backgroundColor="#0F172A" translucent={false} />
+        <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
         <View style={{ flex: 1, backgroundColor: COLORS.backgroundNeutral }}>
-          <AuthorityMobileHeader 
-            title="Command Center" 
-            subtitle="Triage & dispatch hub" 
+          <AuthorityMobileHeader
+            title="Command Center"
+            subtitle="Triage & dispatch hub"
             rightNode={
-              <TouchableOpacity style={s.mobileHeaderIcon} accessibilityLabel="Notifications">
+              <TouchableOpacity style={s.mobileHeaderIcon} accessibilityLabel="Notifications" accessibilityRole="button" onPress={() => navigation.navigate('AuthorityNotifications')}>
                 <Ionicons name="notifications-outline" size={20} color="#FFFFFF" />
-                <View style={s.notifDot} />
+
               </TouchableOpacity>
             }
           />
@@ -184,23 +192,23 @@ export const AuthorityDashboardScreen = ({ navigation }: any) => {
             <Card style={[s.slaCard, { marginTop: 16 }]}>
               <CardContent style={{ padding: 16 }}>
                 <View style={s.slaHeader}>
-                  <Text style={s.slaTitle}>SLA & Perf</Text>
-                  <Text style={s.slaBadge}>87% On-Time</Text>
+                  <Text style={s.slaTitle}>Resolution & Verification</Text>
+                  <Text style={s.slaBadge}>Service data</Text>
                 </View>
                 <View style={s.slaMetrics}>
                   <View style={s.slaMetric}>
-                    <Text style={s.slaMetricVal}>~24.5h</Text>
+                    <Text style={s.slaMetricVal}>{average}</Text>
                     <Text style={s.slaMetricLabel}>Avg</Text>
                   </View>
                   <View style={s.slaDivider} />
                   <View style={s.slaMetric}>
-                    <Text style={s.slaMetricVal}>&lt; 48h</Text>
-                    <Text style={s.slaMetricLabel}>Target</Text>
+                    <Text style={s.slaMetricVal}>—</Text>
+                    <Text style={s.slaMetricLabel}>SLA unavailable</Text>
                   </View>
                   <View style={s.slaDivider} />
                   <View style={s.slaMetric}>
-                    <Text style={[s.slaMetricVal, { color: COLORS.resolved }]}>94%</Text>
-                    <Text style={s.slaMetricLabel}>Triage</Text>
+                    <Text style={[s.slaMetricVal, { color: COLORS.resolved }]}>{verifiedPct}</Text>
+                    <Text style={s.slaMetricLabel}>Verified</Text>
                   </View>
                 </View>
                 {/* Incident Distribution Mobile */}
@@ -286,15 +294,18 @@ export const AuthorityDashboardScreen = ({ navigation }: any) => {
                   <Ionicons name="search" size={16} color={COLORS.slateMuted} />
                   <TextInput
                     style={s.headerSearchInput}
+                    value={search}
+                    onChangeText={setSearch}
+                    accessibilityLabel="Search incidents"
                     placeholder="Search incidents..."
                     placeholderTextColor={COLORS.slateMuted}
                   />
                 </View>
-                <TouchableOpacity style={s.headerIconBtn} accessibilityLabel="Notifications">
+                <TouchableOpacity style={s.headerIconBtn} accessibilityLabel="Notifications" accessibilityRole="button" onPress={() => navigation.navigate('AuthorityNotifications')}>
                   <Ionicons name="notifications-outline" size={20} color={COLORS.textPrimary} />
-                  <View style={s.notifDot} />
+
                 </TouchableOpacity>
-                <TouchableOpacity style={s.avatarBtn}>
+                <TouchableOpacity style={s.avatarBtn} accessibilityRole="button" accessibilityLabel="Officer profile" onPress={() => navigation.navigate('AuthorityProfile')}>
                   <Ionicons name="person" size={18} color={COLORS.primaryDark} />
                 </TouchableOpacity>
               </View>
@@ -328,23 +339,23 @@ export const AuthorityDashboardScreen = ({ navigation }: any) => {
                 <Card style={s.slaCard}>
                   <CardContent style={{ padding: SPACING.xl }}>
                     <View style={s.slaHeader}>
-                      <Text style={s.slaTitle}>SLA & Operational Performance</Text>
-                      <Text style={s.slaBadge}>87% On-Time SLA</Text>
+                      <Text style={s.slaTitle}>Resolution & Verification</Text>
+                      <Text style={s.slaBadge}>Service data</Text>
                     </View>
                     <View style={s.slaMetrics}>
                       <View style={s.slaMetric}>
-                        <Text style={s.slaMetricVal}>~24.5h</Text>
+                        <Text style={s.slaMetricVal}>{average}</Text>
                         <Text style={s.slaMetricLabel}>Avg Resolution</Text>
                       </View>
                       <View style={s.slaDivider} />
                       <View style={s.slaMetric}>
-                        <Text style={s.slaMetricVal}>&lt; 48h</Text>
-                        <Text style={s.slaMetricLabel}>City Target</Text>
+                        <Text style={s.slaMetricVal}>—</Text>
+                        <Text style={s.slaMetricLabel}>SLA unavailable</Text>
                       </View>
                       <View style={s.slaDivider} />
                       <View style={s.slaMetric}>
-                        <Text style={[s.slaMetricVal, { color: COLORS.resolved }]}>94%</Text>
-                        <Text style={s.slaMetricLabel}>Triage Rate</Text>
+                        <Text style={[s.slaMetricVal, { color: COLORS.resolved }]}>{verifiedPct}</Text>
+                        <Text style={s.slaMetricLabel}>Verified</Text>
                       </View>
                     </View>
                     {/* Incident Distribution */}
@@ -560,7 +571,7 @@ const s = StyleSheet.create({
   // ─── SLA Card ──────────────────────────────────────────────────────────────
   slaCard: { backgroundColor: '#1E293B', borderColor: '#334155', borderRadius: 16, marginBottom: 16 },
   slaHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  slaTitle: { ...TYPOGRAPHY.h4, color: '#F8FAFC' },
+  slaTitle: { flex: 1, marginRight: 8, ...TYPOGRAPHY.h4, color: '#F8FAFC' },
   slaBadge: { ...TYPOGRAPHY.bodySmall, fontWeight: '700', color: '#94A3B8' },
   slaMetrics: {
     flexDirection: 'row',

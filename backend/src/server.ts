@@ -5,7 +5,7 @@ import { env } from './config/env';
 const startServer = async () => {
   await connectDB();
 
-  app.listen(env.PORT, () => {
+  app.listen(Number(env.PORT), '0.0.0.0', () => {
     console.log(`==================================================`);
     console.log(` Civic Complaint Backend API Server`);
     console.log(` Running on port: ${env.PORT}`);
@@ -16,3 +16,4 @@ const startServer = async () => {
 };
 
 startServer();
+

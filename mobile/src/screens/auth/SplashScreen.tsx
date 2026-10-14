@@ -37,7 +37,7 @@ export const SplashScreen: React.FC<Props> = ({ navigation }) => {
         </Animated.View>
 
         <Animated.Text entering={FadeInUp.delay(1000)} style={styles.appName}>
-          CivicTrack
+          Civic Track
         </Animated.Text>
         
         <Animated.View entering={FadeInUp.delay(1100)} style={styles.badgePill}>

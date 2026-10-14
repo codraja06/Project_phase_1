@@ -79,6 +79,8 @@ export const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
 
         <TouchableOpacity
           onPress={handleResetToTemplate}
+          accessibilityRole="button"
+          accessibilityLabel="Reset description template"
           style={styles.resetBtn}
           activeOpacity={0.7}
         >
@@ -94,6 +96,7 @@ export const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
       <View style={[styles.inputWrapper, !!error && styles.inputWrapperError]}>
         <TextInput
           style={styles.textArea}
+          accessibilityLabel="Complaint description"
           multiline
           numberOfLines={4}
           value={description}

@@ -105,6 +105,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   const getTextStyle = (): TextStyle => {
     const base: TextStyle = {
+      flexShrink: 1,
       fontWeight: '700',
       fontSize: size === 'sm' ? 13 : size === 'lg' ? 16 : 14,
       letterSpacing: 0.2,

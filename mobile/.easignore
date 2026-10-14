@@ -1,0 +1,29 @@
+# EAS Build Ignore
+node_modules/
+.expo/
+.expo-shared/
+dist/
+build/
+web-build/
+tests/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Monorepo siblings
+../backend/
+../ai-service/
+../.agents/
+../.bob/
+../.claude/
+../.codeartsdoer/
+../.codebuddy/
+../.grok/
+../.hermes/
+../.kimchi/
+../.mcpjam/
+../.playwright-mcp/
+../.zencoder/
+../skills/
+../data/

@@ -20,6 +20,7 @@ export const googleAuthService = {
     const clientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID;
 
     if (clientId) {
+      const state = Crypto.randomUUID();
       const redirectUri =
         Platform.OS === 'web'
           ? (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:8081')
@@ -32,6 +33,7 @@ export const googleAuthService = {
         `client_id=${encodeURIComponent(clientId)}&` +
         `response_type=token%20id_token&` +
         `scope=openid%20profile%20email&` +
+        `state=${encodeURIComponent(state)}&` +
         `nonce=${Crypto.randomUUID()}&` +
         `redirect_uri=${encodeURIComponent(redirectUri)}`;
 
@@ -45,6 +47,7 @@ export const googleAuthService = {
         // Parse token from fragment (#access_token=... or #id_token=...) or query (?id_token=...)
         const hash = result.url.includes('#') ? result.url.split('#')[1] : (result.url.split('?')[1] || '');
         const params = new URLSearchParams(hash);
+        if (params.get('state') !== state) throw new Error('Google sign-in response could not be verified. Please try again.');
         const idToken = params.get('id_token');
 
         if (!idToken) {

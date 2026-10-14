@@ -23,7 +23,7 @@ export const Timeline: React.FC<TimelineProps> = ({
   const normStatus = (status || '').toString().toLowerCase().trim();
 
   const isSubmittedDone = true;
-  const isVerifiedDone = Boolean(verified || normStatus === 'in progress' || normStatus === 'in_progress' || normStatus === 'resolved');
+  const isVerifiedDone = Boolean(verified);
   const isInProgressDone = normStatus === 'in progress' || normStatus === 'in_progress' || normStatus === 'resolved';
   const isResolvedDone = normStatus === 'resolved';
 
@@ -40,35 +40,36 @@ export const Timeline: React.FC<TimelineProps> = ({
       key: 'verified',
       title: isVerifiedDone ? 'Verified by Municipal Authority' : 'Pending Authority Verification',
       subtitle: isVerifiedDone
-        ? 'Inspected and certified by field officer'
+        ? 'Verification recorded by an officer'
         : 'Awaiting triage and site validation',
       isDone: isVerifiedDone,
       isActive: normStatus === 'pending' && isVerifiedDone,
-      timestamp: isVerifiedDone ? updatedAt : null,
+      timestamp: null,
     },
     {
       key: 'inProgress',
       title: 'Remediation In Progress',
-      subtitle: 'Field team dispatched for repair',
+      subtitle: 'Current complaint status: in progress',
       isDone: isResolvedDone,
       isActive: normStatus === 'in progress' || normStatus === 'in_progress',
-      timestamp: isInProgressDone ? updatedAt : null,
+      timestamp: null,
     },
     {
       key: 'resolved',
       title: isResolvedDone ? 'Remediation Resolved ✓' : 'Remediation Resolved',
       subtitle: isResolvedDone
-        ? 'Work certified complete and defect cleared'
+        ? 'Complaint status recorded as resolved'
         : 'Remediation scheduled upon inspection',
       isDone: isResolvedDone,
       isActive: isResolvedDone,
-      timestamp: resolvedAt || (isResolvedDone ? updatedAt : null),
+      timestamp: resolvedAt || null,
     },
   ];
 
   return (
     <View style={styles.container}>
       <Text style={styles.headerTitle}>Resolution Progress Pipeline</Text>
+      {normStatus === 'rejected' && <Text style={{ color: COLORS.error, marginBottom: 12 }}>This complaint was rejected.</Text>}
 
       {steps.map((step, index) => {
         const isLast = index === steps.length - 1;

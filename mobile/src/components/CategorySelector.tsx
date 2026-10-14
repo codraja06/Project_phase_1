@@ -86,6 +86,9 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
           return (
             <TouchableOpacity
               key={item.key}
+              accessibilityRole="button"
+              accessibilityLabel={item.label}
+              accessibilityState={{ selected: isSelected }}
               style={[
                 styles.categoryCard,
                 isSelected && styles.categoryCardSelected,
@@ -110,7 +113,6 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
                   styles.categoryLabel,
                   isSelected && styles.categoryLabelSelected,
                 ]}
-                numberOfLines={1}
               >
                 {item.label}
               </Text>
@@ -129,6 +131,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
         <View style={styles.customInputContainer}>
           <Text style={styles.customInputLabel}>Specify Custom Category *</Text>
           <TextInput
+            accessibilityLabel="Custom issue category"
             style={styles.customInput}
             placeholder="e.g. Fallen tree branch, damaged footpath..."
             placeholderTextColor={COLORS.textMuted}
@@ -220,8 +223,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   categoryCard: {
-    width: '48%',
+    flexBasis: '47%',
     flexGrow: 1,
+    minWidth: 140,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',

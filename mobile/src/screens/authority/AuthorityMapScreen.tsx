@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import { MapSurface } from '../../components/MapSurface';
+import { useFocusEffect } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { RequestError } from '../../components/RequestError';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Platform,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   FlatList,
@@ -30,34 +33,38 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
   const { toggleMenu } = useMobileMenu();
   const { isDesktop, width, height } = useBreakpoint();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [loadError, setLoadError] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
   const [statusFilter, setStatusFilter] = useState('all');
 
-  useEffect(() => {
-    fetchMapComplaints();
-  }, []);
+  useFocusEffect(useCallback(() => { void fetchMapComplaints(); }, []));
 
   const fetchMapComplaints = async () => {
     try {
-      setLoading(true);
+      setLoading(true); setLoadError('');
       const res = await authorityApi.getAllComplaints();
       setComplaints(res.complaints || []);
       if (res.complaints && res.complaints.length > 0) {
         setSelectedComplaint(res.complaints[0]);
       }
     } catch (error) {
-      console.error('Failed to load map complaints:', error);
+      setLoadError((error as Error).message || 'Please check your connection and retry.');
     } finally {
       setLoading(false);
     }
   };
 
   const filtered = complaints.filter((c) => {
+    if (!Number.isFinite(c.latitude) || !Number.isFinite(c.longitude) || Math.abs(c.latitude) > 90 || Math.abs(c.longitude) > 180) return false;
     if (statusFilter === 'all') return true;
     const s = (c.status || '').toLowerCase().replace(' ', '_');
     return s === statusFilter;
   });
+
+  useEffect(() => {
+    if (!filtered.some(c => c._id === selectedComplaint?._id)) setSelectedComplaint(filtered[0] || null);
+  }, [complaints, statusFilter, selectedComplaint?._id]);
 
   const filterOptions = [
     { label: 'All Pinned', value: 'all' },
@@ -66,6 +73,8 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
     { label: 'Resolved', value: 'resolved' },
   ];
 
+  if (loadError) return <RequestError message={loadError} onRetry={fetchMapComplaints} />;
+
   if (loading) {
     return <LoadingSpinner message="Mapping municipal incidents..." />;
   }
@@ -73,91 +82,8 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
   const centerLat = selectedComplaint ? selectedComplaint.latitude : 12.9716;
   const centerLng = selectedComplaint ? selectedComplaint.longitude : 77.5946;
 
-  // ─── Web OpenStreetMap embed ───────────────────────────────────────────────
-  const renderWebMap = () => {
-    const aspectRatio = width && height ? width / height : 1;
-    const latDelta = 0.015;
-    const lngDelta = 0.015 * Math.max(1, aspectRatio); // Expand longitude delta for wide screens
-    const bbox = `${centerLng - lngDelta},${centerLat - latDelta},${centerLng + lngDelta},${centerLat + latDelta}`;
-    const mapSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${centerLat},${centerLng}`;
-    return (
-      <View style={[styles.mapContainer, { position: 'relative' }]}>
-        <iframe
-          key={`${width}x${height}`}
-          src={mapSrc}
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', border: 'none' } as any}
-          title="City Complaints Map"
-        />
-      </View>
-    );
-  };
+  const renderMap = () => <View style={styles.mapContainer}>{selectedComplaint ? <MapSurface latitude={centerLat} longitude={centerLng} interactive pins={filtered.map(c => ({ id: c._id, latitude: c.latitude, longitude: c.longitude, title: c.title, address: c.address }))} onSelectPin={id => setSelectedComplaint(filtered.find(c => c._id === id) || null)} /> : <View style={styles.fallbackMap}><Text>No reports with valid coordinates match this filter.</Text></View>}</View>;
 
-  // ─── Native React Native Maps ──────────────────────────────────────────────
-  const renderNativeMap = () => {
-    let MapView: any = null;
-    let Marker: any = null;
-    let PROVIDER_DEFAULT: any = null;
-    try {
-      const maps = require('react-native-maps');
-      MapView = maps.default;
-      Marker = maps.Marker;
-      PROVIDER_DEFAULT = maps.PROVIDER_DEFAULT;
-    } catch (e) {}
-
-    if (!MapView) {
-      return (
-        <View style={[styles.mapContainer, styles.fallbackMap]}>
-          <Ionicons name="map-outline" size={48} color={COLORS.primary} />
-          <Text style={styles.fallbackTitle}>
-            {filtered.length} Geographic Incidents Mapped
-          </Text>
-        </View>
-      );
-    }
-
-    return (
-      <Animated.View entering={FadeInUp.delay(200)} style={styles.mapContainer}>
-        <MapView
-          provider={PROVIDER_DEFAULT}
-          style={StyleSheet.absoluteFillObject}
-          initialRegion={{
-            latitude: centerLat,
-            longitude: centerLng,
-            latitudeDelta: 0.03,
-            longitudeDelta: 0.03,
-          }}
-          region={{
-            latitude: centerLat,
-            longitude: centerLng,
-            latitudeDelta: 0.03,
-            longitudeDelta: 0.03,
-          }}
-        >
-          {filtered.map((item, index) => {
-            return (
-              <Marker
-                key={item._id}
-                coordinate={{ latitude: item.latitude, longitude: item.longitude }}
-                title={item.title}
-                description={item.address}
-                onPress={() => setSelectedComplaint(item)}
-              >
-                <Animated.View entering={ZoomIn.delay(300 + (index % 10) * 50)} style={styles.redYellowPinMarker}>
-                  <View style={styles.pinOuterYellowRing}>
-                    <View style={styles.pinInnerRedCircle}>
-                      <Ionicons name="location" size={16} color="#FFFFFF" />
-                    </View>
-                  </View>
-                </Animated.View>
-              </Marker>
-            );
-          })}
-        </MapView>
-      </Animated.View>
-    );
-  };
-
-  // ─── Complaint list item (used in the desktop side panel) ─────────────────
   const renderSidePanelItem = ({ item, index }: { item: Complaint, index: number }) => {
     const isSelected = selectedComplaint?._id === item._id;
     const norm = (item.status || '').toLowerCase();
@@ -273,7 +199,7 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
 
           {/* Right — Map */}
           <View style={styles.desktopMapArea}>
-            {Platform.OS === 'web' ? renderWebMap() : renderNativeMap()}
+            {renderMap()}
           </View>
         </View>
       </SafeAreaView>
@@ -283,11 +209,11 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
   // ─── Mobile / Tablet — original stacked layout ─────────────────────────────
   return (
     <View style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0F172A" translucent={false} />
+      <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
 
       <AuthorityMobileHeader title="Incident Map" />
 
-      <View style={styles.container}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
         <View style={styles.filterSection}>
           <FilterChipGroup
             options={filterOptions}
@@ -297,7 +223,8 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
           />
         </View>
 
-        {Platform.OS === 'web' ? renderWebMap() : renderNativeMap()}
+        <View style={{ height: Math.max(260, Math.min(height * 0.45, 500)) }}>{renderMap()}</View>
+        {filtered.map((item,index) => <View key={item._id}>{renderSidePanelItem({item,index})}</View>)}
 
         {selectedComplaint ? (
           <Animated.View entering={FadeInUp.duration(300)} style={styles.previewCard}>
@@ -331,7 +258,7 @@ export const AuthorityMapScreen = ({ navigation }: any) => {
             </TouchableOpacity>
           </Animated.View>
         ) : null}
-      </View>
+      </ScrollView>
     </View>
   );
 };

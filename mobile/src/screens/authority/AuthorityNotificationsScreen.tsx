@@ -1,3 +1,6 @@
+import { useFocusEffect } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { RequestError } from '../../components/RequestError';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -6,7 +9,6 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
-  SafeAreaView,
   StatusBar,
   Platform,
 } from 'react-native';
@@ -28,33 +30,34 @@ export const AuthorityNotificationsScreen = ({ navigation }: any) => {
   const { toggleMenu } = useMobileMenu();
   const { isDesktop } = useBreakpoint();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [loadError, setLoadError] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchComplaints = useCallback(async () => {
     try {
-      setLoading(true);
+      setLoading(true); setLoadError('');
       const res = await authorityApi.getAllComplaints();
       const sorted = [...(res.complaints || [])].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
       setComplaints(sorted);
     } catch (error) {
-      console.error('Failed to load authority notifications:', error);
+      setLoadError((error as Error).message || 'Please check your connection and retry.');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   }, []);
 
-  useEffect(() => {
-    fetchComplaints();
-  }, [fetchComplaints]);
+  useFocusEffect(useCallback(() => { void fetchComplaints(); }, [fetchComplaints]));
 
   const onRefresh = () => {
     setRefreshing(true);
     fetchComplaints();
   };
+
+  if (loadError) return <RequestError message={loadError} onRetry={fetchComplaints} />;
 
   if (loading && !refreshing) {
     return <LoadingSpinner message="Loading municipal alerts..." />;
@@ -62,7 +65,7 @@ export const AuthorityNotificationsScreen = ({ navigation }: any) => {
 
   const notifications: NotificationData[] = complaints.map((c) => {
     const normStatus = (c.status || '').toLowerCase();
-    const formattedDate = new Date(c.createdAt).toLocaleString('en-GB', {
+    const formattedDate = new Date(c.updatedAt || c.createdAt).toLocaleString('en-GB', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -77,6 +80,7 @@ export const AuthorityNotificationsScreen = ({ navigation }: any) => {
     const priority = c.priority || 'medium';
     const isUrgent = priority === 'urgent' || priority === 'high';
 
+    if (normStatus === 'rejected') return { id: `rejected-${c._id}`, title: `Complaint rejected: ${c.title}`, message: 'The complaint is recorded as rejected.', timestamp: formattedDate, type: 'alert', complaintId: c._id };
     if (normStatus === 'pending') {
       return {
         id: `auth-notif-${c._id}`,
@@ -84,27 +88,24 @@ export const AuthorityNotificationsScreen = ({ navigation }: any) => {
         message: `Submitted by ${citizenName} at ${c.address || 'location recorded'}. Requires review.`,
         timestamp: formattedDate,
         type: isUrgent ? 'alert' : 'system',
-        isRead: false,
         complaintId: c._id,
       };
     } else if (normStatus.includes('progress')) {
       return {
         id: `auth-notif-${c._id}`,
         title: `Work in Progress: ${c.title}`,
-        message: `Field team remediation underway.`,
+        message: `Complaint status is recorded as in progress.`,
         timestamp: formattedDate,
         type: 'in_progress',
-        isRead: true,
         complaintId: c._id,
       };
     } else {
       return {
         id: `auth-notif-${c._id}`,
         title: `Issue Resolved: ${c.title}`,
-        message: `Complaint verified and closed.`,
+        message: `Complaint status is recorded as resolved.`,
         timestamp: formattedDate,
         type: 'resolved',
-        isRead: true,
         complaintId: c._id,
       };
     }
@@ -112,7 +113,7 @@ export const AuthorityNotificationsScreen = ({ navigation }: any) => {
 
   return (
     <View style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0F172A" translucent={false} />
+      <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
 
       {/* Screen Header - Mobile Only */}
       {!isDesktop && (
@@ -196,7 +197,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.lg,
-    paddingBottom: SPACING['5xl'],
+    paddingBottom: 100,
   },
   emptyContainer: {
     alignItems: 'center',

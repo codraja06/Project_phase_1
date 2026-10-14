@@ -1,3 +1,4 @@
+import { RequestError } from '../../components/RequestError';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
@@ -27,6 +28,7 @@ import { LoadingSpinner } from '../../components/LoadingSpinner';
 export const ComplaintHistoryScreen = ({ navigation, route }: any) => {
   const { isDesktop, isWide } = useBreakpoint();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [loadError, setLoadError] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState(route?.params?.search || '');
@@ -34,11 +36,11 @@ export const ComplaintHistoryScreen = ({ navigation, route }: any) => {
 
   const fetchComplaints = async () => {
     try {
-      setLoading(true);
+      setLoading(true); setLoadError('');
       const res = await complaintApi.getMyComplaints();
       setComplaints(res.complaints || []);
     } catch (error) {
-      console.error('Failed to load complaint history:', error);
+      setLoadError((error as Error).message || 'Please check your connection and retry.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -127,6 +129,8 @@ export const ComplaintHistoryScreen = ({ navigation, route }: any) => {
   );
 
   // ─── Desktop/Tablet Layout: wide container + two-column card grid ───────────────
+  if (loadError) return <RequestError message={loadError} onRetry={fetchComplaints} />;
+
   if (isWide) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -358,7 +362,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.lg,
-    paddingBottom: SPACING['5xl']},
+    paddingBottom: 100},
   emptyContainer: {
     padding: SPACING['5xl'],
     alignItems: 'center',

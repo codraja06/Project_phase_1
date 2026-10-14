@@ -66,7 +66,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({ item, onPres
           <Text style={styles.title} numberOfLines={2}>
             {item.title}
           </Text>
-          {!item.isRead && <View style={styles.unreadDot} />}
+          {item.isRead === false && <View style={styles.unreadDot} />}
         </View>
 
         {item.message ? (
@@ -82,7 +82,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({ item, onPres
 
   const containerStyle = [
     styles.container,
-    !item.isRead && styles.containerUnread,
+    item.isRead === false && styles.containerUnread,
     isHovered && isWeb && (styles.containerHovered as any),
   ];
 

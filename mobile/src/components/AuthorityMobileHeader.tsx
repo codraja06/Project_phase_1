@@ -23,11 +23,13 @@ export const AuthorityMobileHeader: React.FC<Props> = ({ title, subtitle, rightN
       style={[
         styles.header, 
         { 
-          paddingTop: Math.max(insets.top, Platform.OS === 'android' ? 16 : 0) + 12 
+          paddingTop: insets.top + 12,
+          paddingLeft: Math.max(insets.left, 16),
+          paddingRight: Math.max(insets.right, 16),
         }
       ]}
     > 
-      <TouchableOpacity onPress={toggleMenu} style={styles.menuBtn} accessibilityLabel="Open Menu">
+      <TouchableOpacity onPress={toggleMenu} style={styles.menuBtn} accessibilityRole="button" accessibilityLabel="Open Menu">
         <Ionicons name="menu" size={24} color="#FFFFFF" />
       </TouchableOpacity>
       

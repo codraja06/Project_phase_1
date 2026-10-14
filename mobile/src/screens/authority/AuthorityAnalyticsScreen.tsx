@@ -1,10 +1,13 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useComplaintSummary } from '../../hooks/useComplaintSummary';
+import { Button } from '../../components/ui/Button';
+import { RequestError } from '../../components/RequestError';
 import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  SafeAreaView,
   StatusBar,
   TouchableOpacity,
   RefreshControl,
@@ -27,34 +30,14 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
   const { isDesktop, isWide } = useBreakpoint();
   const [refreshing, setRefreshing] = useState(false);
   const [timeframe, setTimeframe] = useState<'7d' | '30d' | 'all'>('7d');
-  const [stats, setStats] = useState({
-    total: 28,
-    pending: 9,
-    inProgress: 11,
-    resolved: 8,
-    highPriority: 6,
-    avgResolutionHours: 18.4,
-  });
-
-  const categories = [
-    { name: 'Pothole Defect', count: 12, pct: 42, color: COLORS.primary },
-    { name: 'Road Damage', count: 6, pct: 21, color: COLORS.secondary },
-    { name: 'Garbage Overflow', count: 5, pct: 18, color: '#059669' },
-    { name: 'Broken Streetlight', count: 3, pct: 11, color: '#2563EB' },
-    { name: 'Drainage Issue', count: 2, pct: 8, color: '#D97706' },
-  ];
-
-  const wards = [
-    { name: 'Ward 14 • Metro Central', active: 11, resolved: 5, risk: 'High' },
-    { name: 'Ward 08 • North Suburbs', active: 6, resolved: 8, risk: 'Medium' },
-    { name: 'Ward 22 • East Industrial', active: 2, resolved: 6, risk: 'Low' },
-    { name: 'Ward 03 • South Extension', active: 1, resolved: 4, risk: 'Low' },
-  ];
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 600);
-  };
+  const { complaints, loading, error, refresh } = useComplaintSummary('officer');
+  const reports = complaints.filter(c => timeframe === 'all' || Date.parse(c.createdAt) >= Date.now() - (timeframe === '7d' ? 7 : 30) * 86400000);
+  const resolved = reports.filter(c => c.status === 'Resolved');
+  const durations = resolved.filter(c => c.resolvedAt && Date.parse(c.resolvedAt) >= Date.parse(c.createdAt)).map(c => (Date.parse(c.resolvedAt!) - Date.parse(c.createdAt)) / 3600000);
+  const average = durations.length ? `${(durations.reduce((a,b) => a+b,0) / durations.length).toFixed(1)} hrs` : 'Not available';
+  const categories = Object.entries(reports.reduce<Record<string,number>>((counts,c) => { const name = c.category || 'other'; counts[name] = (counts[name] || 0)+1; return counts; },{})).map(([name,count]) => ({ name: name.replace(/_/g,' '), count, pct: Math.round(count / reports.length * 100), color: COLORS.primary }));
+  const wards: { name: string; active: number; resolved: number; risk: string }[] = [];
+  const onRefresh = refresh;
 
   const renderHeader = () => {
     if (isDesktop) {
@@ -90,9 +73,11 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
     );
   };
 
+  if (error) return <View style={styles.safeArea}>{renderHeader()}<RequestError message={error} onRetry={refresh} /></View>;
+
   return (
     <View style={styles.safeArea}>
-      <StatusBar barStyle={isDesktop ? "dark-content" : "light-content"} backgroundColor={isDesktop ? COLORS.background : "#0F172A"} translucent={false} />
+      <StatusBar barStyle={isDesktop ? "dark-content" : "light-content"} backgroundColor={isDesktop ? COLORS.background : "#0F172A"} />
 
       {renderHeader()}
 
@@ -103,7 +88,7 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
           isWide && styles.scrollContentDesktop,
         ]}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />
+          <RefreshControl refreshing={loading} onRefresh={onRefresh} colors={[COLORS.primary]} />
         }
         showsVerticalScrollIndicator={false}
       >
@@ -123,17 +108,31 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
           </ScrollView>
         )}
         <View style={styles.mainWrapper}>
+          {!!error && (
+            <View accessibilityRole="alert" style={styles.errorBanner}>
+              <Ionicons name="alert-circle-outline" size={20} color={COLORS.error} style={{ marginRight: SPACING.sm }} />
+              <Text style={styles.errorText}>{error}</Text>
+              <Button title="Retry" variant="outline" size="sm" onPress={refresh} style={{ marginLeft: 'auto' }} />
+            </View>
+          )}
+          {!loading && !error && !reports.length && (
+            <View style={styles.emptyCard}>
+              <Ionicons name="stats-chart-outline" size={36} color={COLORS.textMuted} style={{ marginBottom: SPACING.sm }} />
+              <Text style={styles.emptyTitle}>No reports in this period</Text>
+              <Text style={styles.emptySubtitle}>Try selecting a broader timeframe to see municipal trends.</Text>
+            </View>
+          )}
           {/* Executive KPI Row */}
           <Animated.View entering={FadeInUp.delay(100)} style={styles.kpiRow}>
             <View style={styles.kpiCard}>
               <View style={styles.kpiIcon}>
                 <Ionicons name="speedometer-outline" size={20} color={COLORS.primary} />
               </View>
-              <Text style={styles.kpiValue}>18.4 hrs</Text>
+              <Text style={styles.kpiValue}>{average}</Text>
               <Text style={styles.kpiLabel}>Avg Resolution Velocity</Text>
               <View style={styles.kpiTrend}>
-                <Ionicons name="arrow-up" size={11} color="#059669" />
-                <Text style={styles.kpiTrendText}>+22% this week</Text>
+
+                <Text style={styles.kpiTrendText}>From resolved timestamps</Text>
               </View>
             </View>
 
@@ -141,11 +140,11 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
               <View style={[styles.kpiIcon, { backgroundColor: '#FEF2F2' }]}>
                 <Ionicons name="flame-outline" size={20} color={COLORS.error} />
               </View>
-              <Text style={[styles.kpiValue, { color: COLORS.error }]}>94.2%</Text>
-              <Text style={styles.kpiLabel}>Critical SLA Adherence</Text>
+              <Text style={[styles.kpiValue, { color: COLORS.error }]}>{reports.filter(c => c.priority === 'urgent' || c.priority === 'high').length}</Text>
+              <Text style={styles.kpiLabel}>High Priority Incidents</Text>
               <View style={styles.kpiTrend}>
-                <Ionicons name="checkmark-circle" size={11} color="#059669" />
-                <Text style={styles.kpiTrendText}>Within 24h target</Text>
+                <Ionicons name="information-circle-outline" size={11} color={COLORS.textMuted} />
+                <Text style={styles.kpiTrendText}>Selected reporting period</Text>
               </View>
             </View>
 
@@ -153,10 +152,10 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
               <View style={[styles.kpiIcon, { backgroundColor: '#EFF6FF' }]}>
                 <Ionicons name="people-outline" size={20} color="#2563EB" />
               </View>
-              <Text style={[styles.kpiValue, { color: '#2563EB' }]}>88%</Text>
-              <Text style={styles.kpiLabel}>Field Officer Utilization</Text>
+              <Text style={[styles.kpiValue, { color: '#2563EB' }]}>{resolved.length}</Text>
+              <Text style={styles.kpiLabel}>Resolved Incidents</Text>
               <View style={styles.kpiTrend}>
-                <Text style={[styles.kpiTrendText, { color: '#4B5563' }]}>6 Active Units</Text>
+                <Text style={[styles.kpiTrendText, { color: '#4B5563' }]}>Current recorded status</Text>
               </View>
             </View>
           </Animated.View>
@@ -200,22 +199,22 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
 
               <View style={styles.priorityGrid}>
                 <View style={[styles.priorityPill, { borderColor: '#FECACA', backgroundColor: '#FEF2F2' }]}>
-                  <Text style={[styles.priorityPillNum, { color: '#DC2626' }]}>4</Text>
+                  <Text style={[styles.priorityPillNum, { color: '#DC2626' }]}>{reports.filter(c => c.priority === 'urgent').length}</Text>
                   <Text style={styles.priorityPillLabel}>Urgent (P1)</Text>
                 </View>
 
                 <View style={[styles.priorityPill, { borderColor: '#FED7AA', backgroundColor: '#FFF7ED' }]}>
-                  <Text style={[styles.priorityPillNum, { color: '#D97706' }]}>8</Text>
+                  <Text style={[styles.priorityPillNum, { color: '#D97706' }]}>{reports.filter(c => c.priority === 'high').length}</Text>
                   <Text style={styles.priorityPillLabel}>High (P2)</Text>
                 </View>
 
                 <View style={[styles.priorityPill, { borderColor: '#FEF08A', backgroundColor: '#FEFCE8' }]}>
-                  <Text style={[styles.priorityPillNum, { color: '#854D0E' }]}>11</Text>
+                  <Text style={[styles.priorityPillNum, { color: '#854D0E' }]}>{reports.filter(c => c.priority === 'medium').length}</Text>
                   <Text style={styles.priorityPillLabel}>Medium (P3)</Text>
                 </View>
 
                 <View style={[styles.priorityPill, { borderColor: '#E4E4E7', backgroundColor: '#FAFAFA' }]}>
-                  <Text style={[styles.priorityPillNum, { color: '#52525B' }]}>5</Text>
+                  <Text style={[styles.priorityPillNum, { color: '#52525B' }]}>{reports.filter(c => c.priority === 'low').length}</Text>
                   <Text style={styles.priorityPillLabel}>Routine (P4)</Text>
                 </View>
               </View>
@@ -229,6 +228,7 @@ export const AuthorityAnalyticsScreen = ({ navigation }: any) => {
               <Text style={styles.cardTitle}>Ward Incident Concentration</Text>
             </View>
 
+            <Text style={{ color: COLORS.textSecondary, lineHeight: 22 }}>Ward assignments and service deadlines are not recorded in the current data. Ward risk and SLA metrics are unavailable.</Text>
             <View style={styles.wardTable}>
               <View style={styles.wardTableHeader}>
                 <Text style={[styles.wardCol, { flex: 2 }]}>WARD / DISTRICT</Text>
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.backgroundNeutral,
   },
-  
+
   // Desktop Header
   desktopHeaderBar: {
     flexDirection: 'row',
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: SPACING.md,
-    paddingBottom: SPACING['5xl'],
+    paddingBottom: 96,
   },
   scrollContentDesktop: {
     padding: SPACING['4xl'],
@@ -407,6 +407,29 @@ const styles = StyleSheet.create({
     maxWidth: 960,
     alignSelf: 'center',
   },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.errorLight,
+    borderWidth: 1,
+    borderColor: COLORS.errorBorder,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.md,
+    marginBottom: SPACING.lg,
+  },
+  errorText: { ...TYPOGRAPHY.caption, color: COLORS.errorDark, fontWeight: '600', flex: 1 },
+  emptyCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1.5,
+    borderColor: COLORS.borderLight,
+    padding: SPACING['3xl'],
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.xl,
+  },
+  emptyTitle: { ...TYPOGRAPHY.h4, color: COLORS.textPrimary, marginBottom: 4, textAlign: 'center' },
+  emptySubtitle: { ...TYPOGRAPHY.caption, color: COLORS.textMuted, textAlign: 'center' },
   kpiRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -416,7 +439,7 @@ const styles = StyleSheet.create({
   kpiCard: {
     flex: 1,
     minWidth: 0,
-    flexBasis: '30%',
+    flexBasis: 140,
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.md,
     padding: SPACING.md,
@@ -451,6 +474,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   kpiTrendText: {
+    flexShrink: 1,
     ...TYPOGRAPHY.caption,
     fontWeight: '700',
     color: '#059669',
@@ -470,6 +494,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   cardTitle: {
+    flexShrink: 1,
     ...TYPOGRAPHY.bodySmall,
     fontWeight: '800',
     color: COLORS.textPrimary,
@@ -482,7 +507,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   catMetaRow: {
-    flexDirection: 'row',
+    flexDirection: 'row', flexWrap: 'wrap', gap: 4,
     justifyContent: 'space-between',
     marginBottom: 4,
   },

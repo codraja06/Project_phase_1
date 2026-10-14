@@ -93,6 +93,8 @@ const CitizenTabs = (_props: any) => {
               color: COLORS.textPrimary,
             },
             tabBarActiveTintColor: COLORS.primary,
+            tabBarLabelPosition: 'below-icon',
+            tabBarItemStyle: { minWidth: 0 },
             tabBarInactiveTintColor: COLORS.textMuted,
             tabBarStyle: {
               backgroundColor: '#FFFFFF',

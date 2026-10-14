@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, StyleSheet, TouchableWithoutFeedback, Animated, Platform } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, StyleSheet, TouchableWithoutFeedback, BackHandler, ScrollView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { AuthoritySidebar } from './AuthoritySidebar';
 import { useMobileMenu } from '../contexts/MobileMenuContext';
 import { COLORS } from '../constants/theme';
@@ -11,6 +12,11 @@ export const MobileDrawer: React.FC<{
 }> = ({ activeRoute, onNavigate }) => {
   const { isMenuOpen, closeMenu } = useMobileMenu();
   const { isDesktop } = useBreakpoint();
+  useEffect(() => {
+    if (!isMenuOpen || isDesktop) return;
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => { closeMenu(); return true; });
+    return () => subscription.remove();
+  }, [isMenuOpen, isDesktop, closeMenu]);
   
   // Animation value could be added here for sliding, but for simplicity
   // we can use a conditional render or basic View for now.
@@ -25,7 +31,8 @@ export const MobileDrawer: React.FC<{
       <TouchableWithoutFeedback onPress={closeMenu}>
         <View style={styles.backdrop} />
       </TouchableWithoutFeedback>
-      <View style={styles.drawerContainer}>
+      <SafeAreaView style={styles.drawerContainer}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <AuthoritySidebar
           activeRoute={activeRoute}
           onNavigate={(route) => {
@@ -33,7 +40,8 @@ export const MobileDrawer: React.FC<{
             closeMenu();
           }}
         />
-      </View>
+        </ScrollView>
+      </SafeAreaView>
     </View>
   );
 };

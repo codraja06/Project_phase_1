@@ -127,7 +127,7 @@ export const updateProfile = async (req: AuthRequest, res: Response, next: NextF
     }
 
     if (validated.name) user.name = validated.name;
-    if (validated.phone) user.phone = validated.phone;
+    if (validated.phone !== undefined) user.phone = validated.phone;
 
     await user.save();
 

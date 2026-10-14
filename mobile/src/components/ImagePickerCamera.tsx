@@ -1,3 +1,4 @@
+import { selectImage } from '../services/imageSelection';
 import React, { useState } from 'react';
 import {
   View,
@@ -22,96 +23,16 @@ export const ImagePickerCamera: React.FC<ImagePickerCameraProps> = ({
   onRetakeImage,
 }) => {
   const [error, setError] = useState('');
-  const acceptImage = (asset: { uri?: string; mimeType?: string; fileSize?: number }, file?: File) => {
-    const mime = file?.type || asset.mimeType;
-    if ((mime && !['image/jpeg', 'image/png', 'image/webp'].includes(mime)) || (file?.size || asset.fileSize || 0) > 10 * 1024 * 1024) {
-      setError('Choose a JPEG, PNG or WebP image, 10 MB or smaller.'); return;
-    }
-    setError('');
-    if (file) onImageSelected(URL.createObjectURL(file));
-    else if (asset.uri) onImageSelected(asset.uri);
-  };
-
-  const handleTakePhoto = async () => {
-    if (Platform.OS === 'web') {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/jpeg,image/png,image/webp';
-      input.capture = 'environment';
-      input.onchange = (e: any) => {
-        const file = e.target.files?.[0];
-        if (file) {
-          acceptImage({}, file);
-        }
-      };
-      input.click();
-      return;
-    }
-
+  const choose = async (source: 'camera' | 'library') => {
     try {
-      const ImagePicker = require('expo-image-picker');
-      const permission = await ImagePicker.requestCameraPermissionsAsync();
-      if (!permission.granted) {
-        Alert.alert(
-          'Camera Permission Required',
-          'Please allow camera access to photograph civic issues in real-time.'
-        );
-        return;
-      }
-
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.85,
-        allowsEditing: false,
-      });
-
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        acceptImage(result.assets[0]);
-      }
-    } catch (err: any) {
-      setError(err.message || 'Camera could not be opened.');
-    }
+      const asset = await selectImage(source);
+      if (!asset) return;
+      if ((asset.mimeType && !['image/jpeg', 'image/png', 'image/webp'].includes(asset.mimeType)) || (asset.fileSize || 0) > 10 * 1024 * 1024) throw new Error('Choose a JPEG, PNG or WebP image, 10 MB or smaller.');
+      setError(''); onImageSelected(asset.uri);
+    } catch (e: any) { setError(e.message || 'The image could not be selected. Please try again.'); }
   };
-
-  const handlePickGallery = async () => {
-    if (Platform.OS === 'web') {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/jpeg,image/png,image/webp';
-      input.onchange = (e: any) => {
-        const file = e.target.files?.[0];
-        if (file) {
-          acceptImage({}, file);
-        }
-      };
-      input.click();
-      return;
-    }
-
-    try {
-      const ImagePicker = require('expo-image-picker');
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        Alert.alert(
-          'Gallery Permission Required',
-          'Please allow photo library access to upload civic issue photos.'
-        );
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.85,
-        allowsEditing: false,
-      });
-
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        acceptImage(result.assets[0]);
-      }
-    } catch (err: any) {
-      setError(err.message || 'Photo library could not be opened.');
-    }
-  };
+  const handleTakePhoto = () => choose('camera');
+  const handlePickGallery = () => choose('library');
 
   if (imageUri) {
     return (
@@ -119,6 +40,8 @@ export const ImagePickerCamera: React.FC<ImagePickerCameraProps> = ({
         <TouchableOpacity
           style={styles.retakeBtn}
           onPress={() => onRetakeImage?.()}
+          accessibilityRole="button"
+          accessibilityLabel="Change or retake photo"
           activeOpacity={0.8}
         >
           <Ionicons name="refresh" size={16} color={COLORS.textPrimary} style={{ marginRight: 6 }} />
@@ -145,6 +68,7 @@ export const ImagePickerCamera: React.FC<ImagePickerCameraProps> = ({
           <TouchableOpacity
             style={styles.actionBtn}
             onPress={handleTakePhoto}
+            accessibilityLabel="Capture Photo"
             activeOpacity={0.8}
             accessibilityRole="button"
           >
@@ -154,6 +78,7 @@ export const ImagePickerCamera: React.FC<ImagePickerCameraProps> = ({
           <TouchableOpacity
             style={styles.actionBtnSecondary}
             onPress={handlePickGallery}
+            accessibilityLabel="Upload Image"
             activeOpacity={0.8}
             accessibilityRole="button"
           >

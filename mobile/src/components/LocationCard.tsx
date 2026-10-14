@@ -30,7 +30,9 @@ export const LocationCard: React.FC<LocationCardProps> = ({
           {address || 'Fetching device GPS coordinates...'}
         </Text>
         <Text style={styles.coordsText}>
-          {latitude.toFixed(5)}° N, {longitude.toFixed(5)}° E
+          {Number.isFinite(latitude) && Number.isFinite(longitude)
+            ? `${Math.abs(latitude).toFixed(5)}° ${latitude >= 0 ? 'N' : 'S'}, ${Math.abs(longitude).toFixed(5)}° ${longitude >= 0 ? 'E' : 'W'}`
+            : 'Location not selected'}
         </Text>
       </View>
 
@@ -39,6 +41,8 @@ export const LocationCard: React.FC<LocationCardProps> = ({
           style={styles.refreshBtn}
           onPress={onRefreshLocation}
           disabled={loading}
+          accessibilityRole="button"
+          accessibilityLabel="Refresh location"
           activeOpacity={0.7}
         >
           <Ionicons

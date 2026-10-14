@@ -1,3 +1,5 @@
+import { RequestError } from '../../components/RequestError';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
@@ -5,7 +7,6 @@ import {
   StyleSheet,
   FlatList,
   RefreshControl,
-  SafeAreaView,
   StatusBar,
   TouchableOpacity,
   Image,
@@ -299,6 +300,7 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
   const { toggleMenu } = useMobileMenu();
   const { isDesktop, isMobile } = useBreakpoint();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [loadError, setLoadError] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -324,11 +326,11 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
 
   const fetchComplaints = async () => {
     try {
-      setLoading(true);
+      setLoading(true); setLoadError('');
       const res = await authorityApi.getAllComplaints();
       setComplaints(res.complaints || []);
     } catch (error) {
-      console.error('Failed to fetch authority complaints:', error);
+      setLoadError((error as Error).message || 'Please check your connection and retry.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -373,7 +375,9 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
 
   const filteredComplaints = useMemo(() => {
     return complaints.filter((c) => {
-      if (statusFilter === 'urgent') {
+      if (statusFilter === 'today') {
+        if (new Date(c.createdAt).toDateString() !== new Date().toDateString()) return false;
+      } else if (statusFilter === 'urgent') {
         const isUrgent = c.priority === 'urgent' || c.priority === 'high';
         if (!isUrgent) return false;
       } else if (statusFilter !== 'all') {
@@ -397,6 +401,7 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
   }, [complaints, statusFilter, searchQuery]);
 
   const statusOptions = [
+    { label: 'Today', value: 'today' },
     { label: 'All Incidents', value: 'all', count: complaints.length },
     { label: 'Pending', value: 'pending', count: complaints.filter((c) => (c.status || '').toLowerCase() === 'pending').length },
     { label: 'In Progress', value: 'in_progress', count: complaints.filter((c) => (c.status || '').toLowerCase().includes('progress')).length },
@@ -433,10 +438,12 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
     if (selectedIds.length === 0) return;
     try {
       setBulkLoading(true);
-      await Promise.all(selectedIds.map((id) => authorityApi.updateComplaintStatus(id, newStatus)));
-      setComplaints((prev) => prev.map((c) => (selectedIds.includes(c._id) ? { ...c, status: newStatus } : c)));
-      setToast({ visible: true, message: `${selectedIds.length} complaints transitioned to ${newStatus}.`, type: 'success' });
-      setSelectedIds([]);
+      const results = await Promise.allSettled(selectedIds.map(id => authorityApi.updateComplaintStatus(id, newStatus)));
+      const successes = results.flatMap(result => result.status === 'fulfilled' ? [result.value] : []);
+      const failedIds = selectedIds.filter((id,index) => results[index].status === 'rejected');
+      setComplaints(prev => prev.map(c => successes.find(updated => updated._id === c._id) || c));
+      setSelectedIds(failedIds);
+      setToast({ visible: true, message: `${successes.length} updated; ${failedIds.length} failed.`, type: failedIds.length ? 'error' : 'success' });
     } catch (error: any) {
       setToast({ visible: true, message: error.message || 'Bulk status update failed.', type: 'error' });
     } finally {
@@ -448,10 +455,12 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
     if (selectedIds.length === 0) return;
     try {
       setBulkLoading(true);
-      await Promise.all(selectedIds.map((id) => authorityApi.verifyComplaint(id)));
-      setComplaints((prev) => prev.map((c) => (selectedIds.includes(c._id) ? { ...c, verified: true } : c)));
-      setToast({ visible: true, message: `${selectedIds.length} complaints officially verified.`, type: 'success' });
-      setSelectedIds([]);
+      const results = await Promise.allSettled(selectedIds.map(id => authorityApi.verifyComplaint(id)));
+      const successes = results.flatMap(result => result.status === 'fulfilled' ? [result.value] : []);
+      const failedIds = selectedIds.filter((id,index) => results[index].status === 'rejected');
+      setComplaints(prev => prev.map(c => successes.find(updated => updated._id === c._id) || c));
+      setSelectedIds(failedIds);
+      setToast({ visible: true, message: `${successes.length} verified; ${failedIds.length} failed.`, type: failedIds.length ? 'error' : 'success' });
     } catch (error: any) {
       setToast({ visible: true, message: error.message || 'Bulk verification failed.', type: 'error' });
     } finally {
@@ -476,9 +485,9 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
         {selectedIds.length > 0 && (
           <Animated.View entering={FadeInUp.duration(200)} exiting={FadeOut.duration(200)} style={styles.bulkActionButtons}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, alignItems: 'center' }}>
-              <Button title={isMobile ? "" : "In Progress"} variant="secondary" size="sm" onPress={() => handleBulkStatus('In Progress')} disabled={bulkLoading} style={{ height: 32 }} icon={<Ionicons name="time" size={14} />} />
-              <Button title={isMobile ? "" : "Resolve"} variant="default" size="sm" onPress={() => handleBulkStatus('Resolved')} disabled={bulkLoading} style={{ height: 32 }} icon={<Ionicons name="checkmark-circle" size={14} color="#FFF" />} />
-              <Button title={isMobile ? "" : "Verify"} variant="outline" size="sm" onPress={handleBulkVerify} disabled={bulkLoading} style={{ height: 32 }} icon={<Ionicons name="shield-checkmark" size={14} />} />
+              <Button title="In Progress" accessibilityLabel="Mark selected incidents in progress" variant="secondary" size="sm" onPress={() => handleBulkStatus('In Progress')} disabled={bulkLoading} style={{ height: 32 }} icon={<Ionicons name="time" size={14} />} />
+              <Button title="Resolve" accessibilityLabel="Resolve selected incidents" variant="default" size="sm" onPress={() => handleBulkStatus('Resolved')} disabled={bulkLoading} style={{ height: 32 }} icon={<Ionicons name="checkmark-circle" size={14} color="#FFF" />} />
+              <Button title="Verify" accessibilityLabel="Verify selected incidents" variant="outline" size="sm" onPress={handleBulkVerify} disabled={bulkLoading} style={{ height: 32 }} icon={<Ionicons name="shield-checkmark" size={14} />} />
               <TouchableOpacity onPress={() => setSelectedIds([])} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ paddingLeft: 4 }}>
                 <Ionicons name="close-circle" size={20} color={COLORS.textMuted} />
               </TouchableOpacity>
@@ -488,6 +497,8 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
       </View>
     );
   };
+
+  if (loadError) return <RequestError message={loadError} onRetry={fetchComplaints} />;
 
   if (isDesktop) {
     return (
@@ -558,7 +569,7 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
 
   return (
     <View style={styles.safeAreaMobile}>
-      <StatusBar barStyle="light-content" backgroundColor="#0F172A" translucent={false} />
+      <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
 
       <AuthorityMobileHeader 
         title="Incident Registry" 
@@ -655,7 +666,7 @@ const styles = StyleSheet.create({
   filterSection: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.md, paddingBottom: SPACING.sm, backgroundColor: COLORS.background, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
   searchBar: { marginBottom: SPACING.sm },
   filterChips: { paddingVertical: SPACING.xs },
-  listContent: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.lg, paddingBottom: SPACING['5xl'] },
+  listContent: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.lg, paddingBottom: 110 },
   mobileCard: { marginBottom: SPACING.md, padding: 0 },
   mobileCardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: SPACING.md, gap: SPACING.xs },
   mobileCardHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs, flexWrap: 'wrap', flex: 1, minWidth: 0 },
@@ -683,8 +694,8 @@ const styles = StyleSheet.create({
   tableRowSelected: { backgroundColor: COLORS.backgroundNeutral, borderColor: COLORS.border },
   mobileCheckboxBtn: { marginRight: 4, padding: 2 },
   mobileCardSelected: { borderColor: COLORS.border, backgroundColor: COLORS.backgroundNeutral },
-  bulkToolbar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: COLORS.surface, paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
+  bulkToolbar: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center', justifyContent: 'space-between', backgroundColor: COLORS.surface, paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight },
   bulkSelectAllBtn: { flexDirection: 'row', alignItems: 'center' },
   bulkSelectAllText: { ...TYPOGRAPHY.bodySmall, fontWeight: '800', color: COLORS.textPrimary },
-  bulkActionButtons: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, flex: 1, justifyContent: 'flex-end', minWidth: 0, overflow: 'hidden' as any },
+  bulkActionButtons: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, flex: 1, justifyContent: 'flex-end', minWidth: 0, flexWrap: 'wrap' },
 });

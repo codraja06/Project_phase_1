@@ -1,3 +1,5 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useComplaintSummary } from '../../hooks/useComplaintSummary';
 import React, { useState } from 'react';
 import {
   View,
@@ -6,7 +8,7 @@ import {
   ScrollView,
   Alert,
   TouchableOpacity,
-  SafeAreaView,
+
   StatusBar,
   Modal,
   Platform,
@@ -19,6 +21,8 @@ import { Input, PasswordInput } from '../../components/Input';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
+import { FormDialog } from '../../components/FormDialog';
+import { showMessage } from '../../utils/showMessage';
 import { ConfirmationDialog } from '../../components/ConfirmationDialog';
 import { COLORS } from '../../theme/colors';
 import { BORDER_RADIUS } from '../../theme/radius';
@@ -33,6 +37,9 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
   const { toggleMenu } = useMobileMenu();
   const { isDesktop } = useBreakpoint();
   const { user, logout, updateUser } = useAuth();
+
+  const { complaints, loading: statsLoading, error: statsError, refresh: refreshStats } = useComplaintSummary('officer');
+  const count = (status?: string) => statsLoading || statsError ? '—' : String(status ? complaints.filter(c => c.status === status).length : complaints.length);
 
   const [editProfileVisible, setEditProfileVisible] = useState(false);
   const [changePasswordVisible, setChangePasswordVisible] = useState(false);
@@ -52,9 +59,9 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
       const updated = await authApi.updateProfile({ name, phone });
       updateUser(updated);
       setEditProfileVisible(false);
-      Alert.alert('Officer Profile Updated', 'Department contact info updated.');
+      showMessage('Officer Profile Updated', 'Department contact info updated.');
     } catch (error: any) {
-      Alert.alert('Update Failed', error.message || 'Failed to update details.');
+      showMessage('Update Failed', error.message || 'Failed to update details.');
     } finally {
       setUpdatingProfile(false);
     }
@@ -62,11 +69,11 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
 
   const handleChangePassword = async () => {
     if (!oldPassword || !newPassword) {
-      Alert.alert('Validation Error', 'Please enter current and new passwords.');
+      showMessage('Validation Error', 'Please enter current and new passwords.');
       return;
     }
     if (newPassword.length < 6) {
-      Alert.alert('Validation Error', 'Password must be at least 6 characters.');
+      showMessage('Validation Error', 'Password must be at least 6 characters.');
       return;
     }
     try {
@@ -75,18 +82,18 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
       setOldPassword('');
       setNewPassword('');
       setChangePasswordVisible(false);
-      Alert.alert('Security Update', 'Officer password changed successfully.');
+      showMessage('Security Update', 'Officer password changed successfully.');
     } catch (error: any) {
-      Alert.alert('Password Change Failed', error.message || 'Incorrect current password.');
+      showMessage('Password Change Failed', error.message || 'Incorrect current password.');
     } finally {
       setUpdatingPassword(false);
     }
   };
 
   const handleDispatchSupport = () => {
-    Alert.alert(
+    showMessage(
       'Municipal Operations Dispatch',
-      'Central Dispatch Desk: 1800-CITY-OPS\nInternal Ext: #4402\nIT & Model Monitoring: it-support@city.gov'
+      'Municipal support contact has not been configured. Please contact your department administrator.'
     );
   };
 
@@ -144,7 +151,7 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
           iconBg: COLORS.secondaryLight,
           iconColor: COLORS.secondary,
           label: 'Geo-Incident Map',
-          sub: 'Live GPS cluster heatmap of civic incidents',
+          sub: 'View recorded incident coordinates on the map',
           onPress: () => navigation.navigate('AuthorityMap'),
         },
       ],
@@ -153,7 +160,7 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
 
   return (
     <View style={isDesktop ? styles.safeArea : styles.safeAreaMobile}>
-      <StatusBar barStyle="light-content" backgroundColor="#0F172A" translucent={false} />
+      <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
 
       {!isDesktop && (
         <AuthorityMobileHeader title="Officer Dossier" />
@@ -206,12 +213,19 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
         </Animated.View>
 
         {/* ── Compact Stat Cards ──────────────────────────────────────────── */}
+        {!!statsError && (
+          <View accessibilityRole="alert" style={styles.statsErrorBanner}>
+            <Ionicons name="alert-circle-outline" size={18} color={COLORS.error} style={{ marginRight: SPACING.sm }} />
+            <Text style={styles.statsErrorText}>{statsError}</Text>
+            <Button title="Retry" variant="outline" size="sm" onPress={refreshStats} style={{ marginLeft: 'auto' }} />
+          </View>
+        )}
         <Animated.View entering={FadeInUp.delay(200)} style={styles.statsGrid}>
           {[
-            { label: 'Queue', value: '24', color: '#0F172A' },
-            { label: 'Pending', value: '14', color: COLORS.pending },
-            { label: 'Resolved', value: '8', color: COLORS.resolved },
-            { label: 'High Priority', value: '2', color: COLORS.error },
+            { label: 'Queue', value: count(), color: '#0F172A' },
+            { label: 'Pending', value: count('Pending'), color: COLORS.pending },
+            { label: 'Resolved', value: count('Resolved'), color: COLORS.resolved },
+            { label: 'High Priority', value: statsLoading || statsError ? '—' : String(complaints.filter(c => c.priority === 'urgent' || c.priority === 'high').length), color: COLORS.error },
           ].map((stat, i) => (
             <Card key={i} style={isDesktop ? styles.statCardDesktop : styles.statCard}>
               <CardContent style={styles.statCardContent}>
@@ -269,17 +283,15 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
             </TouchableOpacity>
           </Card>
 
-          <Text style={styles.footerVersion}>CivicTrack v2.0.0 • Operations Portal</Text>
+          <Text style={styles.footerVersion}>CivicTrack v1.0.0 • Operations Portal</Text>
         </Animated.View>
       </ScrollView>
 
       {/* Edit Profile Modal */}
-      <Modal visible={editProfileVisible} animationType="fade" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+      <FormDialog visible={editProfileVisible} onClose={() => setEditProfileVisible(false)}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Edit Officer Details</Text>
-              <TouchableOpacity onPress={() => setEditProfileVisible(false)}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close dialog" onPress={() => setEditProfileVisible(false)} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
                 <Ionicons name="close" size={24} color={COLORS.textSecondary} />
               </TouchableOpacity>
             </View>
@@ -306,17 +318,13 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
               loading={updatingProfile}
               style={{ marginTop: SPACING.sm }}
             />
-          </View>
-        </View>
-      </Modal>
+      </FormDialog>
 
       {/* Change Password Modal */}
-      <Modal visible={changePasswordVisible} animationType="fade" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+      <FormDialog visible={changePasswordVisible} onClose={() => setChangePasswordVisible(false)}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Change Security Password</Text>
-              <TouchableOpacity onPress={() => setChangePasswordVisible(false)}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close dialog" onPress={() => setChangePasswordVisible(false)} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
                 <Ionicons name="close" size={24} color={COLORS.textSecondary} />
               </TouchableOpacity>
             </View>
@@ -342,9 +350,7 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
               loading={updatingPassword}
               style={{ marginTop: SPACING.sm }}
             />
-          </View>
-        </View>
-      </Modal>
+      </FormDialog>
 
       {/* Logout Confirmation Dialog */}
       <ConfirmationDialog
@@ -369,7 +375,7 @@ const styles = StyleSheet.create({
   safeAreaMobile: { flex: 1, backgroundColor: COLORS.backgroundNeutral },
   container: { flex: 1, backgroundColor: COLORS.backgroundNeutral },
   desktopContent: { padding: SPACING['5xl'], maxWidth: 900, alignSelf: 'center', width: '100%' },
-  mobileContent: { padding: SPACING.lg, paddingBottom: SPACING['5xl'] },
+  mobileContent: { padding: SPACING.lg, paddingBottom: 100 },
   desktopHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING['4xl'], backgroundColor: '#0F172A', padding: SPACING.xl, borderRadius: BORDER_RADIUS.lg, ...SHADOWS.card },
   backBtn: { width: 38, height: 38, borderRadius: BORDER_RADIUS.full, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.1)', marginRight: SPACING.md },
   headerTitle: { ...TYPOGRAPHY.h3, color: '#FFFFFF' },
@@ -384,6 +390,17 @@ const styles = StyleSheet.create({
   badgeRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: 4, flexWrap: 'wrap' },
   profileEmail: { ...TYPOGRAPHY.caption, color: COLORS.textSecondary, fontWeight: '500' },
   profileLocality: { ...TYPOGRAPHY.caption, color: COLORS.textMuted },
+  statsErrorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.errorLight,
+    borderWidth: 1,
+    borderColor: COLORS.errorBorder,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.md,
+    marginBottom: SPACING.lg,
+  },
+  statsErrorText: { ...TYPOGRAPHY.caption, color: COLORS.errorDark, fontWeight: '600', flex: 1 },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.md, marginBottom: SPACING['3xl'] },
   statCard: {
     flexBasis: Platform.OS === 'web' ? ('calc(50% - 6px)' as any) : '47%',

@@ -87,7 +87,18 @@ export const CitizenDashboardScreen = ({ navigation }: any) => {
   return (
     <SafeAreaView style={s.screen} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" />
-      <ScrollView testID="citizen-dashboard-scroll" contentContainerStyle={[s.page, { padding: width < 600 ? 16 : 28 }]} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); void fetchData(); }} colors={[RED]} />}>
+      <ScrollView
+        testID="citizen-dashboard-scroll"
+        contentContainerStyle={[
+          s.page,
+          {
+            paddingHorizontal: width < 600 ? 16 : 28,
+            paddingTop: width < 600 ? 16 : 28,
+            paddingBottom: width < 600 ? 96 : 48,
+          },
+        ]}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); void fetchData(); }} colors={[RED]} />}
+      >
         <View style={s.header}>
           <View style={s.welcome}>
             <Text style={s.eyebrow}>YOUR NEIGHBORHOOD. YOUR VOICE.</Text>
@@ -96,7 +107,11 @@ export const CitizenDashboardScreen = ({ navigation }: any) => {
           </View>
           <View style={s.headerActions}>
             <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open notifications" style={s.iconButton} onPress={() => navigation.navigate('Notifications')}><Ionicons name="notifications-outline" size={21} color={INK} /></TouchableOpacity>
-            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open profile" style={[s.iconButton, s.avatar]} onPress={() => navigation.navigate('CitizenProfile')}><Text style={s.avatarText}>{user?.name?.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() || 'C'}</Text></TouchableOpacity>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open profile" style={[s.iconButton, s.avatar]} onPress={() => navigation.navigate('CitizenProfile')}>
+              <Text style={s.avatarText}>
+                {(user?.name || 'Citizen').split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || 'C'}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
         <SearchBar value={query} onChangeText={setQuery} placeholder="Search your reports by issue, ID or location" style={s.search} />
@@ -116,7 +131,7 @@ export const CitizenDashboardScreen = ({ navigation }: any) => {
               <Grid columns={fourColumns ? 4 : 2}>{CATEGORIES.map(cat => <TouchableOpacity key={cat.id} accessibilityRole="button" accessibilityLabel={`Report ${cat.label}`} style={s.category} onPress={() => navigation.navigate('ReportIssue', { initialCategory: cat.id })}><View style={s.categoryIcon}><Ionicons name={cat.icon} size={23} color={RED} /></View><Text style={s.categoryLabel}>{cat.label}</Text><Ionicons name="arrow-forward" size={16} color={MUTED} /></TouchableOpacity>)}</Grid>
             </View>
             <View style={s.section}>
-              <View style={s.sectionHeading}><Text accessibilityRole="header" style={s.sectionTitle}>Activity Overview</Text><View accessibilityRole="radiogroup" accessibilityLabel="Activity date range" style={s.rangeGroup}>{RANGES.map(r => <TouchableOpacity key={r.value} accessibilityRole="radio" accessibilityState={{ checked: range === r.value }} accessibilityLabel={r.label} onPress={() => setRange(r.value)} style={[s.rangeButton, range === r.value && s.rangeActive]}><Text style={[s.rangeLabel, range === r.value && s.rangeLabelActive]}>{r.label}</Text></TouchableOpacity>)}</View></View>
+              <View style={s.sectionHeading}><Text accessibilityRole="header" style={s.sectionTitle}>Activity Overview</Text><View accessibilityRole="radiogroup" accessibilityLabel="Activity date range" style={s.rangeGroup}>{RANGES.map(r => <TouchableOpacity key={r.value} accessibilityRole="button" accessibilityState={{ selected: range === r.value }} accessibilityLabel={r.label} onPress={() => setRange(r.value)} style={[s.rangeButton, range === r.value && s.rangeActive]}><Text style={[s.rangeLabel, range === r.value && s.rangeLabelActive]}>{r.label}</Text></TouchableOpacity>)}</View></View>
               <Grid columns={fourColumns ? 4 : 2}>{[
                 { label: 'Total Reports', count: stats.total, icon: 'documents-outline', color: INK, filter: 'all' },
                 { label: 'Pending', count: stats.pending, icon: 'time-outline', color: '#946000', filter: 'pending' },

@@ -28,9 +28,9 @@ async function mockApi(page, role='citizen', options={}) {
 }
 async function login(page,role='citizen') {
  await page.goto(`http://localhost:8081/${role==='citizen'?'citizen-login':'authority-login'}`);
- await page.getByLabel('Email Address',{exact:true}).fill(user.email);
- await page.getByLabel('Password',{exact:true}).fill('FixturePassword123!');
- const button=page.getByRole('button',{name:role==='citizen'?'Sign In':'Authenticate Officer',exact:true});
+ await page.getByLabel(role==='citizen'?'Email Address':'Department Official Email',{exact:true}).fill(user.email);
+ await page.getByLabel(role==='citizen'?'Password':'Officer Security Password',{exact:true}).fill('FixturePassword123!');
+ const button=page.getByRole('button',{name:role==='citizen'?'Sign In':'Authenticate as Officer',exact:true});
  if(await button.count()) await button.click(); else await page.getByRole('button').filter({hasText:/sign in|authenticate/i}).click();
  await page.getByText(role==='citizen'?'Quick Issue Categories':'Command Center',{exact:true}).last().waitFor();
 }

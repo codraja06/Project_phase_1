@@ -1,3 +1,4 @@
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import Animated, { FadeInUp, FadeOutUp } from 'react-native-reanimated';
@@ -23,6 +24,7 @@ export const Toast: React.FC<ToastProps> = ({
   onDismiss,
   duration = 3500,
 }) => {
+  const insets = useSafeAreaInsets();
   useEffect(() => {
     if (visible) {
       const timer = setTimeout(() => {
@@ -63,6 +65,7 @@ export const Toast: React.FC<ToastProps> = ({
       style={[
         styles.toastContainer,
         {
+          top: insets.top + 16,
           borderColor,
           backgroundColor: bg,
         },
@@ -71,10 +74,10 @@ export const Toast: React.FC<ToastProps> = ({
       accessibilityRole="alert"
     >
       <Ionicons name={iconName} size={22} color={iconColor} style={{ marginRight: SPACING.md }} />
-      <Text style={styles.toastMessage} numberOfLines={2}>
+      <Text style={styles.toastMessage}>
         {message}
       </Text>
-      <TouchableOpacity onPress={onDismiss} style={styles.closeBtn} activeOpacity={0.7}>
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Dismiss message" onPress={onDismiss} style={styles.closeBtn} activeOpacity={0.7}>
         <Ionicons name="close" size={20} color={COLORS.slateMuted} />
       </TouchableOpacity>
     </Animated.View>

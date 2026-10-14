@@ -63,8 +63,8 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
   const [title, setTitle] = useState<string>('');
 
   // Location
-  const [latitude, setLatitude] = useState<number>(12.9716);
-  const [longitude, setLongitude] = useState<number>(77.5946);
+  const [latitude, setLatitude] = useState<number>(NaN);
+  const [longitude, setLongitude] = useState<number>(NaN);
   const [address, setAddress] = useState<string>('Fetching device location...');
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
 
@@ -308,7 +308,7 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
                     <Text style={[styles.stepNumText, isCurrent && styles.stepNumTextCurrent]}>{step.num}</Text>
                   )}
                 </Animated.View>
-                <Text style={[styles.stepLabel, isCurrent && styles.stepLabelCurrent, isDone && styles.stepLabelDone]}>
+                <Text style={[styles.stepLabel, isCurrent && styles.stepLabelCurrent, isDone && styles.stepLabelDone]} numberOfLines={1}>
                   {step.label}
                 </Text>
               </View>
@@ -388,9 +388,24 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
                   </Card>
                 ) : (
                   <>
-                    <Animated.View entering={FadeInUp.delay(100)}>
-                      <MapLocationPicker latitude={latitude} longitude={longitude} address={address} height={290} showCard={true} onSelectLocation={(lat, lng) => { setLocationConfirmed(true); setErrorMessage(null); setLatitude(lat); setLongitude(lng); setAddress(`Coordinates Lat: ${lat.toFixed(4)}, Long: ${lng.toFixed(4)}`); }} onUseCurrentLocation={fetchCurrentLocation} />
-                    </Animated.View>
+                      <MapLocationPicker
+                        latitude={latitude}
+                        longitude={longitude}
+                        address={address}
+                        height={290}
+                        showCard={true}
+                        onSelectLocation={(lat, lng) => {
+                          setLocationConfirmed(true);
+                          setErrorMessage(null);
+                          setLatitude(lat);
+                          setLongitude(lng);
+                          setAddress(`Coordinates Lat: ${lat.toFixed(4)}, Long: ${lng.toFixed(4)}`);
+                          void locationService.reverseGeocode(lat, lng).then((resolvedAddr) => {
+                            if (resolvedAddr) setAddress(resolvedAddr);
+                          });
+                        }}
+                        onUseCurrentLocation={fetchCurrentLocation}
+                      />
                     <Animated.View entering={FadeInUp.delay(200)}>
                       <LocationCard address={address} latitude={latitude} longitude={longitude} onRefreshLocation={fetchCurrentLocation} />
                     </Animated.View>
@@ -451,17 +466,17 @@ const styles = StyleSheet.create({
   backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.borderLight, marginRight: SPACING.md, ...SHADOWS.sm },
   headerTextWrapper: { flex: 1 },
   headerTitle: { ...TYPOGRAPHY.h3, color: COLORS.textPrimary },
-  stepperContainer: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING.xl, paddingVertical: SPACING.lg, backgroundColor: COLORS.surface, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight, ...SHADOWS.sm },
-  stepPill: { flex: 1, flexDirection: 'column', gap: 4, alignItems: 'center' },
-  stepCircle: { width: 24, height: 24, borderRadius: 12, backgroundColor: COLORS.borderLight, alignItems: 'center', justifyContent: 'center', marginRight: SPACING.xs },
+  stepperContainer: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: SPACING.md, paddingVertical: SPACING.md, backgroundColor: COLORS.surface, borderBottomWidth: 1, borderBottomColor: COLORS.borderLight, ...SHADOWS.sm },
+  stepPill: { flex: 1, flexDirection: 'column', gap: 4, alignItems: 'center', minWidth: 0 },
+  stepCircle: { width: 24, height: 24, borderRadius: 12, backgroundColor: COLORS.borderLight, alignItems: 'center', justifyContent: 'center' },
   stepCircleCurrent: { backgroundColor: COLORS.primary },
   stepCircleDone: { backgroundColor: COLORS.primaryDark },
   stepNumText: { ...TYPOGRAPHY.caption, fontWeight: '800', color: COLORS.textSecondary },
   stepNumTextCurrent: { color: '#FFFFFF' },
-  stepLabel: { ...TYPOGRAPHY.caption, fontWeight: '600', color: COLORS.textMuted },
+  stepLabel: { ...TYPOGRAPHY.caption, fontSize: 10, fontWeight: '600', color: COLORS.textMuted, textAlign: 'center' },
   stepLabelCurrent: { color: COLORS.primary, fontWeight: '800' },
   stepLabelDone: { color: COLORS.textPrimary, fontWeight: '700' },
-  stepLine: { flex: 1, height: 2, backgroundColor: COLORS.borderLight, marginHorizontal: SPACING.sm },
+  stepLine: { width: 14, height: 2, backgroundColor: COLORS.borderLight, marginHorizontal: 2, marginBottom: 14, flexShrink: 1 },
   stepLineDone: { backgroundColor: COLORS.primary },
   scrollContent: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.xl, paddingBottom: SPACING['5xl'] },
   scrollContentDesktop: { paddingTop: SPACING['3xl'], paddingBottom: SPACING['7xl'] },

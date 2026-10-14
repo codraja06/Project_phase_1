@@ -1,3 +1,4 @@
+import { FormDialog } from './FormDialog';
 import React from 'react';
 import {
   View,
@@ -53,16 +54,8 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
       : COLORS.primaryLight;
 
   return (
-    <Modal
-      transparent
-      visible={visible}
-      animationType="fade"
-      onRequestClose={onCancel}
-    >
-      <TouchableWithoutFeedback onPress={onCancel}>
-        <View style={styles.overlay}>
-          <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
-            <View style={styles.dialogCard}>
+    <FormDialog visible={visible} onClose={onCancel}>
+            <View style={{ alignItems: 'center' }}>
               <View style={[styles.iconCircle, { backgroundColor: iconBg }]}>
                 <Ionicons name={icon} size={28} color={iconColor} />
               </View>
@@ -87,10 +80,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
                 />
               </View>
             </View>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+    </FormDialog>
   );
 };
 
@@ -141,13 +131,14 @@ const styles = StyleSheet.create({
   },
   buttonRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 12,
     width: '100%',
   },
   cancelBtn: {
-    flex: 1,
+    flexGrow: 1, flexBasis: 120,
   },
   confirmBtn: {
-    flex: 1,
+    flexGrow: 1, flexBasis: 120,
   },
 });

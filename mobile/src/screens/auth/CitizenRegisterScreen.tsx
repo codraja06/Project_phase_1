@@ -89,7 +89,7 @@ export const CitizenRegisterScreen: React.FC<Props> = ({ navigation }) => {
                 </Text>
               </Animated.View>
               <Animated.View entering={FadeInUp.delay(500)} style={styles.brandingFooter}>
-                <Text style={styles.brandingFooterText}>City Resident Access • CivicTrack v2.0</Text>
+                <Text style={styles.brandingFooterText}>City Resident Access • CivicTrack v1.0</Text>
               </Animated.View>
             </View>
 
@@ -359,8 +359,8 @@ const styles = StyleSheet.create({
   authSubtitle: { ...TYPOGRAPHY.body, color: COLORS.textSecondary, marginBottom: SPACING['4xl'] },
   
   // Mobile
-  mobileContainer: { flexGrow: 1, backgroundColor: COLORS.background },
-  mobileHeader: { backgroundColor: COLORS.backgroundNeutral, padding: SPACING['3xl'], paddingTop: Platform.OS === 'ios' ? SPACING['5xl'] : SPACING['6xl'], paddingBottom: SPACING['5xl'], borderBottomLeftRadius: 32, borderBottomRightRadius: 32, alignItems: 'center' },
+  mobileContainer: { flexGrow: 1, backgroundColor: COLORS.background, paddingBottom: SPACING['4xl'] },
+  mobileHeader: { backgroundColor: COLORS.backgroundNeutral, padding: SPACING['3xl'], paddingTop: SPACING.xl, paddingBottom: SPACING['4xl'], borderBottomLeftRadius: 32, borderBottomRightRadius: 32, alignItems: 'center' },
   backBtnMobile: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING['3xl'], backgroundColor: COLORS.surface, paddingHorizontal: SPACING.lg, paddingVertical: SPACING.sm, borderRadius: BORDER_RADIUS.xl, alignSelf: 'flex-start', borderWidth: 1, borderColor: COLORS.borderLight, ...SHADOWS.sm },
   backBtnTextMobile: { ...TYPOGRAPHY.caption, color: COLORS.textPrimary, fontWeight: '700', marginLeft: SPACING.xs },
   logoWrapperMobile: { marginBottom: SPACING.xl },

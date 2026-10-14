@@ -13,6 +13,18 @@ import { authRateLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
+router.get('/login', (req, res) => {
+  res.json({
+    status: 'OK',
+    message: 'Auth login endpoint is active. Submit an HTTP POST request with email and password to log in.',
+  });
+});
+router.get('/register', (req, res) => {
+  res.json({
+    status: 'OK',
+    message: 'Auth register endpoint is active. Submit an HTTP POST request to create an account.',
+  });
+});
 router.post('/register', authRateLimiter, register);
 router.post('/login', authRateLimiter, login);
 router.post('/google', authRateLimiter, googleAuth);

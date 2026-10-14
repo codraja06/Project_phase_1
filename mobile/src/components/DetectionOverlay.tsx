@@ -38,33 +38,15 @@ export const DetectionOverlay: React.FC<DetectionOverlayProps> = ({
     setImageLoaded(false);
     setImageError(false);
 
-    if (Platform.OS === 'web') {
-      const img = new window.Image();
-      img.onload = () => {
-        setNaturalSize({
-          width: img.naturalWidth || 640,
-          height: img.naturalHeight || 640,
-        });
-        setImageLoaded(true);
-      };
-      img.onerror = () => {
-        setImageError(true);
-        setNaturalSize({ width: 640, height: 640 });
-      };
-      img.src = imageUri;
-    } else {
-      Image.getSize(
-        imageUri,
-        (width, height) => {
-          setNaturalSize({ width, height });
-          setImageLoaded(true);
-        },
-        () => {
-          setImageError(true);
-          setNaturalSize({ width: 640, height: 640 });
-        }
-      );
-    }
+    let active = true;
+    Image.getSize(imageUri, (width, height) => {
+      if (!active) return;
+      setNaturalSize({ width, height }); setImageLoaded(true);
+    }, () => {
+      if (!active) return;
+      setImageError(true);
+    });
+    return () => { active = false; };
   }, [imageUri]);
 
   const handleLayout = (event: any) => {
@@ -131,6 +113,7 @@ export const DetectionOverlay: React.FC<DetectionOverlayProps> = ({
           </View>
         ) : (
           <Image
+            accessibilityLabel="Reported civic issue photograph"
             source={{ uri: imageUri }}
             style={styles.image}
             resizeMode="contain"
@@ -142,7 +125,7 @@ export const DetectionOverlay: React.FC<DetectionOverlayProps> = ({
         {imageLoaded && (
           <View style={styles.hudBadge}>
             <Ionicons name="sparkles" size={11} color={COLORS.primary} style={{ marginRight: 4 }} />
-            <Text style={styles.hudText}>YOLOv8 DETECTOR</Text>
+            <Text style={styles.hudText}>{detections.length ? 'AI DETECTION OVERLAY' : 'ISSUE PHOTO'}</Text>
           </View>
         )}
 
@@ -155,8 +138,8 @@ export const DetectionOverlay: React.FC<DetectionOverlayProps> = ({
 
             const boxLeft = offsetX + x1 * scale;
             const boxTop = offsetY + y1 * scale;
-            const boxWidth = Math.max((x2 - x1) * scale, 32);
-            const boxHeight = Math.max((y2 - y1) * scale, 32);
+            const boxWidth = Math.max((x2 - x1) * scale, 0);
+            const boxHeight = Math.max((y2 - y1) * scale, 0);
             const conf = Math.round((item.confidence || confidence || 0) * 100);
             const rawName = item.category || 'Civic Issue';
             const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1).replace(/_/g, ' ');

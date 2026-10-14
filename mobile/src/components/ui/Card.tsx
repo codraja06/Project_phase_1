@@ -36,22 +36,21 @@ export const Card: React.FC<CardProps> = ({
 
   if (isPressable) {
     return (
-      <AnimatedPressable
+      <Animated.View style={[styles.card, animateEntry && entryStyle, pressStyle, style]}>
+      <Pressable
         accessibilityRole="button"
         onPress={onPress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
         style={({ pressed, hovered }: any) => [
-          styles.card,
-          animateEntry && entryStyle,
-          pressStyle,
-          style,
+          { flexGrow: 1, width: '100%' },
           pressed && styles.pressed,
           hovered && styles.hovered,
         ]}
       >
         {children}
-      </AnimatedPressable>
+      </Pressable>
+      </Animated.View>
     );
   }
 

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { MapSurface } from './MapSurface';
+import React, { useState, useEffect } from 'react';
 import { Input } from './Input';
 import { Button } from './ui/Button';
 import { View, Text, StyleSheet, Platform, TouchableOpacity } from 'react-native';
@@ -26,219 +27,47 @@ export const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
   height = 240,
   showCard = true,
 }) => {
-  const lat = Number.isFinite(latitude) ? latitude : 12.9716;
-  const lng = Number.isFinite(longitude) ? longitude : 77.5946;
   const [manualLat, setManualLat] = useState('');
   const [manualLng, setManualLng] = useState('');
   const [coordinateError, setCoordinateError] = useState('');
 
-  // ─── WEB: Use OpenStreetMap embed iframe ──────────────────────────────────
-  if (Platform.OS === 'web') {
-    const bbox = `${lng - 0.005},${lat - 0.005},${lng + 0.005},${lat + 0.005}`;
-    const mapSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}`;
+  const valid = Number.isFinite(latitude) && Number.isFinite(longitude) && Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180;
 
-    return (
-      <View style={styles.outerContainer}>
-        <View style={[styles.mapContainer, { height }]}>
-          <iframe
-            src={mapSrc}
-            style={{ width: '100%', height: '100%', border: 'none' } as any}
-            title="Civic Issue Location"
-          />
-          {/* Visual radar radius circle & pin center graphic */}
-          <View style={styles.radarCenter} pointerEvents="none">
-            <View style={styles.radarCircle} />
-          </View>
-        </View>
-
-        {showCard && (
-          <View style={styles.locationCard}>
-            <View style={styles.iconCircle}>
-              <Ionicons name="location" size={20} color={COLORS.primary} />
-            </View>
-            <View style={styles.addressInfo}>
-              <Text style={styles.locationHeader}>Current Location</Text>
-              <Text style={styles.addressText} numberOfLines={2}>
-                {address || 'Fetching device address...'}
-              </Text>
-              <Text style={styles.coordsText}>
-                Lat: {lat.toFixed(4)} Long: {lng.toFixed(4)}
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {interactive && onSelectLocation && <View style={{ marginTop: 16 }}>
-          <Text style={{ marginBottom: 12 }}>Enter exact coordinates to set the incident pin, or use your current location.</Text>
-          <Input label="Incident latitude" value={manualLat} onChangeText={setManualLat} keyboardType="numbers-and-punctuation" placeholder="-90 to 90" />
-          <Input label="Incident longitude" value={manualLng} onChangeText={setManualLng} keyboardType="numbers-and-punctuation" placeholder="-180 to 180" />
-          {!!coordinateError && <Text accessibilityRole="alert" style={{ color: COLORS.error, marginBottom: 12 }}>{coordinateError}</Text>}
-          <Button title="Set incident location" variant="outline" onPress={() => {
-            const newLat = Number(manualLat), newLng = Number(manualLng);
-            if (!manualLat.trim() || !manualLng.trim() || !Number.isFinite(newLat) || !Number.isFinite(newLng) || Math.abs(newLat) > 90 || Math.abs(newLng) > 180) { setCoordinateError('Enter a valid latitude and longitude.'); return; }
-            setCoordinateError(''); onSelectLocation(newLat, newLng);
-          }} />
-        </View>}
-        {interactive && onSelectLocation && <View style={{ marginTop: 16 }}>
-          <Text style={{ marginBottom: 12 }}>Enter exact coordinates to set the incident pin, or use your current location.</Text>
-          <Input label="Incident latitude" value={manualLat} onChangeText={setManualLat} keyboardType="numbers-and-punctuation" placeholder="-90 to 90" />
-          <Input label="Incident longitude" value={manualLng} onChangeText={setManualLng} keyboardType="numbers-and-punctuation" placeholder="-180 to 180" />
-          {!!coordinateError && <Text accessibilityRole="alert" style={{ color: COLORS.error, marginBottom: 12 }}>{coordinateError}</Text>}
-          <Button title="Set incident location" variant="outline" onPress={() => {
-            const newLat = Number(manualLat), newLng = Number(manualLng);
-            if (!manualLat.trim() || !manualLng.trim() || !Number.isFinite(newLat) || !Number.isFinite(newLng) || Math.abs(newLat) > 90 || Math.abs(newLng) > 180) { setCoordinateError('Enter a valid latitude and longitude.'); return; }
-            setCoordinateError(''); onSelectLocation(newLat, newLng);
-          }} />
-        </View>}
-        {onUseCurrentLocation && (
-          <TouchableOpacity
-            style={styles.useCurrentBtn}
-            onPress={onUseCurrentLocation}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="Use Current Location"
-          >
-            <Ionicons name="locate-outline" size={18} color={COLORS.primary} style={{ marginRight: 6 }} />
-            <Text style={styles.useCurrentText}>Use Current Location</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    );
-  }
-
-  // ─── NATIVE: Use react-native-maps ────────────────────────────────────────
-  let MapView: any = null;
-  let Marker: any = null;
-  let Circle: any = null;
-  let PROVIDER_DEFAULT: any = null;
-
-  try {
-    const maps = require('react-native-maps');
-    MapView = maps.default;
-    Marker = maps.Marker;
-    Circle = maps.Circle;
-    PROVIDER_DEFAULT = maps.PROVIDER_DEFAULT;
-  } catch (e) {}
-
-  if (!MapView) {
-    return (
-      <View style={styles.outerContainer}>
-        <View style={[styles.mapContainer, { height }, styles.fallbackContainer]}>
-          <Ionicons name="map-outline" size={42} color={COLORS.primary} />
-          <Text style={styles.fallbackTitle}>GPS Coordinates Pinned</Text>
-          <Text style={styles.coordsText}>
-            Lat: {lat.toFixed(4)} Long: {lng.toFixed(4)}
-          </Text>
-        </View>
-
-        {showCard && (
-          <View style={styles.locationCard}>
-            <View style={styles.iconCircle}>
-              <Ionicons name="location" size={20} color={COLORS.primary} />
-            </View>
-            <View style={styles.addressInfo}>
-              <Text style={styles.locationHeader}>Current Location</Text>
-              <Text style={styles.addressText} numberOfLines={2}>
-                {address || 'Location recorded'}
-              </Text>
-              <Text style={styles.coordsText}>
-                Lat: {lat.toFixed(4)} Long: {lng.toFixed(4)}
-              </Text>
-            </View>
-          </View>
-        )}
-      </View>
-    );
-  }
-
-  const initialRegion = {
-    latitude: lat,
-    longitude: lng,
-    latitudeDelta: 0.005,
-    longitudeDelta: 0.005,
-  };
-
-  const handleMapPress = (e: any) => {
-    if (interactive && onSelectLocation) {
-      const { latitude: clickLat, longitude: clickLng } = e.nativeEvent.coordinate;
-      onSelectLocation(clickLat, clickLng);
+  useEffect(() => {
+    if (valid) {
+      setManualLat(latitude.toString());
+      setManualLng(longitude.toString());
     }
-  };
+  }, [latitude, longitude, valid]);
 
-  return (
-    <View style={styles.outerContainer}>
-      <View style={[styles.mapContainer, { height }]}>
-        <MapView
-          provider={PROVIDER_DEFAULT}
-          style={styles.map}
-          initialRegion={initialRegion}
-          region={{
-            latitude: lat,
-            longitude: lng,
-            latitudeDelta: 0.005,
-            longitudeDelta: 0.005,
-          }}
-          onPress={handleMapPress}
-          scrollEnabled={interactive}
-          zoomEnabled={interactive}
-        >
-          {Circle && (
-            <Circle
-              center={{ latitude: lat, longitude: lng }}
-              radius={70}
-              fillColor="rgba(183, 28, 28, 0.12)"
-              strokeColor="#FFC107"
-              strokeWidth={2}
-            />
-          )}
-          <Marker
-            coordinate={{ latitude: lat, longitude: lng }}
-            title="Issue Location"
-            description={address || 'Location coordinates'}
-            pinColor={COLORS.primary}
-          >
-            <View style={styles.redYellowPinMarker}>
-              <View style={styles.pinOuterYellowRing}>
-                <View style={styles.pinInnerRedCircle}>
-                  <Ionicons name="location" size={16} color="#FFFFFF" />
-                </View>
-              </View>
-            </View>
-          </Marker>
-        </MapView>
-      </View>
-
-      {showCard && (
-        <View style={styles.locationCard}>
-          <View style={styles.iconCircle}>
-            <Ionicons name="location" size={20} color={COLORS.primary} />
-          </View>
-          <View style={styles.addressInfo}>
-            <Text style={styles.locationHeader}>Current Location</Text>
-            <Text style={styles.addressText} numberOfLines={2}>
-              {address || 'Fetching device address...'}
-            </Text>
-            <Text style={styles.coordsText}>
-              Lat: {lat.toFixed(4)} Long: {lng.toFixed(4)}
-            </Text>
-          </View>
+  return <View style={styles.outerContainer}>
+    <View style={[styles.mapContainer, { height }]}>
+      {valid ? (
+        <MapSurface latitude={latitude} longitude={longitude} interactive={interactive} onSelectLocation={onSelectLocation} />
+      ) : (
+        <View style={styles.fallbackContainer}>
+          <Ionicons name="map-outline" size={32} color={COLORS.textMuted} />
+          <Text style={styles.fallbackTitle}>Choose the incident location</Text>
         </View>
-      )}
-
-      {onUseCurrentLocation && (
-        <TouchableOpacity
-          style={styles.useCurrentBtn}
-          onPress={onUseCurrentLocation}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          accessibilityLabel="Use Current Location"
-        >
-          <Ionicons name="locate-outline" size={18} color={COLORS.primary} style={{ marginRight: 6 }} />
-          <Text style={styles.useCurrentText}>Use Current Location</Text>
-        </TouchableOpacity>
       )}
     </View>
-  );
+    {showCard && <View style={styles.locationCard}>
+      <Ionicons name="location" size={20} color={COLORS.primary} />
+      <View style={styles.addressInfo}><Text style={styles.locationHeader}>Incident location</Text><Text style={styles.addressText}>{address || 'Address unavailable'}</Text>{valid && <Text style={styles.coordsText}>Lat: {latitude.toFixed(4)} Long: {longitude.toFixed(4)}</Text>}</View>
+    </View>}
+    {interactive && onSelectLocation && <View style={{ marginTop: 16 }}>
+      <Text style={[TYPOGRAPHY.caption, { color: COLORS.textSecondary, marginBottom: 12 }]}>Enter exact coordinates, or use your current location.</Text>
+      <Input label="Incident latitude" value={manualLat} onChangeText={setManualLat} keyboardType="numbers-and-punctuation" placeholder="-90 to 90" />
+      <Input label="Incident longitude" value={manualLng} onChangeText={setManualLng} keyboardType="numbers-and-punctuation" placeholder="-180 to 180" />
+      {!!coordinateError && <Text accessibilityRole="alert" style={{ color: COLORS.error, marginBottom: 12 }}>{coordinateError}</Text>}
+      <Button title="Set incident location" variant="outline" onPress={() => {
+        const newLat = Number(manualLat), newLng = Number(manualLng);
+        if (!manualLat.trim() || !manualLng.trim() || !Number.isFinite(newLat) || !Number.isFinite(newLng) || Math.abs(newLat) > 90 || Math.abs(newLng) > 180) { setCoordinateError('Enter a valid latitude and longitude.'); return; }
+        setCoordinateError(''); onSelectLocation(newLat, newLng);
+      }} />
+    </View>}
+    {onUseCurrentLocation && <TouchableOpacity style={styles.useCurrentBtn} onPress={onUseCurrentLocation} accessibilityRole="button" accessibilityLabel="Use Current Location"><Ionicons name="locate-outline" size={18} color={COLORS.primary} /><Text style={styles.useCurrentText}>Use Current Location</Text></TouchableOpacity>}
+  </View>;
 };
 
 const styles = StyleSheet.create({

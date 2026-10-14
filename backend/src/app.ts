@@ -26,7 +26,7 @@ app.use('/api', apiRateLimiter);
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Health Check
-app.get('/health', (_req, res) => {
+app.get(['/health', '/api/health'], (_req, res) => {
   res.status(200).json({ status: 'OK', message: 'Backend API is running.' });
 });
 

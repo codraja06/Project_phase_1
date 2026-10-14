@@ -1,9 +1,12 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useReducedMotion } from 'react-native-reanimated';
 import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Modal,
+  ScrollView,
   TouchableOpacity,
   Animated,
   Platform,
@@ -28,12 +31,16 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
   onViewComplaint,
   onClose,
 }) => {
+  const reducedMotion = useReducedMotion();
   const scaleAnim = useRef(new Animated.Value(0.3)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const checkAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (visible) {
+      if (reducedMotion) {
+        scaleAnim.setValue(1); opacityAnim.setValue(1); checkAnim.setValue(1); return;
+      }
       scaleAnim.setValue(0.3);
       opacityAnim.setValue(0);
       checkAnim.setValue(0);
@@ -59,7 +66,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
         }).start();
       });
     }
-  }, [visible, scaleAnim, opacityAnim, checkAnim]);
+  }, [visible, reducedMotion, scaleAnim, opacityAnim, checkAnim]);
 
   return (
     <Modal
@@ -68,7 +75,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
       animationType="none"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: 'rgba(26,26,26,0.72)' }}><ScrollView contentContainerStyle={styles.overlay}>
         <Animated.View
           style={[
             styles.container,
@@ -99,13 +106,15 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
           {/* Complaint ID Badge Container */}
           <View style={styles.idCard}>
             <Text style={styles.idLabel}>OFFICIAL COMPLAINT ID</Text>
-            <Text style={styles.idValue}>{complaintId || 'CIV-100245'}</Text>
+            <Text style={styles.idValue}>{complaintId || 'Reference unavailable'}</Text>
           </View>
 
           {/* Action Buttons */}
           <View style={styles.actionContainer}>
             <TouchableOpacity
               style={styles.primaryBtn}
+              accessibilityLabel="VIEW COMPLAINT DETAILS"
+              accessibilityRole="button"
               onPress={onViewComplaint}
               activeOpacity={0.85}
             >
@@ -115,6 +124,8 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
 
             <TouchableOpacity
               style={styles.secondaryBtn}
+              accessibilityLabel="BACK TO HOME"
+              accessibilityRole="button"
               onPress={onClose}
               activeOpacity={0.7}
             >
@@ -122,18 +133,18 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
             </TouchableOpacity>
           </View>
         </Animated.View>
-      </View>
+      </ScrollView></SafeAreaView>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: 'rgba(26, 26, 26, 0.72)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: 16,
     ...(Platform.OS === 'web' ? { backdropFilter: 'blur(6px)' as any } : {}),
   },
   container: {
@@ -142,7 +153,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: BORDER_RADIUS.xl,
     paddingVertical: 32,
-    paddingHorizontal: 26,
+    paddingHorizontal: 20,
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#FEF08A',
@@ -214,7 +225,9 @@ const styles = StyleSheet.create({
   },
   primaryBtn: {
     width: '100%',
-    height: 48,
+    minHeight: 48,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
     backgroundColor: COLORS.primary,
     borderRadius: BORDER_RADIUS.md,
     flexDirection: 'row',
@@ -223,6 +236,8 @@ const styles = StyleSheet.create({
     ...SHADOWS.button,
   },
   primaryBtnText: {
+    flexShrink: 1,
+    textAlign: 'center',
     color: '#FFFFFF',
     fontSize: 13.5,
     fontWeight: '800',
@@ -230,7 +245,9 @@ const styles = StyleSheet.create({
   },
   secondaryBtn: {
     width: '100%',
-    height: 46,
+    minHeight: 46,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
     backgroundColor: 'transparent',
     borderRadius: BORDER_RADIUS.md,
     borderWidth: 1.5,

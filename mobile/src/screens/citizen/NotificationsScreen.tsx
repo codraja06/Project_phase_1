@@ -1,3 +1,4 @@
+import { RequestError } from '../../components/RequestError';
 import React, { useState, useCallback } from 'react';
 import {
   View,
@@ -24,19 +25,20 @@ import { formatDate } from '../../utils/date';
 
 export const NotificationsScreen = ({ navigation }: any) => {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [loadError, setLoadError] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchComplaints = async () => {
     try {
-      setLoading(true);
+      setLoading(true); setLoadError('');
       const res = await complaintApi.getMyComplaints();
       const sorted = [...(res.complaints || [])].sort(
         (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
       setComplaints(sorted);
     } catch (error) {
-      console.error('Failed to load notifications:', error);
+      setLoadError((error as Error).message || 'Please check your connection and retry.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -54,6 +56,8 @@ export const NotificationsScreen = ({ navigation }: any) => {
     fetchComplaints();
   };
 
+  if (loadError) return <RequestError message={loadError} onRetry={fetchComplaints} />;
+
   if (loading && !refreshing) {
     return <LoadingSpinner message="Loading notifications..." />;
   }
@@ -64,23 +68,22 @@ export const NotificationsScreen = ({ navigation }: any) => {
     const formattedDate = formatDate(c.updatedAt || c.createdAt, true);
     const complaintCode = c.complaintId || `#CIV${c._id.slice(-5).toUpperCase()}`;
 
+    if (normStatus === 'rejected') return { id: `rejected-${c._id}`, title: `Complaint rejected: ${c.title}`, message: 'The complaint is recorded as rejected.', timestamp: formattedDate, type: 'alert', complaintId: c._id };
     if (normStatus === 'resolved') {
       return {
         id: `notif-${c._id}-resolved`,
         title: `Your complaint ${complaintCode} has been Resolved`,
-        message: `${c.title} has been successfully certified and resolved by municipal maintenance.`,
+        message: `${c.title} is recorded as resolved.`,
         timestamp: formattedDate,
         type: 'resolved',
-        isRead: true,
         complaintId: c._id};
     } else if (normStatus === 'in progress' || normStatus === 'in_progress') {
       return {
         id: `notif-${c._id}-inprogress`,
         title: `Your complaint ${complaintCode} is now In Progress`,
-        message: `Field inspection and remediation crew dispatched for: ${c.title}`,
+        message: `Status changed to in progress for: ${c.title}`,
         timestamp: formattedDate,
         type: 'in_progress',
-        isRead: false,
         complaintId: c._id};
     } else {
       return {
@@ -89,7 +92,6 @@ export const NotificationsScreen = ({ navigation }: any) => {
         message: `Incident '${c.title}' is queued for municipal inspection.`,
         timestamp: formattedDate,
         type: 'received',
-        isRead: true,
         complaintId: c._id};
     }
   });
@@ -181,7 +183,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.lg,
-    paddingBottom: SPACING['4xl']},
+    paddingBottom: 96},
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',

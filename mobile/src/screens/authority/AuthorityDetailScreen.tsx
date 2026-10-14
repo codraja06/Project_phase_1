@@ -1,3 +1,6 @@
+import { MapLocationPicker } from '../../components/MapLocationPicker';
+import { RequestError } from '../../components/RequestError';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -5,7 +8,6 @@ import {
   StyleSheet,
   ScrollView,
   RefreshControl,
-  SafeAreaView,
   StatusBar,
   TouchableOpacity,
 } from 'react-native';
@@ -37,6 +39,7 @@ export const AuthorityDetailScreen: React.FC<Props> = ({ route, navigation }) =>
   const { complaintId } = route.params;
   const { isDesktop, isWide } = useBreakpoint();
   const [complaint, setComplaint] = useState<Complaint | null>(null);
+  const [loadError, setLoadError] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
@@ -51,18 +54,17 @@ export const AuthorityDetailScreen: React.FC<Props> = ({ route, navigation }) =>
 
   const fetchDetail = useCallback(async () => {
     try {
-      setLoading(true);
+      setLoading(true); setLoadError('');
       const data = await authorityApi.getComplaintById(complaintId);
       setComplaint(data);
     } catch (error) {
-      console.error('Failed to load authority complaint details:', error);
+      setLoadError((error as Error).message || 'Unable to load this incident.');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   }, [complaintId]);
 
-  useEffect(() => { fetchDetail(); }, [fetchDetail]);
   useFocusEffect(useCallback(() => { fetchDetail(); }, [fetchDetail]));
 
   const onRefresh = () => { setRefreshing(true); fetchDetail(); };
@@ -111,17 +113,36 @@ export const AuthorityDetailScreen: React.FC<Props> = ({ route, navigation }) =>
     }
   };
 
+  if (loadError) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
+        <View style={styles.headerBar}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back" style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Incident Dossier</Text>
+        </View>
+        <View style={{ flex: 1, backgroundColor: COLORS.backgroundNeutral }}>
+          <RequestError message={loadError} onRetry={fetchDetail} />
+        </View>
+      </SafeAreaView>
+    );
+  }
   if (loading && !refreshing) return <LoadingSpinner message="Loading municipal dossier..." />;
   if (!complaint) return (
     <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
       <View style={styles.headerBar}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={20} color={COLORS.textPrimary} />
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back" style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Incident Dossier</Text>
       </View>
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Text>Complaint not found.</Text>
+      <View style={{ flex: 1, backgroundColor: COLORS.backgroundNeutral, alignItems: 'center', justifyContent: 'center', padding: SPACING.xl }}>
+        <Ionicons name="alert-circle-outline" size={48} color={COLORS.textMuted} style={{ marginBottom: SPACING.md }} />
+        <Text style={{ ...TYPOGRAPHY.h4, color: COLORS.textPrimary, textAlign: 'center' }}>Complaint not found.</Text>
+        <Text style={{ ...TYPOGRAPHY.bodySmall, color: COLORS.textSecondary, textAlign: 'center', marginTop: SPACING.xs }}>This record may have been removed or is unavailable.</Text>
       </View>
     </SafeAreaView>
   );
@@ -152,7 +173,7 @@ export const AuthorityDetailScreen: React.FC<Props> = ({ route, navigation }) =>
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
       <Animated.View entering={FadeInDown.duration(400)} style={styles.headerBar}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back" style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={20} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Incident Dossier</Text>
@@ -160,6 +181,7 @@ export const AuthorityDetailScreen: React.FC<Props> = ({ route, navigation }) =>
       </Animated.View>
 
       <ScrollView style={styles.container} contentContainerStyle={isWide ? styles.desktopScrollContent : styles.scrollContent} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />}>
+        <View style={{ padding: 16 }}><MapLocationPicker latitude={complaint.latitude} longitude={complaint.longitude} address={complaint.address} interactive={false} showCard={false} height={220} /></View>
         {isWide ? (
           <View style={styles.desktopContainer}>
             {/* Left Column */}
@@ -184,7 +206,7 @@ export const AuthorityDetailScreen: React.FC<Props> = ({ route, navigation }) =>
                   <CardContent>
                     <View style={styles.metaHeaderRow}><Ionicons name="location" size={20} color={COLORS.primary} /><Text style={styles.metaCardTitle}> Geographic Verification</Text></View>
                     <Text style={styles.locationText}>{complaint.address || 'Address registered with device GPS sensor'}</Text>
-                    {complaint.latitude && complaint.longitude && <Text style={styles.coordsText}>Lat: {complaint.latitude.toFixed(5)}, Long: {complaint.longitude.toFixed(5)}</Text>}
+                    {Number.isFinite(complaint.latitude) && Number.isFinite(complaint.longitude) && <Text style={styles.coordsText}>Lat: {complaint.latitude.toFixed(5)}, Long: {complaint.longitude.toFixed(5)}</Text>}
                   </CardContent>
                 </Card>
               </Animated.View>

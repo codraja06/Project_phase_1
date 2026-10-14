@@ -117,7 +117,9 @@ export const AuthoritySidebar: React.FC<AuthoritySidebarProps> = ({
       <View style={styles.footer}>
         <View style={styles.footerOfficerCard}>
           <View style={styles.officerAvatar}>
-            <Text style={styles.officerAvatarText}>{user?.name.split(' ').map(n => n[0]).slice(0, 2).join('')}</Text>
+            <Text style={styles.officerAvatarText}>
+              {(user?.name || 'Officer').split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || 'OF'}
+            </Text>
           </View>
           <View style={styles.officerInfo}>
             <Text style={styles.officerName}>{user?.name || 'Officer'}</Text>
@@ -135,6 +137,7 @@ export const AuthoritySidebar: React.FC<AuthoritySidebarProps> = ({
 const styles = StyleSheet.create({
   sidebar: {
     width: 260,
+    maxWidth: '100%',
     backgroundColor: '#F8FAFC',
     borderRightWidth: 1,
     borderRightColor: COLORS.borderLight,

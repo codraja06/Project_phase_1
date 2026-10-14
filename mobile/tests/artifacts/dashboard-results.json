@@ -4,78 +4,7 @@
       "width": 320,
       "height": 568,
       "scroll": 320,
-      "offenders": [
-        {
-          "text": "",
-          "x": 288,
-          "width": 44
-        },
-        {
-          "text": "AP",
-          "x": 342,
-          "width": 44
-        },
-        {
-          "text": "",
-          "x": 329,
-          "width": 181
-        },
-        {
-          "text": "Report an Issue",
-          "x": 313,
-          "width": 110.046875
-        },
-        {
-          "text": "Road Damage",
-          "x": 300,
-          "width": 30
-        },
-        {
-          "text": "Garbage",
-          "x": 312,
-          "width": 30
-        },
-        {
-          "text": "Garbage Overflow",
-          "x": 324,
-          "width": 30
-        },
-        {
-          "text": "5Total Reports",
-          "x": 288,
-          "width": 34
-        },
-        {
-          "text": "2Pending",
-          "x": 300,
-          "width": 34
-        },
-        {
-          "text": "2In Progress",
-          "x": 312,
-          "width": 34
-        },
-        {
-          "text": "1Resolved",
-          "x": 324,
-          "width": 34
-        },
-        {
-          "text": "My Reports",
-          "x": 288,
-          "width": 116.421875
-        },
-        {
-          "text": "Notifications",
-          "x": 288,
-          "width": 127.25
-        },
-        {
-          "text": "See all",
-          "x": 333,
-          "width": 79.484375
-        }
-      ]
+      "offenders": []
     },
     {
       "width": 320,
@@ -235,30 +164,5 @@
     }
   ],
   "errors": [],
-  "axe": [
-    {
-      "id": "aria-required-attr",
-      "impact": "critical",
-      "nodes": [
-        {
-          "target": [
-            "div[aria-label=\"7 days\"]"
-          ],
-          "summary": "Fix any of the following:\n  Required ARIA attribute not present: aria-checked"
-        },
-        {
-          "target": [
-            "div[aria-label=\"30 days\"]"
-          ],
-          "summary": "Fix any of the following:\n  Required ARIA attribute not present: aria-checked"
-        },
-        {
-          "target": [
-            "div[aria-label=\"All time\"]"
-          ],
-          "summary": "Fix any of the following:\n  Required ARIA attribute not present: aria-checked"
-        }
-      ]
-    }
-  ]
+  "axe": []
 }

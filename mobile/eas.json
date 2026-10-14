@@ -1,11 +1,25 @@
 {
+  "cli": {
+    "appVersionSource": "remote"
+  },
   "build": {
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://192.168.29.44:5000/api",
+        "EXPO_PUBLIC_MAP_PROVIDER": "osm",
+        "EXPO_PUBLIC_LOCATION_TIMEOUT": "15000"
       }
     },
-    "production": {}
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://192.168.29.44:5000/api",
+        "EXPO_PUBLIC_MAP_PROVIDER": "osm",
+        "EXPO_PUBLIC_LOCATION_TIMEOUT": "15000"
+      }
+    }
   }
 }

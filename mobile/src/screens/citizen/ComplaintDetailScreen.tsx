@@ -1,3 +1,5 @@
+import { MapLocationPicker } from '../../components/MapLocationPicker';
+import { RequestError } from '../../components/RequestError';
 import React, { useState, useCallback } from 'react';
 import {
   View,
@@ -33,17 +35,18 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
   const { complaintId } = route.params;
   const { isDesktop, isWide } = useBreakpoint();
   const [complaint, setComplaint] = useState<Complaint | null>(null);
+  const [loadError, setLoadError] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [expandedDesc, setExpandedDesc] = useState(false);
 
   const fetchDetail = async () => {
     try {
-      setLoading(true);
+      setLoading(true); setLoadError('');
       const data = await complaintApi.getComplaintById(complaintId);
       setComplaint(data);
     } catch (error) {
-      console.error('Failed to load complaint details:', error);
+      setLoadError((error as Error).message || 'Unable to load this incident.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -61,6 +64,19 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
     fetchDetail();
   };
 
+  if (loadError) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.headerBar}>
+          <TouchableOpacity hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Back" style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={24} color={COLORS.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Complaint Details</Text>
+        </View>
+        <RequestError message={loadError} onRetry={fetchDetail} />
+      </SafeAreaView>
+    );
+  }
   if (loading && !refreshing) {
     return <LoadingSpinner message="Fetching live complaint dossier..." />;
   }
@@ -125,6 +141,7 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
         }
         showsVerticalScrollIndicator={false}
       >
+        <View style={{ padding: 16 }}><MapLocationPicker latitude={complaint.latitude} longitude={complaint.longitude} address={complaint.address} interactive={false} showCard={false} height={220} /></View>
         {isWide ? (
           /* Desktop/Tablet Two-Column Layout */
           <View style={styles.desktopContainer}>
@@ -146,7 +163,7 @@ export const ComplaintDetailScreen: React.FC<Props> = ({ route, navigation }) =>
                   <Text style={styles.metaCardTitle}>Incident Location</Text>
                 </View>
                 <Text style={styles.locationText}>{complaint.address || 'Address logged via device GPS sensor'}</Text>
-                {complaint.latitude && complaint.longitude && (
+                {Number.isFinite(complaint.latitude) && Number.isFinite(complaint.longitude) && (
                   <Text style={styles.gpsCoordsText}>
                     GPS: {complaint.latitude.toFixed(5)}, {complaint.longitude.toFixed(5)}
                   </Text>
