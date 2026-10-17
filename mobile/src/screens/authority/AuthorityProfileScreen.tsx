@@ -17,6 +17,7 @@ import Animated, { FadeInDown, FadeInUp, ZoomIn } from 'react-native-reanimated'
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
 import { authApi } from '../../api/authApi';
+import { googleAuthService } from '../../services/googleAuth';
 import { Input, PasswordInput } from '../../components/Input';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent } from '../../components/ui/Card';
@@ -52,6 +53,7 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [updatingPassword, setUpdatingPassword] = useState(false);
+  const [linkingGoogle, setLinkingGoogle] = useState(false);
 
   const handleUpdateProfile = async () => {
     try {
@@ -90,6 +92,26 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
     }
   };
 
+  const handleLinkGoogle = async () => {
+    if (user?.googleId) {
+      showMessage('Google Connected', 'This officer account is already linked to Google.');
+      return;
+    }
+    if (linkingGoogle) return;
+    try {
+      setLinkingGoogle(true);
+      const updated = await googleAuthService.linkGoogle();
+      updateUser(updated);
+      showMessage('Google Connected', 'You can now use Continue with Google on the Officer Portal.');
+    } catch (error: any) {
+      if (!error.message?.toLowerCase().includes('cancelled')) {
+        showMessage('Could Not Connect Google', error.message || 'Please try again.');
+      }
+    } finally {
+      setLinkingGoogle(false);
+    }
+  };
+
   const handleDispatchSupport = () => {
     showMessage(
       'Municipal Operations Dispatch',
@@ -124,6 +146,14 @@ export const AuthorityProfileScreen = ({ navigation }: any) => {
           label: 'Security Credentials',
           sub: 'Change officer authentication password',
           onPress: () => setChangePasswordVisible(true),
+        },
+        {
+          icon: 'logo-google' as const,
+          iconBg: COLORS.primaryLight,
+          iconColor: COLORS.primary,
+          label: user?.googleId ? 'Google Account Connected' : 'Connect Google Account',
+          sub: user?.googleId ? 'Use Google at your next sign-in' : 'Link this officer account for Google sign-in',
+          onPress: handleLinkGoogle,
         },
       ],
     },

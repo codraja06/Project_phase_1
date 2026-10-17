@@ -46,7 +46,6 @@ export const AuthorityDetailScreen: React.FC<Props> = ({ route, navigation }) =>
   const [expandedDesc, setExpandedDesc] = useState(false);
 
   // Modals
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [progressModalVisible, setProgressModalVisible] = useState(false);
   const [resolveModalVisible, setResolveModalVisible] = useState(false);
 
@@ -99,19 +98,7 @@ export const AuthorityDetailScreen: React.FC<Props> = ({ route, navigation }) =>
     }
   };
 
-  const handleDeleteComplaint = async () => {
-    try {
-      setActionLoading(true);
-      await authorityApi.deleteComplaint(complaintId);
-      setDeleteModalVisible(false);
-      setToast({ visible: true, message: 'Complaint purged.', type: 'info' });
-      setTimeout(() => navigation.goBack(), 1200);
-    } catch (error: any) {
-      setToast({ visible: true, message: error.message || 'Unable to delete.', type: 'error' });
-    } finally {
-      setActionLoading(false);
-    }
-  };
+
 
   if (loadError) {
     return (
@@ -263,7 +250,6 @@ export const AuthorityDetailScreen: React.FC<Props> = ({ route, navigation }) =>
                 {!isInProgress && !isResolved && <Button title="Mark In Progress" onPress={() => setProgressModalVisible(true)} variant="default" size="lg" loading={actionLoading} style={styles.actionBtn} />}
                 {isInProgress && <Button title="Mark Resolved" onPress={() => setResolveModalVisible(true)} variant="default" size="lg" loading={actionLoading} style={styles.actionBtn} />}
                 {isResolved && <Button title="Resolved ✓" onPress={() => {}} variant="outline" size="lg" disabled style={styles.actionBtn} />}
-                <Button title="Purge Record" onPress={() => setDeleteModalVisible(true)} variant="destructive" style={{ marginTop: SPACING.md }} />
               </Animated.View>
             </View>
           </View>
@@ -344,7 +330,6 @@ export const AuthorityDetailScreen: React.FC<Props> = ({ route, navigation }) =>
                 {!isInProgress && !isResolved && <Button title="Mark In Progress" onPress={() => setProgressModalVisible(true)} variant="default" size="lg" loading={actionLoading} style={styles.actionBtn} />}
                 {isInProgress && <Button title="Mark Resolved" onPress={() => setResolveModalVisible(true)} variant="default" size="lg" loading={actionLoading} style={styles.actionBtn} />}
                 {isResolved && <Button title="Resolved ✓" onPress={() => {}} variant="outline" size="lg" disabled style={styles.actionBtn} />}
-                <Button title="Purge Record" onPress={() => setDeleteModalVisible(true)} variant="destructive" style={{ marginTop: SPACING.md }} />
               </Animated.View>
             </View>
           </View>
@@ -353,7 +338,6 @@ export const AuthorityDetailScreen: React.FC<Props> = ({ route, navigation }) =>
 
       <ConfirmationDialog visible={progressModalVisible} title="Mark In Progress" message={`Dispatch municipal team to inspect and resolve '${complaint.title}'?`} confirmText="Confirm Dispatch" confirmVariant="info" loading={actionLoading} onConfirm={() => handleUpdateStatus('In Progress')} onCancel={() => setProgressModalVisible(false)} />
       <ConfirmationDialog visible={resolveModalVisible} title="Certify Resolution" message={`Confirm that work is completed and civic issue '${complaint.title}' is remediated?`} confirmText="Confirm Resolution" confirmVariant="primary" loading={actionLoading} onConfirm={() => handleUpdateStatus('Resolved')} onCancel={() => setResolveModalVisible(false)} />
-      <ConfirmationDialog visible={deleteModalVisible} title="Purge Complaint" message={`Permanently remove '${complaint.title}' from the civic database?`} confirmText="Purge Record" confirmVariant="danger" loading={actionLoading} onConfirm={handleDeleteComplaint} onCancel={() => setDeleteModalVisible(false)} />
 
       <Toast visible={toast.visible} message={toast.message} type={toast.type} onDismiss={() => setToast(prev => ({ ...prev, visible: false }))} />
     </SafeAreaView>

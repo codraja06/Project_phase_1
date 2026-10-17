@@ -46,7 +46,6 @@ interface TableRowProps {
   complaint: Complaint;
   onPress: () => void;
   onVerify: (complaint: Complaint) => void;
-  onReject: (complaint: Complaint) => void;
   isSelected?: boolean;
   onToggleSelect?: () => void;
 }
@@ -55,7 +54,6 @@ const DesktopComplaintRow: React.FC<TableRowProps> = ({
   complaint,
   onPress,
   onVerify,
-  onReject,
   isSelected,
   onToggleSelect,
 }) => {
@@ -179,7 +177,6 @@ const DesktopComplaintRow: React.FC<TableRowProps> = ({
         {!isVerified && (
           <Button title="Verify" variant="outline" onPress={() => onVerify(complaint)} size="sm" style={{ marginRight: SPACING.xs, height: 32, paddingHorizontal: SPACING.sm }} />
         )}
-        <Button variant="ghost" onPress={() => onReject(complaint)} size="sm" style={{ width: 32, height: 32, paddingHorizontal: 0, marginRight: 4 }} icon={<Ionicons name="trash-outline" size={16} color={COLORS.error} />} />
         <Button variant="ghost" onPress={onPress} size="sm" style={{ width: 32, height: 32, paddingHorizontal: 0 }} icon={<Ionicons name="chevron-forward" size={16} color={COLORS.textPrimary} />} />
       </View>
     </View>
@@ -191,7 +188,6 @@ interface MobileCardProps {
   complaint: Complaint;
   onPress: () => void;
   onVerify: (complaint: Complaint) => void;
-  onReject: (complaint: Complaint) => void;
   isSelected?: boolean;
   onToggleSelect?: () => void;
 }
@@ -200,7 +196,6 @@ const MobileAuthorityCard: React.FC<MobileCardProps> = ({
   complaint,
   onPress,
   onVerify,
-  onReject,
   isSelected,
   onToggleSelect,
 }) => {
@@ -286,7 +281,6 @@ const MobileAuthorityCard: React.FC<MobileCardProps> = ({
             {!isVerified && (
               <Button title="Verify" variant="outline" onPress={() => onVerify(complaint)} size="sm" style={{ height: 32, paddingHorizontal: SPACING.sm }} />
             )}
-            <Button variant="ghost" onPress={() => onReject(complaint)} size="sm" style={{ width: 32, height: 32, paddingHorizontal: 0 }} icon={<Ionicons name="trash-outline" size={14} color={COLORS.error} />} />
             <Button title="Dossier" variant="secondary" onPress={onPress} size="sm" style={{ height: 32 }} icon={<Ionicons name="chevron-forward" size={14} color={COLORS.textPrimary} />} />
           </View>
         </View>
@@ -307,9 +301,6 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
   const initialFilter = route?.params?.filter || 'all';
   const [statusFilter, setStatusFilter] = useState<string>(initialFilter);
 
-  const [rejectModalVisible, setRejectModalVisible] = useState(false);
-  const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
-  const [actionLoading, setActionLoading] = useState(false);
 
   const [toast, setToast] = useState<{ visible: boolean; message: string; type: 'success' | 'error' | 'info' }>({ visible: false, message: '', type: 'success' });
 
@@ -352,26 +343,7 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
     }
   };
 
-  const handleOpenReject = (item: Complaint) => {
-    setSelectedComplaint(item);
-    setRejectModalVisible(true);
-  };
 
-  const handleConfirmReject = async () => {
-    if (!selectedComplaint) return;
-    try {
-      setActionLoading(true);
-      await authorityApi.deleteComplaint(selectedComplaint._id);
-      setComplaints((prev) => prev.filter((c) => c._id !== selectedComplaint._id));
-      setRejectModalVisible(false);
-      setSelectedComplaint(null);
-      setToast({ visible: true, message: 'Complaint record purged successfully.', type: 'info' });
-    } catch (error: any) {
-      setToast({ visible: true, message: error.message || 'Unable to delete complaint.', type: 'error' });
-    } finally {
-      setActionLoading(false);
-    }
-  };
 
   const filteredComplaints = useMemo(() => {
     return complaints.filter((c) => {
@@ -550,7 +522,6 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
                   onToggleSelect={() => toggleSelect(item._id)}
                   onPress={() => navigation.navigate('AuthorityComplaintDetail', { complaintId: item._id })}
                   onVerify={handleVerify}
-                  onReject={handleOpenReject}
                 />
               </Animated.View>
             )}
@@ -561,7 +532,6 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
           />
         )}
 
-        <ConfirmationDialog visible={rejectModalVisible} title="Reject / Purge Incident" message={`Permanently remove '${selectedComplaint?.title || 'this complaint'}' from the database?`} confirmText="Purge Record" confirmVariant="danger" loading={actionLoading} onConfirm={handleConfirmReject} onCancel={() => { setRejectModalVisible(false); setSelectedComplaint(null); }} />
         <Toast visible={toast.visible} message={toast.message} type={toast.type} onDismiss={() => setToast((prev) => ({ ...prev, visible: false }))} />
       </SafeAreaView>
     );
@@ -601,7 +571,6 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
                 onToggleSelect={() => toggleSelect(item._id)}
                 onPress={() => navigation.navigate('AuthorityComplaintDetail', { complaintId: item._id })}
                 onVerify={handleVerify}
-                onReject={handleOpenReject}
               />
             </Animated.View>
           )}
@@ -612,7 +581,6 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
         />
       )}
 
-      <ConfirmationDialog visible={rejectModalVisible} title="Purge Incident" message={`Remove '${selectedComplaint?.title || 'this complaint'}' from the database?`} confirmText="Purge Record" confirmVariant="danger" loading={actionLoading} onConfirm={handleConfirmReject} onCancel={() => { setRejectModalVisible(false); setSelectedComplaint(null); }} />
       <Toast visible={toast.visible} message={toast.message} type={toast.type} onDismiss={() => setToast((prev) => ({ ...prev, visible: false }))} />
     </View>
   );

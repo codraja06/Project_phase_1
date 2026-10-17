@@ -18,6 +18,7 @@ import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated'
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
 import { authApi } from '../../api/authApi';
+import { googleAuthService } from '../../services/googleAuth';
 import { Input, PasswordInput } from '../../components/Input';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent } from '../../components/ui/Card';
@@ -54,6 +55,7 @@ export const ProfileScreen = ({ navigation }: any) => {
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [updatingPassword, setUpdatingPassword] = useState(false);
+  const [linkingGoogle, setLinkingGoogle] = useState(false);
 
   // Notification Preferences State
   const [pushEnabled, setPushEnabled] = useState(true);
@@ -113,6 +115,26 @@ export const ProfileScreen = ({ navigation }: any) => {
     }
   };
 
+  const handleLinkGoogle = async () => {
+    if (user?.googleId) {
+      showMessage('Google Connected', 'This account is already linked to Google.');
+      return;
+    }
+    if (linkingGoogle) return;
+    try {
+      setLinkingGoogle(true);
+      const updated = await googleAuthService.linkGoogle();
+      updateUser(updated);
+      showMessage('Google Connected', 'You can now use Continue with Google to sign in.');
+    } catch (error: any) {
+      if (!error.message?.toLowerCase().includes('cancelled')) {
+        showMessage('Could Not Connect Google', error.message || 'Please try again.');
+      }
+    } finally {
+      setLinkingGoogle(false);
+    }
+  };
+
   const handleHelpSupport = () => {
     showMessage(
       'CivicTrack Support & Helpline',
@@ -153,6 +175,13 @@ export const ProfileScreen = ({ navigation }: any) => {
           label: 'Password & Security',
           sub: 'Change password and secure login',
           onPress: () => setChangePasswordVisible(true)},
+        {
+          icon: 'logo-google' as const,
+          iconBg: COLORS.primaryLight,
+          iconColor: COLORS.primary,
+          label: user?.googleId ? 'Google Account Connected' : 'Connect Google Account',
+          sub: user?.googleId ? 'Use Google at your next sign-in' : 'Link your account for Google sign-in',
+          onPress: handleLinkGoogle},
         {
           icon: 'notifications-outline' as const,
           iconBg: '#FEFCE8', // Yellow tint

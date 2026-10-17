@@ -19,29 +19,30 @@ interface DescriptionEditorProps {
 }
 
 export const getDefaultDescription = (category: string, address?: string): string => {
-  const locSuffix = address ? ` near ${address}` : ' at the selected location';
+  const location = address?.trim().replace(/[.,;]+$/, '');
+  const locSuffix = location ? ` at ${location}` : ' at the selected location';
   switch (category) {
     case 'pothole':
-      return `A pothole has been detected on the road${locSuffix}.`;
+      return `I would like to report a pothole${locSuffix}. Please inspect the affected road surface and arrange the necessary repairs.`;
     case 'road_damage':
-      return `Road damage has been detected${locSuffix}.`;
+      return `I would like to report damage to the road surface${locSuffix}. Please assess its condition and arrange appropriate maintenance or repairs.`;
     case 'garbage':
-      return `Uncollected garbage accumulation reported${locSuffix}.`;
+      return `I would like to report an accumulation of uncollected waste${locSuffix}. Please arrange waste collection and cleaning of the affected area.`;
     case 'garbage_overflow':
-      return `An overflowing garbage bin has been detected${locSuffix}.`;
+      return `I would like to report an overflowing waste bin${locSuffix}. Please arrange collection of the waste and cleaning of the surrounding area.`;
     case 'broken_streetlight':
-      return `A broken or non-functional streetlight has been reported${locSuffix}.`;
+      return `I would like to report a damaged or non-functioning streetlight${locSuffix}. Please inspect the lighting equipment and arrange the necessary repairs.`;
     case 'drainage_problem':
     case 'drainage':
-      return `A drainage problem causing water stagnation has been detected${locSuffix}.`;
+      return `I would like to report a drainage issue${locSuffix}. Please inspect the drainage system and carry out the necessary cleaning or repairs.`;
     case 'water_leakage':
-      return `A municipal water pipeline leakage has been observed${locSuffix}.`;
+      return `I would like to report a water leak${locSuffix}. Please identify the source of the leak and arrange the necessary repairs.`;
     case 'dead_animal':
-      return `A deceased animal requiring sanitation clearance has been reported${locSuffix}.`;
+      return `I would like to report a deceased animal${locSuffix}. Please arrange safe removal and appropriate cleaning of the affected area.`;
     case 'broken_tree':
-      return `A fallen or broken tree hazard obstructing public space has been reported${locSuffix}.`;
+      return `I would like to report a fallen or damaged tree${locSuffix}. Please assess its condition and arrange safe removal or maintenance as appropriate.`;
     default:
-      return `A civic infrastructure issue has been reported${locSuffix}.`;
+      return `I would like to report a civic maintenance issue${locSuffix}. Please review the details provided and arrange an inspection and appropriate action.`;
   }
 };
 
@@ -73,7 +74,7 @@ export const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
           <Text style={styles.label}>Complaint Description</Text>
           <View style={styles.autoBadge}>
             <Ionicons name="sparkles" size={11} color={COLORS.secondaryDark} style={{ marginRight: 3 }} />
-            <Text style={styles.autoBadgeText}>Auto-Generated (Editable)</Text>
+            <Text style={styles.autoBadgeText}>Suggested Draft</Text>
           </View>
         </View>
 
@@ -90,7 +91,7 @@ export const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
       </View>
 
       <Text style={styles.helperText}>
-        You can freely modify or add specific landmarks and details to this description.
+        Review this draft before submitting. Add the nearest landmark, the observed condition, and any relevant details.
       </Text>
 
       <View style={[styles.inputWrapper, !!error && styles.inputWrapperError]}>
@@ -101,7 +102,7 @@ export const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
           numberOfLines={4}
           value={description}
           onChangeText={onChangeDescription}
-          placeholder="Describe defect details, landmarks, or severity..."
+          placeholder="Describe the issue, its location, and the action requested."
           placeholderTextColor={COLORS.textMuted}
           textAlignVertical="top"
         />
