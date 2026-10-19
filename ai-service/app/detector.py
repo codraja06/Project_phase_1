@@ -1,7 +1,5 @@
 import os
 import io
-import cv2
-import numpy as np
 from PIL import Image
 from typing import List, Dict, Any
 from app.config import settings
@@ -74,6 +72,8 @@ def apply_nms(detections: List[Dict[str, Any]], iou_threshold: float = 0.45) -> 
     for det in sorted_detections:
         should_keep = True
         for kept in kept_detections:
+            if det["category"] != kept["category"]:
+                continue
             iou = calculate_iou(det["bbox"], kept["bbox"])
             if iou > iou_threshold:
                 should_keep = False
@@ -139,16 +139,17 @@ class CivicIssueDetector:
         if not self.is_ready():
             raise RuntimeError("No AI model weights are configured.")
 
-        # Load image with PIL & convert to RGB numpy array
+        # Ultralytics treats PIL images as RGB but NumPy inputs as BGR.
+        # Keep the PIL image so red/blue channels are not silently swapped.
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-        image_np = np.array(image)
 
         raw_detections = []
+        failed_models = []
 
         for model_name, model in self.models.items():
             try:
                 results = model.predict(
-                    source=image_np,
+                    source=image,
                     conf=settings.CONF_THRESHOLD,
                     verbose=False
                 )
@@ -188,6 +189,10 @@ class CivicIssueDetector:
                         })
             except Exception as e:
                 print(f"[Inference Error] Failed to run {model_name}: {str(e)}")
+                failed_models.append(model_name)
+
+        if failed_models:
+            raise RuntimeError("AI analysis could not be completed. Please retry or select a category manually.")
 
         # Deduplicate overlapping detections across models and sort by confidence descending
         final_detections = apply_nms(raw_detections, iou_threshold=0.45)

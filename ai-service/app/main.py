@@ -1,4 +1,5 @@
 import uvicorn
+import logging
 from fastapi import FastAPI, UploadFile, File, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
@@ -14,7 +15,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -42,7 +43,7 @@ def health_check():
         400: {"model": ErrorResponse, "description": "Invalid Image Input"}
     }
 )
-async def predict_issue(image: UploadFile = File(...)):
+def predict_issue(image: UploadFile = File(...)):
     # Check model availability first
     if not detector_instance.is_ready():
         raise HTTPException(
@@ -51,7 +52,11 @@ async def predict_issue(image: UploadFile = File(...)):
         )
 
     try:
-        contents = await image.read()
+        # Synchronous inference runs in FastAPI's thread pool, keeping health
+        # checks responsive. Bound the read even when called without Express.
+        contents = image.file.read(10 * 1024 * 1024 + 1)
+        if len(contents) > 10 * 1024 * 1024:
+            raise HTTPException(status_code=413, detail="Image must be 10 MB or smaller.")
         if not contents or len(contents) == 0:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -82,10 +87,11 @@ async def predict_issue(image: UploadFile = File(...)):
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=str(re)
         )
-    except Exception as e:
+    except Exception:
+        logging.exception("Computer vision inference failed")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error executing computer vision detection: {str(e)}"
+            detail="Computer vision analysis failed. Please retry."
         )
 
 if __name__ == "__main__":

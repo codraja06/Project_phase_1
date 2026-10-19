@@ -49,6 +49,12 @@
       "offenders": []
     },
     {
+      "width": 393,
+      "height": 873,
+      "scroll": 393,
+      "offenders": []
+    },
+    {
       "width": 412,
       "height": 915,
       "scroll": 412,
@@ -164,5 +170,42 @@
     }
   ],
   "errors": [],
-  "axe": []
+  "axe": [
+    {
+      "id": "aria-allowed-attr",
+      "impact": "critical",
+      "nodes": [
+        {
+          "target": [
+            "button[aria-label=\"Dashboard\"]"
+          ],
+          "summary": "Fix all of the following:\n  ARIA attribute is not allowed: aria-selected=\"true\""
+        },
+        {
+          "target": [
+            "button[aria-label=\"Report Issue\"]"
+          ],
+          "summary": "Fix all of the following:\n  ARIA attribute is not allowed: aria-selected=\"false\""
+        },
+        {
+          "target": [
+            "button[aria-label=\"My Complaints\"]"
+          ],
+          "summary": "Fix all of the following:\n  ARIA attribute is not allowed: aria-selected=\"false\""
+        },
+        {
+          "target": [
+            ".r-paddingBlock-1mmae3n.r-transition-1kbsudl[aria-label=\"Notifications\"]"
+          ],
+          "summary": "Fix all of the following:\n  ARIA attribute is not allowed: aria-selected=\"false\""
+        },
+        {
+          "target": [
+            "button[aria-label=\"Profile & Settings\"]"
+          ],
+          "summary": "Fix all of the following:\n  ARIA attribute is not allowed: aria-selected=\"false\""
+        }
+      ]
+    }
+  ]
 }

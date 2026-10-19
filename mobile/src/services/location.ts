@@ -51,9 +51,10 @@ async function reverseGeocode(latitude: number, longitude: number): Promise<stri
   }
 
   // Fallback to OpenStreetMap Nominatim
+  let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 5000);
+    timer = setTimeout(() => controller.abort(), 5000);
     const res = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
       {
@@ -64,7 +65,6 @@ async function reverseGeocode(latitude: number, longitude: number): Promise<stri
         signal: controller.signal,
       }
     );
-    clearTimeout(timer);
     if (res.ok) {
       const data = await res.json();
       if (data && data.display_name) {
@@ -73,6 +73,8 @@ async function reverseGeocode(latitude: number, longitude: number): Promise<stri
     }
   } catch {
     // Return fallback coords string
+  } finally {
+    if (timer) clearTimeout(timer);
   }
 
   return fallbackStr;
@@ -164,13 +166,14 @@ export const locationService = {
 
     // 3. Acquire location with timeout race and fallback to last known location
     let location: any = null;
+    let positionTimer: ReturnType<typeof setTimeout> | undefined;
     try {
       const positionPromise = Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
 
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(
+      const timeoutPromise = new Promise((_, reject) => {
+        positionTimer = setTimeout(
           () =>
             reject(
               new Error(
@@ -178,8 +181,8 @@ export const locationService = {
               )
             ),
           timeoutMs
-        )
-      );
+        );
+      });
 
       location = await Promise.race([positionPromise, timeoutPromise]);
     } catch (error: any) {
@@ -194,6 +197,8 @@ export const locationService = {
       } catch {
         throw error;
       }
+    } finally {
+      if (positionTimer) clearTimeout(positionTimer);
     }
 
     if (!location || !location.coords) {

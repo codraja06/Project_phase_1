@@ -3,17 +3,17 @@ import { z } from 'zod';
 export const boundingBoxSchema = z.object({
   category: z.string().optional(),
   className: z.string().optional(),
-  confidence: z.coerce.number().optional().default(0),
-  x1: z.coerce.number().optional(),
-  y1: z.coerce.number().optional(),
-  x2: z.coerce.number().optional(),
-  y2: z.coerce.number().optional(),
+  confidence: z.coerce.number().finite().min(0).max(100).optional().default(0),
+  x1: z.coerce.number().finite().min(0).optional(),
+  y1: z.coerce.number().finite().min(0).optional(),
+  x2: z.coerce.number().finite().min(0).optional(),
+  y2: z.coerce.number().finite().min(0).optional(),
   bbox: z
     .object({
-      x1: z.coerce.number().optional().default(0),
-      y1: z.coerce.number().optional().default(0),
-      x2: z.coerce.number().optional().default(0),
-      y2: z.coerce.number().optional().default(0),
+      x1: z.coerce.number().finite().min(0).optional().default(0),
+      y1: z.coerce.number().finite().min(0).optional().default(0),
+      x2: z.coerce.number().finite().min(0).optional().default(0),
+      y2: z.coerce.number().finite().min(0).optional().default(0),
     })
     .optional(),
   model: z.string().optional(),
@@ -36,18 +36,19 @@ export const boundingBoxSchema = z.object({
     bbox: { x1, y1, x2, y2 },
     model: box.model || 'yolo',
   };
-});
+}).refine(box => box.x2 >= box.x1 && box.y2 >= box.y1, 'Bounding box coordinates must be ordered');
 
 export const createComplaintSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters'),
-  description: z.string().min(5, 'Description must be at least 5 characters'),
-  category: z.string().min(1, 'Category is required'),
+  title: z.string().trim().min(3, 'Title must be at least 3 characters'),
+  description: z.string().trim().min(5, 'Description must be at least 5 characters'),
+  category: z.string().trim().min(1, 'Category is required'),
   customCategory: z.string().optional().default(''),
   imageUrl: z.string().url('A successfully uploaded image URL is required').refine((url) => /^https?:\/\//i.test(url), 'Upload the image before submitting'),
   aiDetected: z.boolean().optional().default(false),
   aiClass: z.string().optional().default(''),
   aiConfidence: z.coerce
     .number()
+    .finite().min(0).max(100)
     .optional()
     .default(0)
     .transform((val) => (val > 1 ? Number((val / 100).toFixed(2)) : val)),

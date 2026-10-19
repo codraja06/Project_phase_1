@@ -74,6 +74,7 @@ export const FilterChip: React.FC<FilterChipProps> = ({
       onPressOut={onPressOut}
       accessibilityRole="button"
       accessibilityState={{ selected: isSelected }}
+      aria-pressed={isSelected}
     >
       <Animated.Text style={[styles.label, animatedTextStyle, isSelected && styles.labelSelected]}>
         {label}

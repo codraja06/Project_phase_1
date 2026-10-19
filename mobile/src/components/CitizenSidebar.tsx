@@ -103,6 +103,7 @@ export const CitizenSidebar: React.FC<CitizenSidebarProps> = ({
               accessibilityRole="button"
               accessibilityLabel={item.label}
               accessibilityState={{ selected: isActive }}
+              aria-pressed={isActive}
               {...({
                 onMouseEnter: () => setHoveredRoute(item.route),
                 onMouseLeave: () => setHoveredRoute(null),

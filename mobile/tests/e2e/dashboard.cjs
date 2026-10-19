@@ -2,7 +2,7 @@ const {chromium,mockApi,login}=require('./fixtures.cjs');
 const {expect}=require('@playwright/test');
 const AxeBuilder=require('@axe-core/playwright').default;
 const fs=require('fs');
-const sizes=[[320,568],[320,640],[360,640],[360,800],[375,667],[375,812],[390,844],[393,852],[412,915],[430,932],[480,960],[540,960],[600,960],[768,1024],[800,1280],[820,1180],[1024,768],[1180,820],[1280,720],[1366,768],[1440,900],[1536,864],[1600,900],[1920,1080],[2560,1440],[3440,1440],[844,390]];
+const sizes=[[320,568],[320,640],[360,640],[360,800],[375,667],[375,812],[390,844],[393,852],[393,873],[412,915],[430,932],[480,960],[540,960],[600,960],[768,1024],[800,1280],[820,1180],[1024,768],[1180,820],[1280,720],[1366,768],[1440,900],[1536,864],[1600,900],[1920,1080],[2560,1440],[3440,1440],[844,390]];
 (async()=>{
  fs.mkdirSync('tests/artifacts',{recursive:true});
  const browser=await chromium.launch({channel:'msedge'});const context=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));const state=await mockApi(page);await login(page);
@@ -20,6 +20,9 @@ const sizes=[[320,568],[320,640],[360,640],[360,800],[375,667],[375,812],[390,84
  await page.getByRole('button',{name:'Open notifications',exact:true}).click();await page.getByRole('button',{name:'Dashboard',exact:true}).click();await expect(page.getByText('Your first report starts here')).toBeVisible();await page.screenshot({path:'tests/artifacts/citizen-empty.png'});
  state.fail=true;await page.getByRole('button',{name:'Open notifications',exact:true}).click();await page.getByRole('button',{name:'Dashboard',exact:true}).click();await expect(page.getByTestId('recent-incidents').getByText('Reports unavailable',{exact:true})).toBeVisible();state.fail=false;await page.getByTestId('recent-incidents').getByRole('button',{name:'Retry loading reports',exact:true}).click();await expect(page.getByText('Your first report starts here')).toBeVisible();
  console.log('Dashboard search, date ranges, empty and error recovery passed.');
+ expect(results.filter(r=>r.scroll>r.width||r.offenders.length)).toEqual([]);
+ expect(errors).toEqual([]);
+ expect(axe.violations).toEqual([]);
  await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});
 

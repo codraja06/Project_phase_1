@@ -1,0 +1,12 @@
+{
+  "checks": [
+    "custom draft survives category changes",
+    "reset restores category draft",
+    "latest geocode wins and draft matches location",
+    "foreign window messages ignored",
+    "complaint submitted with selected coordinates",
+    "map popup content rendered as text",
+    "bulk select uses visible record identities"
+  ],
+  "errors": []
+}

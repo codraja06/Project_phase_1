@@ -150,9 +150,16 @@ function generateLeafletHtml({
           if (typeof pin.latitude === 'number' && typeof pin.longitude === 'number') {
             var marker = L.marker([pin.latitude, pin.longitude], { icon: customIcon }).addTo(map);
             if (pin.title || pin.address) {
-              var content = '<div class="popup-title">' + (pin.title || 'Civic Issue') + '</div>';
+              var content = document.createElement('div');
+              var title = document.createElement('div');
+              title.className = 'popup-title';
+              title.textContent = pin.title || 'Civic Issue';
+              content.appendChild(title);
               if (pin.address) {
-                content += '<div class="popup-address">' + pin.address + '</div>';
+                var address = document.createElement('div');
+                address.className = 'popup-address';
+                address.textContent = pin.address;
+                content.appendChild(address);
               }
               marker.bindPopup(content);
             }
@@ -241,9 +248,11 @@ export function MapSurface({
   const handleMessage = (event: any) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
-      if (data.type === 'location_selected' && onSelectLocation) {
+      if (data.type === 'location_selected' && interactive && onSelectLocation &&
+          Number.isFinite(data.latitude) && Math.abs(data.latitude) <= 90 &&
+          Number.isFinite(data.longitude) && Math.abs(data.longitude) <= 180) {
         onSelectLocation(data.latitude, data.longitude);
-      } else if (data.type === 'pin_selected' && onSelectPin) {
+      } else if (data.type === 'pin_selected' && onSelectPin && pins?.some(pin => pin.id === data.id)) {
         onSelectPin(data.id);
       }
     } catch {

@@ -81,4 +81,20 @@ describe('Complaint API Endpoints (Citizen)', () => {
     expect(res.body.success).toBe(true);
     expect(res.body.data.complaints.length).toBeGreaterThanOrEqual(1);
   });
+
+  it('retries a public reference collision without losing the complaint', async () => {
+    const create = jest.spyOn(Complaint, 'create');
+    create.mockRejectedValueOnce({ code: 11000, keyPattern: { complaintId: 1 } });
+    try {
+      const res = await request(app).post('/api/complaints').set('Authorization', `Bearer ${citizenToken}`).send({
+        title: 'Test collision recovery', description: 'Road surface needs inspection', category: 'pothole',
+        imageUrl: 'https://example.test/photo.jpg', latitude: 0, longitude: 0,
+      });
+      expect(res.status).toBe(201);
+      expect(create).toHaveBeenCalledTimes(2);
+      expect(await Complaint.countDocuments({ title: 'Test collision recovery' })).toBe(1);
+    } finally {
+      create.mockRestore();
+    }
+  });
 });

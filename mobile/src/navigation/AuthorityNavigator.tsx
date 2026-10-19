@@ -63,6 +63,7 @@ const MobileBottomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, n
             key={route.key}
             accessibilityRole="button"
             accessibilityState={isFocused ? { selected: true } : {}}
+            aria-pressed={isFocused}
             accessibilityLabel={tabDef.label}
             onPress={onPress}
             style={tabStyles.tab}

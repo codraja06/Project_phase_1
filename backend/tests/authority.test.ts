@@ -87,6 +87,8 @@ describe('Authority API Endpoints & Role Guard', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.data.status).toBe('In Progress');
+    expect(res.body.data.createdBy.name).toBe('Citizen User');
+    expect(res.body.data.createdBy.email).toBe('citizen@example.com');
   });
 
   it('should reject invalid status transition from Pending directly to Resolved', async () => {
@@ -129,5 +131,13 @@ describe('Authority API Endpoints & Role Guard', () => {
 
     const check = await Complaint.findById(complaintId);
     expect(check).toBeNull();
+  });
+
+  it('preserves citizen contact details after verification', async () => {
+    const res = await request(app).patch(`/api/authority/complaints/${complaintId}/verify`).set('Authorization', `Bearer ${authorityToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.data.verified).toBe(true);
+    expect(res.body.data.createdBy.phone).toBe('1234567890');
+    expect(res.body.data.createdBy.name).toBe('Citizen User');
   });
 });

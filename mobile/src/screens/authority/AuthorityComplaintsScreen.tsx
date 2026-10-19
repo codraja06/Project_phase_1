@@ -103,7 +103,7 @@ const DesktopComplaintRow: React.FC<TableRowProps> = ({
         onMouseLeave: () => setIsHovered(false),
       } as any)}
     >
-      <TouchableOpacity onPress={onToggleSelect} style={styles.tableCheckboxBtn} activeOpacity={0.8}>
+      <TouchableOpacity onPress={onToggleSelect} style={styles.tableCheckboxBtn} activeOpacity={0.8} accessibilityRole="checkbox" accessibilityLabel={`Select complaint ${complaintCode}`} accessibilityState={{ checked: Boolean(isSelected) }} aria-checked={Boolean(isSelected)}>
         <Ionicons
           name={isSelected ? 'checkbox' : 'square-outline'}
           size={18}
@@ -237,7 +237,7 @@ const MobileAuthorityCard: React.FC<MobileCardProps> = ({
       <CardContent style={{ padding: SPACING.lg }}>
         <View style={styles.mobileCardHeader}>
           <View style={styles.mobileCardHeaderLeft}>
-            <TouchableOpacity onPress={onToggleSelect} style={styles.mobileCheckboxBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <TouchableOpacity onPress={onToggleSelect} style={styles.mobileCheckboxBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} accessibilityRole="checkbox" accessibilityLabel={`Select complaint ${complaintCode}`} accessibilityState={{ checked: Boolean(isSelected) }} aria-checked={Boolean(isSelected)}>
               <Ionicons name={isSelected ? 'checkbox' : 'square-outline'} size={20} color={isSelected ? '#0F172A' : COLORS.textMuted} />
             </TouchableOpacity>
             <Text style={styles.complaintCodeText}>{complaintCode}</Text>
@@ -393,16 +393,17 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkLoading, setBulkLoading] = useState(false);
+  const allVisibleSelected = filteredComplaints.length > 0 && filteredComplaints.every(c => selectedIds.includes(c._id));
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]);
   };
 
   const handleSelectAll = () => {
-    if (selectedIds.length === filteredComplaints.length && filteredComplaints.length > 0) {
-      setSelectedIds([]);
+    if (allVisibleSelected) {
+      setSelectedIds(prev => prev.filter(id => !filteredComplaints.some(c => c._id === id)));
     } else {
-      setSelectedIds(filteredComplaints.map((c) => c._id));
+      setSelectedIds(prev => [...new Set([...prev, ...filteredComplaints.map(c => c._id)])]);
     }
   };
 
@@ -444,9 +445,9 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
     if (filteredComplaints.length === 0) return null;
     return (
       <View style={styles.bulkToolbar}>
-        <TouchableOpacity onPress={handleSelectAll} style={styles.bulkSelectAllBtn} activeOpacity={0.7}>
+        <TouchableOpacity onPress={handleSelectAll} style={styles.bulkSelectAllBtn} activeOpacity={0.7} accessibilityRole="checkbox" accessibilityLabel="Toggle selection of visible complaints" accessibilityState={{ checked: allVisibleSelected }} aria-checked={allVisibleSelected}>
           <Ionicons
-            name={selectedIds.length === filteredComplaints.length && filteredComplaints.length > 0 ? 'checkbox' : 'square-outline'}
+            name={allVisibleSelected ? 'checkbox' : 'square-outline'}
             size={18}
             color={COLORS.primary}
             style={{ marginRight: SPACING.xs }}
@@ -495,8 +496,8 @@ export const AuthorityComplaintsScreen = ({ navigation, route }: any) => {
 
         <View style={styles.tableHeaderRow}>
           <View style={styles.tableCheckboxHeader}>
-            <TouchableOpacity onPress={handleSelectAll} activeOpacity={0.8}>
-              <Ionicons name={selectedIds.length === filteredComplaints.length && filteredComplaints.length > 0 ? 'checkbox' : 'square-outline'} size={18} color={COLORS.textMuted} />
+            <TouchableOpacity onPress={handleSelectAll} activeOpacity={0.8} accessibilityRole="checkbox" accessibilityLabel="Select all visible complaints" accessibilityState={{ checked: allVisibleSelected }} aria-checked={allVisibleSelected}>
+              <Ionicons name={allVisibleSelected ? 'checkbox' : 'square-outline'} size={18} color={COLORS.textMuted} />
             </TouchableOpacity>
           </View>
           <View style={styles.tableThumbHeader}><Text style={styles.tableHeaderLabel}>IMAGE</Text></View>

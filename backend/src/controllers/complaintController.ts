@@ -13,13 +13,18 @@ export const createComplaint = async (req: AuthRequest, res: Response, next: Nex
 
     const validated = createComplaintSchema.parse(req.body);
 
-    const complaint = await Complaint.create({
-      ...validated,
-      createdBy: req.user._id,
-      status: 'Pending',
-    });
-
-    res.status(201).json(new ApiResponse('Complaint created successfully', complaint));
+    // A randomly generated public reference can collide with an existing one.
+    // Retry only that unique-index conflict; do not hide other database errors.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const complaint = await Complaint.create({ ...validated, createdBy: req.user._id, status: 'Pending' });
+        res.status(201).json(new ApiResponse('Complaint created successfully', complaint));
+        return;
+      } catch (error: any) {
+        if (error.code !== 11000 || !error.keyPattern?.complaintId) throw error;
+      }
+    }
+    throw new ApiError(503, 'Unable to allocate a complaint reference. Please try again.');
   } catch (error) {
     next(error);
   }

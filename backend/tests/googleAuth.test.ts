@@ -6,6 +6,8 @@ import { env } from '../src/config/env';
 import { User } from '../src/models/User';
 import { generateToken } from '../src/utils/jwt';
 
+jest.setTimeout(30000);
+
 describe('Google sign-in role and identity checks', () => {
   const originalClientId = env.GOOGLE_CLIENT_ID;
   let verifyToken: jest.SpyInstance;
@@ -13,17 +15,17 @@ describe('Google sign-in role and identity checks', () => {
   beforeAll(async () => {
     expect(env.MONGODB_URI).toBe('mongodb://127.0.0.1:27017/civictrack_isolated_test');
     env.GOOGLE_CLIENT_ID = 'test-web-client.apps.googleusercontent.com';
-    await mongoose.connect(env.MONGODB_URI);
     verifyToken = jest.spyOn(OAuth2Client.prototype, 'verifyIdToken');
+    await mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 10000 });
   });
 
   afterEach(async () => {
-    verifyToken.mockReset();
-    await User.deleteMany({ email: /@google-auth-test\.example$/ });
+    verifyToken?.mockReset();
+    if (mongoose.connection.readyState === 1) await User.deleteMany({ email: /@google-auth-test\.example$/ });
   });
 
   afterAll(async () => {
-    verifyToken.mockRestore();
+    verifyToken?.mockRestore();
     env.GOOGLE_CLIENT_ID = originalClientId;
     await mongoose.disconnect();
   });

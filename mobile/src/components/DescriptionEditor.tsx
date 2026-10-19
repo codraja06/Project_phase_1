@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ interface DescriptionEditorProps {
   customCategory?: string;
   description: string;
   onChangeDescription: (text: string) => void;
+  onResetDescription?: () => void;
   address?: string;
   error?: string;
 }
@@ -51,18 +52,12 @@ export const DescriptionEditor: React.FC<DescriptionEditorProps> = ({
   customCategory,
   description,
   onChangeDescription,
+  onResetDescription,
   address,
   error,
 }) => {
-  // When category changes, if description is empty, populate with generated template
-  useEffect(() => {
-    if (!description || description.trim() === '') {
-      const generated = getDefaultDescription(category, address);
-      onChangeDescription(generated);
-    }
-  }, [category, address]);
-
   const handleResetToTemplate = () => {
+    if (onResetDescription) { onResetDescription(); return; }
     const generated = getDefaultDescription(category, address);
     onChangeDescription(generated);
   };
@@ -120,12 +115,16 @@ const styles = StyleSheet.create({
   },
   headerRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 6,
   },
   labelWrapper: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    flexShrink: 1,
     alignItems: 'center',
     gap: 8,
   },

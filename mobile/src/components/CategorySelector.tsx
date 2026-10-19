@@ -89,6 +89,7 @@ export const CategorySelector: React.FC<CategorySelectorProps> = ({
               accessibilityRole="button"
               accessibilityLabel={item.label}
               accessibilityState={{ selected: isSelected }}
+              aria-pressed={isSelected}
               style={[
                 styles.categoryCard,
                 isSelected && styles.categoryCardSelected,

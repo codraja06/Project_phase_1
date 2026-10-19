@@ -103,6 +103,7 @@ export const updateComplaintStatus = async (req: AuthRequest, res: Response, nex
 
     // Idempotent: If already in target status, return 200 without error
     if (currentStatus === targetStatus) {
+      await complaint.populate('createdBy', 'name email phone');
       return res.status(200).json(new ApiResponse('Complaint is already in requested status', complaint));
     }
 
@@ -133,6 +134,7 @@ export const updateComplaintStatus = async (req: AuthRequest, res: Response, nex
       { new: true, runValidators: true }
     );
     if (!updated) throw new ApiError(409, 'This complaint changed. Refresh before trying again.');
+    await updated.populate('createdBy', 'name email phone');
     res.status(200).json(new ApiResponse('Complaint status updated successfully', updated));
   } catch (error) {
     next(error);
@@ -171,6 +173,7 @@ export const verifyComplaint = async (req: AuthRequest, res: Response, next: Nex
     }
 
     await complaint.save();
+    await complaint.populate('createdBy', 'name email phone');
 
     res.status(200).json(new ApiResponse('Complaint verified by authority', complaint));
   } catch (error) {

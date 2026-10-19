@@ -67,6 +67,14 @@
     {
       "role": "citizen",
       "route": "dashboard",
+      "width": 393,
+      "height": 873,
+      "scroll": 393,
+      "body": 393
+    },
+    {
+      "role": "citizen",
+      "route": "dashboard",
       "width": 412,
       "height": 915,
       "scroll": 412,
@@ -277,6 +285,14 @@
       "route": "report",
       "width": 393,
       "height": 852,
+      "scroll": 393,
+      "body": 393
+    },
+    {
+      "role": "citizen",
+      "route": "report",
+      "width": 393,
+      "height": 873,
       "scroll": 393,
       "body": 393
     },
@@ -499,6 +515,14 @@
     {
       "role": "citizen",
       "route": "history",
+      "width": 393,
+      "height": 873,
+      "scroll": 393,
+      "body": 393
+    },
+    {
+      "role": "citizen",
+      "route": "history",
       "width": 412,
       "height": 915,
       "scroll": 412,
@@ -709,6 +733,14 @@
       "route": "alerts",
       "width": 393,
       "height": 852,
+      "scroll": 393,
+      "body": 393
+    },
+    {
+      "role": "citizen",
+      "route": "alerts",
+      "width": 393,
+      "height": 873,
       "scroll": 393,
       "body": 393
     },
@@ -931,6 +963,14 @@
     {
       "role": "citizen",
       "route": "profile",
+      "width": 393,
+      "height": 873,
+      "scroll": 393,
+      "body": 393
+    },
+    {
+      "role": "citizen",
+      "route": "profile",
       "width": 412,
       "height": 915,
       "scroll": 412,
@@ -1141,6 +1181,14 @@
       "route": "complaint/64b000000000000000000000",
       "width": 393,
       "height": 852,
+      "scroll": 393,
+      "body": 393
+    },
+    {
+      "role": "citizen",
+      "route": "complaint/64b000000000000000000000",
+      "width": 393,
+      "height": 873,
       "scroll": 393,
       "body": 393
     },
@@ -1363,6 +1411,14 @@
     {
       "role": "authority",
       "route": "dashboard",
+      "width": 393,
+      "height": 873,
+      "scroll": 393,
+      "body": 393
+    },
+    {
+      "role": "authority",
+      "route": "dashboard",
       "width": 412,
       "height": 915,
       "scroll": 412,
@@ -1573,6 +1629,14 @@
       "route": "complaints",
       "width": 393,
       "height": 852,
+      "scroll": 393,
+      "body": 393
+    },
+    {
+      "role": "authority",
+      "route": "complaints",
+      "width": 393,
+      "height": 873,
       "scroll": 393,
       "body": 393
     },
@@ -1795,6 +1859,14 @@
     {
       "role": "authority",
       "route": "map",
+      "width": 393,
+      "height": 873,
+      "scroll": 393,
+      "body": 393
+    },
+    {
+      "role": "authority",
+      "route": "map",
       "width": 412,
       "height": 915,
       "scroll": 412,
@@ -2005,6 +2077,14 @@
       "route": "analytics",
       "width": 393,
       "height": 852,
+      "scroll": 393,
+      "body": 393
+    },
+    {
+      "role": "authority",
+      "route": "analytics",
+      "width": 393,
+      "height": 873,
       "scroll": 393,
       "body": 393
     },
@@ -2227,6 +2307,14 @@
     {
       "role": "authority",
       "route": "alerts",
+      "width": 393,
+      "height": 873,
+      "scroll": 393,
+      "body": 393
+    },
+    {
+      "role": "authority",
+      "route": "alerts",
       "width": 412,
       "height": 915,
       "scroll": 412,
@@ -2443,6 +2531,14 @@
     {
       "role": "authority",
       "route": "profile",
+      "width": 393,
+      "height": 873,
+      "scroll": 393,
+      "body": 393
+    },
+    {
+      "role": "authority",
+      "route": "profile",
       "width": 412,
       "height": 915,
       "scroll": 412,
@@ -2653,6 +2749,14 @@
       "route": "complaint/64b000000000000000000000",
       "width": 393,
       "height": 852,
+      "scroll": 393,
+      "body": 393
+    },
+    {
+      "role": "authority",
+      "route": "complaint/64b000000000000000000000",
+      "width": 393,
+      "height": 873,
       "scroll": 393,
       "body": 393
     },

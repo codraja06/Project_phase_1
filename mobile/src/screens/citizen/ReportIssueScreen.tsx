@@ -24,7 +24,7 @@ import { Complaint } from '../../types/complaint';
 import { ImagePickerCamera } from '../../components/ImagePickerCamera';
 import { DetectionOverlay } from '../../components/DetectionOverlay';
 import { MapLocationPicker } from '../../components/MapLocationPicker';
-import { CategorySelector } from '../../components/CategorySelector';
+import { CategorySelector, CATEGORY_OPTIONS } from '../../components/CategorySelector';
 import { DescriptionEditor, getDefaultDescription } from '../../components/DescriptionEditor';
 import { LocationCard } from '../../components/LocationCard';
 import { SuccessModal } from '../../components/SuccessModal';
@@ -44,6 +44,8 @@ type Step = 'capture' | 'ai_analysis' | 'location' | 'review';
 export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
   const { isDesktop } = useBreakpoint();
   const imageRequest = useRef(0);
+  const locationRequest = useRef(0);
+  const descriptionEdited = useRef(false);
   const [locationConfirmed, setLocationConfirmed] = useState(false);
   const [currentStep, setCurrentStep] = useState<Step>('capture');
 
@@ -65,7 +67,7 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
   // Location
   const [latitude, setLatitude] = useState<number>(NaN);
   const [longitude, setLongitude] = useState<number>(NaN);
-  const [address, setAddress] = useState<string>('Fetching device location...');
+  const [address, setAddress] = useState<string>('Choose the incident location');
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
 
   // Submission & Success Modal
@@ -75,12 +77,18 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
 
   useEffect(() => () => { if (localImageUri?.startsWith('blob:')) URL.revokeObjectURL(localImageUri); }, [localImageUri]);
+  useEffect(() => () => { imageRequest.current++; locationRequest.current++; }, []);
+
+  useEffect(() => {
+    if (!descriptionEdited.current) {
+      setDescription(getDefaultDescription(selectedCategory, locationConfirmed ? address : undefined));
+    }
+  }, [selectedCategory, address, locationConfirmed]);
 
   useEffect(() => {
     fetchCurrentLocation();
     if (route.params?.initialCategory) {
       setSelectedCategory(route.params.initialCategory);
-      setDescription(getDefaultDescription(route.params.initialCategory));
     }
   }, [route.params?.initialCategory]);
 
@@ -90,19 +98,37 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const fetchCurrentLocation = async () => {
+    const request = ++locationRequest.current;
     try {
       setLocationLoading(true);
       const loc = await locationService.getCurrentLocation();
+      if (request !== locationRequest.current) return;
       setLatitude(loc.latitude);
       setLongitude(loc.longitude);
       setAddress(loc.address);
       setLocationConfirmed(true);
       setErrorMessage(null);
     } catch (error: any) {
-      setAddress('Choose the incident location');
+      if (request !== locationRequest.current) return;
       setErrorMessage(error.message);
     } finally {
-      setLocationLoading(false);
+      if (request === locationRequest.current) setLocationLoading(false);
+    }
+  };
+
+  const handleSelectLocation = async (lat: number, lng: number) => {
+    const request = ++locationRequest.current;
+    setLocationLoading(false);
+    setLocationConfirmed(true);
+    setErrorMessage(null);
+    setLatitude(lat);
+    setLongitude(lng);
+    setAddress(`Coordinates Lat: ${lat.toFixed(4)}, Long: ${lng.toFixed(4)}`);
+    try {
+      const resolvedAddress = await locationService.reverseGeocode(lat, lng);
+      if (request === locationRequest.current && resolvedAddress) setAddress(resolvedAddress);
+    } catch {
+      // Keep the selected coordinates when the external geocoder is unavailable.
     }
   };
 
@@ -137,22 +163,22 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
         setAiDetectedClass(topDetection.category);
         setAiDetected(true);
 
-        const mappedCategory = topDetection.category.toLowerCase().replace(/ /g, '_');
+        const rawCategory = topDetection.category.toLowerCase().replace(/ /g, '_');
+        const normalizedCategory = rawCategory === 'drainage' ? 'drainage_problem' : rawCategory;
+        const mappedCategory = CATEGORY_OPTIONS.some(option => option.key === normalizedCategory) ? normalizedCategory : 'other';
         setSelectedCategory(mappedCategory);
         const genTitle = `${topDetection.category.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')} Issue`;
         setTitle(genTitle);
-        setDescription(getDefaultDescription(mappedCategory, address));
       } else {
         setAiDetected(false);
         setSelectedCategory('other');
         setTitle('Civic Hazard Reported');
-        setDescription(getDefaultDescription('other', address));
       }
     } catch (error: any) {
+      if (request !== imageRequest.current) return;
       setAiDetected(false);
       setSelectedCategory('other');
       setTitle('Civic Hazard Reported');
-      setDescription(getDefaultDescription('pothole', address));
     } finally {
       if (request === imageRequest.current) setDetectingAI(false);
     }
@@ -162,7 +188,6 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
     setSelectedCategory(cat);
     const catLabel = cat.replace(/_/g, ' ').toUpperCase();
     setTitle(`${catLabel.charAt(0) + catLabel.slice(1).toLowerCase()} Hazard Reported`);
-    setDescription(getDefaultDescription(cat, address));
   };
 
   const handleRetake = () => {
@@ -175,7 +200,8 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
     setAiDetectedClass('');
     setAiDetected(false);
     setCustomCategory('');
-    setDescription('');
+    descriptionEdited.current = false;
+    setDescription(getDefaultDescription(selectedCategory, locationConfirmed ? address : undefined));
     setTitle('');
     animateStepChange('capture');
   };
@@ -209,7 +235,7 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
         return;
       }
 
-      if (!locationConfirmed) { setErrorMessage('Confirm a real incident location before submitting.'); return; }
+      if (!locationConfirmed || !Number.isFinite(latitude) || !Number.isFinite(longitude) || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) { setErrorMessage('Confirm a real incident location before submitting.'); return; }
       setSubmitting(true);
 
       // Ensure image is uploaded if it's still a local file or blob
@@ -363,7 +389,7 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
                       <CategorySelector selectedCategory={selectedCategory} onSelectCategory={handleSelectCategory} customCategory={customCategory} onChangeCustomCategory={setCustomCategory} aiDetected={aiDetected} aiClass={aiDetectedClass} aiConfidence={aiConfidence} />
                     </Animated.View>
                     <Animated.View entering={FadeInUp.delay(300)}>
-                      <DescriptionEditor category={selectedCategory} customCategory={customCategory} description={description} onChangeDescription={setDescription} address={address} />
+                      <DescriptionEditor category={selectedCategory} customCategory={customCategory} description={description} onChangeDescription={text => { descriptionEdited.current = true; setDescription(text); }} onResetDescription={() => { descriptionEdited.current = false; setDescription(getDefaultDescription(selectedCategory, locationConfirmed ? address : undefined)); }} address={locationConfirmed ? address : undefined} />
                     </Animated.View>
                     
                     <Animated.View entering={FadeInUp.delay(400)} style={styles.buttonRow}>
@@ -394,16 +420,7 @@ export const ReportIssueScreen: React.FC<Props> = ({ navigation, route }) => {
                         address={address}
                         height={290}
                         showCard={true}
-                        onSelectLocation={(lat, lng) => {
-                          setLocationConfirmed(true);
-                          setErrorMessage(null);
-                          setLatitude(lat);
-                          setLongitude(lng);
-                          setAddress(`Coordinates Lat: ${lat.toFixed(4)}, Long: ${lng.toFixed(4)}`);
-                          void locationService.reverseGeocode(lat, lng).then((resolvedAddr) => {
-                            if (resolvedAddr) setAddress(resolvedAddr);
-                          });
-                        }}
+                        onSelectLocation={handleSelectLocation}
                         onUseCurrentLocation={fetchCurrentLocation}
                       />
                     <Animated.View entering={FadeInUp.delay(200)}>

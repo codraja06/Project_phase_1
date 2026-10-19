@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { MapSurfaceProps, MapPin } from './MapSurface.types';
 
@@ -130,8 +130,17 @@ function generateWebLeafletHtml({
           if (typeof pin.latitude === 'number' && typeof pin.longitude === 'number') {
             var marker = L.marker([pin.latitude, pin.longitude], { icon: customIcon }).addTo(map);
             if (pin.title || pin.address) {
-              var content = '<div class="popup-title">' + (pin.title || 'Civic Issue') + '</div>';
-              if (pin.address) content += '<div class="popup-address">' + pin.address + '</div>';
+              var content = document.createElement('div');
+              var title = document.createElement('div');
+              title.className = 'popup-title';
+              title.textContent = pin.title || 'Civic Issue';
+              content.appendChild(title);
+              if (pin.address) {
+                var address = document.createElement('div');
+                address.className = 'popup-address';
+                address.textContent = pin.address;
+                content.appendChild(address);
+              }
               marker.bindPopup(content);
             }
             marker.on('click', function() {
@@ -161,6 +170,7 @@ function generateWebLeafletHtml({
       }
 
       window.addEventListener('message', function(e) {
+        if (e.source !== window.parent) return;
         try {
           var payload = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
           if (payload && payload.type === 'center_update') {
@@ -185,7 +195,7 @@ export function MapSurface({
   onSelectPin,
   onSelectLocation,
 }: MapSurfaceProps) {
-  const [iframeRef, setIframeRef] = useState<HTMLIFrameElement | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const validCoords =
     Number.isFinite(latitude) &&
@@ -199,11 +209,14 @@ export function MapSurface({
   // Listen to messages from the iframe
   useEffect(() => {
     const handleWindowMessage = (event: MessageEvent) => {
+      if (!iframeRef.current || event.source !== iframeRef.current.contentWindow) return;
       try {
         const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-        if (data?.type === 'location_selected' && onSelectLocation) {
+        if (data?.type === 'location_selected' && interactive && onSelectLocation &&
+            Number.isFinite(data.latitude) && Math.abs(data.latitude) <= 90 &&
+            Number.isFinite(data.longitude) && Math.abs(data.longitude) <= 180) {
           onSelectLocation(data.latitude, data.longitude);
-        } else if (data?.type === 'pin_selected' && onSelectPin) {
+        } else if (data?.type === 'pin_selected' && onSelectPin && pins?.some(pin => pin.id === data.id)) {
           onSelectPin(data.id);
         }
       } catch {
@@ -213,12 +226,12 @@ export function MapSurface({
 
     window.addEventListener('message', handleWindowMessage);
     return () => window.removeEventListener('message', handleWindowMessage);
-  }, [onSelectLocation, onSelectPin]);
+  }, [iframeRef, interactive, onSelectLocation, onSelectPin, pins]);
 
   // Center update message to iframe
   useEffect(() => {
-    if (iframeRef && iframeRef.contentWindow && validCoords) {
-      iframeRef.contentWindow.postMessage(
+    if (iframeRef.current?.contentWindow && validCoords) {
+      iframeRef.current.contentWindow.postMessage(
         JSON.stringify({ type: 'center_update', latitude: lat, longitude: lng }),
         '*'
       );
@@ -249,8 +262,9 @@ export function MapSurface({
     <View style={styles.container}>
       {/* React Native Web renders iframe natively */}
       <iframe
-        ref={(el) => setIframeRef(el as unknown as HTMLIFrameElement)}
+        ref={iframeRef}
         title="CivicTrack OpenStreetMap"
+        sandbox="allow-scripts"
         srcDoc={htmlDoc}
         style={{
           width: '100%',
