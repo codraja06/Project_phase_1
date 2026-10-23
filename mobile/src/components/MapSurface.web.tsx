@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { MapSurfaceProps, MapPin } from './MapSurface.types';
 
@@ -12,12 +12,14 @@ function generateWebLeafletHtml({
   interactive,
   pins,
   hasLocationSelector,
+  scriptNonce,
 }: {
   latitude: number;
   longitude: number;
   interactive: boolean;
   pins?: MapPin[];
   hasLocationSelector: boolean;
+  scriptNonce: string;
 }): string {
   const safePins = pins && pins.length > 0 ? pins : null;
 
@@ -26,6 +28,8 @@ function generateWebLeafletHtml({
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-${scriptNonce}'; style-src 'unsafe-inline' https://unpkg.com; img-src https://tile.openstreetmap.org data:; base-uri 'none'; form-action 'none'" />
   <title>CivicTrack OpenStreetMap</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <style>
@@ -83,9 +87,10 @@ function generateWebLeafletHtml({
 </head>
 <body>
   <div id="map"></div>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" nonce="${scriptNonce}"></script>
+  <script nonce="${scriptNonce}">
     (function() {
+      if (!window.L) return;
       var initialLat = ${latitude};
       var initialLng = ${longitude};
       var isInteractive = ${interactive ? 'true' : 'false'};
@@ -106,8 +111,9 @@ function generateWebLeafletHtml({
 
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
+        referrerPolicy: 'strict-origin-when-cross-origin',
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
-      }).addTo(map);
+      }).on('tileload', function() { postMsg({ type: 'map_ready' }); }).addTo(map);
 
       var customIcon = L.divIcon({
         className: 'custom-marker',
@@ -196,6 +202,11 @@ export function MapSurface({
   onSelectLocation,
 }: MapSurfaceProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const scriptNonce = useMemo(() => Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, '0')).join(''), []);
+  const [mapReady, setMapReady] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [externalError, setExternalError] = useState('');
+  const [retry, setRetry] = useState(0);
 
   const validCoords =
     Number.isFinite(latitude) &&
@@ -212,7 +223,10 @@ export function MapSurface({
       if (!iframeRef.current || event.source !== iframeRef.current.contentWindow) return;
       try {
         const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-        if (data?.type === 'location_selected' && interactive && onSelectLocation &&
+        if (data?.type === 'map_ready') {
+          setMapReady(true);
+          setLoadError(false);
+        } else if (data?.type === 'location_selected' && interactive && onSelectLocation &&
             Number.isFinite(data.latitude) && Math.abs(data.latitude) <= 90 &&
             Number.isFinite(data.longitude) && Math.abs(data.longitude) <= 180) {
           onSelectLocation(data.latitude, data.longitude);
@@ -246,9 +260,30 @@ export function MapSurface({
         interactive,
         pins,
         hasLocationSelector: !!onSelectLocation,
+        scriptNonce,
       }),
-    [lat, lng, interactive, pins, !!onSelectLocation]
+    [lat, lng, interactive, pins, !!onSelectLocation, scriptNonce]
   );
+
+  useEffect(() => {
+    setMapReady(false);
+    setLoadError(false);
+    setExternalError('');
+  }, [htmlDoc, retry]);
+
+  useEffect(() => {
+    if (mapReady || !validCoords) return;
+    const timer = setTimeout(() => setLoadError(true), 12000);
+    return () => clearTimeout(timer);
+  }, [htmlDoc, retry, mapReady, validCoords]);
+
+  const openExternalMap = async () => {
+    try {
+      await Linking.openURL(`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`);
+    } catch {
+      setExternalError('Unable to open OpenStreetMap. Please try again.');
+    }
+  };
 
   if (!validCoords) {
     return (
@@ -262,9 +297,13 @@ export function MapSurface({
     <View style={styles.container}>
       {/* React Native Web renders iframe natively */}
       <iframe
+        key={retry}
         ref={iframeRef}
         title="CivicTrack OpenStreetMap"
-        sandbox="allow-scripts"
+        // Same-origin preserves the real page referrer required by OSM tiles.
+        // The frame's CSP restricts execution to our nonce and pinned CDN script.
+        sandbox="allow-scripts allow-same-origin"
+        referrerPolicy="strict-origin-when-cross-origin"
         srcDoc={htmlDoc}
         style={{
           width: '100%',
@@ -273,11 +312,33 @@ export function MapSurface({
           backgroundColor: '#F1F5F9',
         }}
       />
+      {loadError && (
+        <View style={styles.errorOverlay}>
+          <Text style={styles.fallbackText}>OpenStreetMap preview unavailable</Text>
+          <Text style={styles.fallbackText}>{lat.toFixed(5)}, {lng.toFixed(5)}</Text>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Retry map preview" onPress={() => setRetry(value => value + 1)} style={styles.recoveryButton}>
+            <Text style={styles.fallbackText}>Retry map</Text>
+          </TouchableOpacity>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open incident in OpenStreetMap" onPress={openExternalMap} style={styles.recoveryButton}>
+            <Text style={styles.fallbackText}>View on OpenStreetMap</Text>
+          </TouchableOpacity>
+          {!!externalError && <Text style={styles.fallbackText}>{externalError}</Text>}
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  errorOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    gap: 6,
+  },
+  recoveryButton: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 12 },
   container: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: '#F1F5F9',

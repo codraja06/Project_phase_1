@@ -104,6 +104,7 @@ function generateLeafletHtml({
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script>
     (function() {
+      if (!window.L) return;
       var initialLat = ${latitude};
       var initialLng = ${longitude};
       var isInteractive = ${interactive ? 'true' : 'false'};
@@ -126,7 +127,7 @@ function generateLeafletHtml({
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
-      }).addTo(map);
+      }).on('tileload', function() { postMsg({ type: 'map_ready' }); }).addTo(map);
 
       // Create Custom SVG-like HTML Marker Icon
       var customIcon = L.divIcon({
@@ -215,6 +216,8 @@ export function MapSurface({
   const webViewRef = useRef<WebView>(null);
   const [loadError, setLoadError] = useState(false);
   const [externalError, setExternalError] = useState('');
+  const [mapReady, setMapReady] = useState(false);
+  const [retry, setRetry] = useState(0);
 
   const validCoords =
     Number.isFinite(latitude) &&
@@ -248,7 +251,10 @@ export function MapSurface({
   const handleMessage = (event: any) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
-      if (data.type === 'location_selected' && interactive && onSelectLocation &&
+      if (data.type === 'map_ready') {
+        setMapReady(true);
+        setLoadError(false);
+      } else if (data.type === 'location_selected' && interactive && onSelectLocation &&
           Number.isFinite(data.latitude) && Math.abs(data.latitude) <= 90 &&
           Number.isFinite(data.longitude) && Math.abs(data.longitude) <= 180) {
         onSelectLocation(data.latitude, data.longitude);
@@ -259,6 +265,18 @@ export function MapSurface({
       // Ignore parse errors
     }
   };
+
+  useEffect(() => {
+    setMapReady(false);
+    setLoadError(false);
+    setExternalError('');
+  }, [htmlContent, retry]);
+
+  useEffect(() => {
+    if (mapReady || !validCoords) return;
+    const timer = setTimeout(() => setLoadError(true), 12000);
+    return () => clearTimeout(timer);
+  }, [htmlContent, retry, mapReady, validCoords]);
 
   const openInExternalMap = async () => {
     setExternalError('');
@@ -300,6 +318,9 @@ export function MapSurface({
         <Ionicons name="alert-circle-outline" size={32} color="#DC2626" />
         <Text style={styles.fallbackTitle}>OpenStreetMap preview unavailable</Text>
         <Text style={styles.coordsText}>Coordinates: {lat.toFixed(5)}, {lng.toFixed(5)}</Text>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Retry map preview" style={styles.externalButton} onPress={() => setRetry(value => value + 1)}>
+          <Text style={styles.externalButtonText}>Retry map</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={styles.externalButton}
           onPress={openInExternalMap}
@@ -317,6 +338,7 @@ export function MapSurface({
   return (
     <View style={styles.container}>
       <WebView
+        key={retry}
         ref={webViewRef}
         source={{ html: htmlContent, baseUrl: 'https://www.openstreetmap.org' }}
         style={styles.webView}

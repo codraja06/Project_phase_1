@@ -32,6 +32,7 @@ const fs = require('fs');
     await expect(description).toHaveValue(/uncollected waste/);
     await page.setViewportSize({ width: 393, height: 873 });
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await description.scrollIntoViewIfNeeded();
     await page.screenshot({ path: `${output}/citizen-description-phone.png` });
     await page.getByRole('button', { name: 'Continue to Location', exact: true }).click();
     await page.getByLabel('Incident latitude', { exact: true }).fill('-33.9');
@@ -62,7 +63,7 @@ const fs = require('fs');
     authorityPage.on('pageerror', error => errors.push(error.message));
     const authority = await mockApi(authorityPage, 'authority');
     // Leaflet is stubbed only to exercise our popup DOM without external CDN access.
-    const leafletStub = `window.L={map:()=>({on(){},panTo(){}}),tileLayer:()=>({addTo(){}}),divIcon:()=>({}),marker:()=>({addTo(){return this},bindPopup(content){const host=document.createElement('div');if(typeof content==='string')host.innerHTML=content;else host.appendChild(content);document.body.appendChild(host);return this},on(){return this},setLatLng(){return this}})};`;
+    const leafletStub = `window.L={map:()=>({on(){},panTo(){}}),tileLayer:()=>({on(){return this},addTo(){}}),divIcon:()=>({}),marker:()=>({addTo(){return this},bindPopup(content){const host=document.createElement('div');if(typeof content==='string')host.innerHTML=content;else host.appendChild(content);document.body.appendChild(host);return this},on(){return this},setLatLng(){return this}})};`;
     authority.complaints[0].title = '<img src=x onerror="window.mapInjection=true">';
     authority.complaints[0].address = '<b>Citizen supplied address</b>';
     await login(authorityPage, 'authority');
@@ -70,7 +71,8 @@ const fs = require('fs');
     await authorityPage.locator('iframe[title="CivicTrack OpenStreetMap"]').evaluate((element, stub) => {
       // Substitute only the external library in this isolated frame. The app's
       // generated popup code and iframe sandbox remain intact.
-      element.srcdoc = element.srcdoc.replace(/<link[^>]*>/g, '').replace(/<script src=[\s\S]*?<\/script>/g, `<script>${stub}</script>`);
+      const nonce = element.srcdoc.match(/nonce="([^"]+)"/)[1];
+      element.srcdoc = element.srcdoc.replace(/<link[^>]*>/g, '').replace(/<script src=[\s\S]*?<\/script>/g, `<script nonce="${nonce}">${stub}</script>`);
     }, leafletStub);
     const frame = authorityPage.frameLocator('iframe[title="CivicTrack OpenStreetMap"]');
     await expect(frame.locator('.popup-title').first()).toHaveText(authority.complaints[0].title);

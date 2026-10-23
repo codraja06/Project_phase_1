@@ -1,0 +1,12 @@
+{
+  "registration": "passed",
+  "realImageUpload": "passed",
+  "realAiRequest": {
+    "status": 200,
+    "detections": 0
+  },
+  "complaintCode": "CIV-863643",
+  "officerVerifyProgressResolve": "passed",
+  "citizenSeesPersistedResolution": "passed",
+  "errors": []
+}

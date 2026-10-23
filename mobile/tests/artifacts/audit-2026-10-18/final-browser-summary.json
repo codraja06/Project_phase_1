@@ -1,0 +1,23 @@
+{
+  "auth": {
+    "checks": 112,
+    "errors": [],
+    "overflow": []
+  },
+  "dashboard": {
+    "checks": 28,
+    "errors": [],
+    "overflow": [],
+    "axe": []
+  },
+  "routes": {
+    "checks": 364,
+    "errors": [],
+    "overflow": []
+  },
+  "flows": {
+    "checks": 6,
+    "errors": [],
+    "overflow": []
+  }
+}

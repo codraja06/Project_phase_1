@@ -17,7 +17,9 @@ const web = process.env.CIVICTRACK_WEB_URL || 'http://localhost:8081';
   const makePage = async () => {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, permissions: ['geolocation'], geolocation: { latitude: 12.9, longitude: 80.1 }, reducedMotion: 'reduce' });
     contexts.push(context);
-    await context.addInitScript(value => localStorage.setItem('@civic_server_url', value), api);
+    await context.addInitScript(value => {
+      if (window === window.top) localStorage.setItem('@civic_server_url', value);
+    }, api);
     const page = await context.newPage();
     page.on('pageerror', error => errors.push(error.message));
     return page;
@@ -72,7 +74,7 @@ const web = process.env.CIVICTRACK_WEB_URL || 'http://localhost:8081';
     await officer.getByRole('button', { name: 'Authenticate as Officer', exact: true }).click();
     await expect(officer.getByText('Command Center', { exact: true }).last()).toBeVisible();
     await officer.getByRole('button', { name: 'All Complaints', exact: true }).click();
-    await officer.getByText(complaint.complaintId, { exact: true }).first().click();
+    await officer.getByText(complaint.complaintId, { exact: true }).filter({ visible: true }).first().click();
     await officer.getByRole('button', { name: 'Verify Incident', exact: true }).click();
     await expect(officer.getByRole('button', { name: 'Verify Incident', exact: true })).toHaveCount(0);
     await officer.getByRole('button', { name: 'Mark In Progress', exact: true }).click();
@@ -81,14 +83,18 @@ const web = process.env.CIVICTRACK_WEB_URL || 'http://localhost:8081';
     await officer.getByRole('button', { name: 'Mark Resolved', exact: true }).click();
     await officer.getByRole('button', { name: 'Confirm Resolution', exact: true }).click();
     await expect(officer.getByRole('button', { name: 'Resolved ✓', exact: true })).toBeVisible();
-    await expect(officer.getByText('Live Audit Citizen', { exact: true })).toBeVisible();
+    await expect(officer.getByText('Live Audit Citizen', { exact: true }).filter({ visible: true }).last()).toBeVisible();
     await expect(officer.getByRole('button', { name: 'Purge Record', exact: true })).toHaveCount(0);
     results.officerVerifyProgressResolve = 'passed';
-    await citizen.getByLabel('Back', { exact: true }).click();
+    await citizen.getByRole('button', { name: 'Back', exact: true }).click();
     await citizen.getByRole('button', { name: 'My Complaints', exact: true }).click();
-    await citizen.getByText(complaint.complaintId, { exact: true }).first().click();
-    await expect(citizen.getByText('Resolved', { exact: true }).first()).toBeVisible();
+    await citizen.getByText(complaint.complaintId, { exact: true }).filter({ visible: true }).first().click();
+    await expect(citizen.getByText('Resolved', { exact: true }).filter({ visible: true }).first()).toBeVisible();
     results.citizenSeesPersistedResolution = 'passed';
+    await Promise.race([
+      citizen.frameLocator('iframe[title="CivicTrack OpenStreetMap"]').locator('.leaflet-tile-loaded').first().waitFor({ state: 'visible', timeout: 20000 }),
+      citizen.getByText('OpenStreetMap preview unavailable', { exact: true }).filter({ visible: true }).first().waitFor({ state: 'visible', timeout: 20000 }),
+    ]);
     expect(errors).toEqual([]);
     fs.mkdirSync('tests/artifacts/audit-2026-10-18', { recursive: true });
     await citizen.screenshot({ path: 'tests/artifacts/audit-2026-10-18/live-citizen-resolved.png' });

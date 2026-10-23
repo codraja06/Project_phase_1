@@ -1,0 +1,10 @@
+{
+  "missingScriptFallback": "passed",
+  "retry": "passed",
+  "realLeaflet": "1.9.4",
+  "tiles": "external OSM",
+  "browserReferrer": "http://localhost:8082/",
+  "untrustedScriptBlocked": true,
+  "popup": "passed",
+  "errors": []
+}
